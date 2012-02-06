@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/myLocationMenuItem" android:title="My Location" />
+  <item android:id="@+id/inputAnnotationMenuItem" android:title="Walk note" />
+  <item android:id="@+id/settingsMenuItem" android:title="Settings" />
+  <item android:id="@+id/poisMenuItem" android:title="Download POIs" />
+  <item android:id="@+id/findPoisMenuItem" android:title="Find POIs" />
+</menu>

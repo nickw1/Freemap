@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<array name="mapSourceOpts">
+	<item>Freemap</item>
+	<item>Freemap (Home rendered)</item>
+	<item>NPE</item>
+	<item>OS 7th Series</item>
+	<item>OS First Edition</item>
+</array>
+<array name="mapSourceOptValues">
+	<item>FREEMAP</item>
+	<item>FREEMAP_HOME</item>
+	<item>NPE</item>
+	<item>OS7</item>
+	<item>OS1</item>
+</array>
+</resources>

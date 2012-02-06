@@ -1,0 +1,93 @@
+<!--
+map is in OSGB
+OSM data is in Google Mercator
+<Map bgcolor="#ffffff" srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over">
+-->
+<Map bgcolor="transparent" srs="+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.999601 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +towgs84=446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894 +units=m +nodefs">
+<Style name="footpaths">
+	<Rule>
+		<Filter>[designation] = 'public_footpath'</Filter>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#fff</CssParameter>
+			<CssParameter name="stroke-width">6</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+			<CssParameter name="stroke-opacity">0.4</CssParameter>
+		</LineSymbolizer>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#c00000</CssParameter>
+			<CssParameter name="stroke-width">1.0</CssParameter>
+			<CssParameter name="stroke-dasharray">2,4</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+		</LineSymbolizer>
+	</Rule>
+	<Rule>
+		<Filter>[designation] = 'public_bridleway'</Filter>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#fff</CssParameter>
+			<CssParameter name="stroke-width">6</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+			<CssParameter name="stroke-opacity">0.4</CssParameter>
+		</LineSymbolizer>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#c00000</CssParameter>
+			<CssParameter name="stroke-width">1.0</CssParameter>
+			<CssParameter name="stroke-dasharray">6,4</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+		</LineSymbolizer>
+	</Rule>
+	<Rule>
+		<Filter>[designation] = 'public_byway' or
+		[designation] = 'byway' or
+		[designation] = 'restricted_byway' or
+		[designation] = 'unknown_byway' or
+		[designation] = 'byway_open_to_all_traffic' </Filter>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#fff</CssParameter>
+			<CssParameter name="stroke-width">6</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+			<CssParameter name="stroke-opacity">0.4</CssParameter>
+		</LineSymbolizer>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#c00000</CssParameter>
+			<CssParameter name="stroke-width">3.0</CssParameter>
+			<CssParameter name="stroke-dasharray">2,6</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+		</LineSymbolizer>
+	</Rule>
+	<Rule>
+		<Filter>[foot] = 'permissive'</Filter>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#fff</CssParameter>
+			<CssParameter name="stroke-width">6</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+			<CssParameter name="stroke-opacity">0.4</CssParameter>
+		</LineSymbolizer>
+		<LineSymbolizer>
+			<CssParameter name="stroke">#c000c0</CssParameter>
+			<CssParameter name="stroke-width">1.0</CssParameter>
+			<CssParameter name="stroke-dasharray">2,4</CssParameter>
+			<CssParameter name="stroke-linejoin">round</CssParameter>
+			<CssParameter name="stroke-linecap">round</CssParameter>
+		</LineSymbolizer>
+	</Rule>
+</Style>
+<Layer name="row" status="on" srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over">
+	<StyleName>footpaths</StyleName>
+	<Datasource>
+		<Parameter name="type">postgis</Parameter>
+		<Parameter name="host">localhost</Parameter>
+		<Parameter name="port">5432</Parameter>
+		<Parameter name="user">gis</Parameter>
+		<Parameter name="dbname">gis</Parameter>
+		<Parameter name="estimate_extent">false</Parameter>
+		<Parameter name="table">(select way,designation,foot from planet_osm_line where foot='permissive' or designation is not null) as roads</Parameter>
+	</Datasource>
+</Layer>
+</Map>

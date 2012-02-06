@@ -1,0 +1,19 @@
+This is the source for all web apps running on the Freemap server, primarily:
+- Freemap itself;
+- OpenTrailView;
+- Freemap 3D (OSM WebGL demo).
+To run on your server you will need to have a standard OSM PostGIS database
+present, prepared by importing .osm files using osm2pgsql or Osmosis. You
+also need to set up the Freemap/OTV specific tables, the SQL for this can be
+found in database.sql.
+You will also need to tweak the paths in common/defines.php.
+
+Explanation of directories:
+
+freemap - Freemap itself.
+otvnew - OpenTrailView.
+3d - Demo WebGL OSM viewer.
+ws - Web services to return PostGIS OSM data by tile.
+lib - Library functions, used by Freemap and OTV.
+common - Common functionality; login and defines.
+javascript - Common JavaScript, including a local copy of Prototype.

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+  
+  <freemap.opentrail.CameraView 
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" />
+ 
+ <!--  
+  <freemap.opentrail.CameraOverlay
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:background="@android:color/transparent" 
+  android:id="@+id/cameraoverlay"/>
+  -->
+  
+  <android.opengl.GLSurfaceView
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:background="@android:color/transparent"
+  android:id="@+id/cameragloverlay" />
+ 
+</FrameLayout>

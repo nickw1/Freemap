@@ -1,0 +1,29 @@
+OpenTrail
+=========
+
+The beginnings of an Android app aimed at walkers and other outdoor users
+of the countryside.
+
+The apk is available at http://www.free-map.org.uk/downloads/android.
+
+To build from source you need:
+
+- the osmdroid JAR, at least version 3.0.5: 
+see http://code.google.com/p/osmdroid/
+
+- the SLF4J JAR (v1.5.8 definitely works, haven't tried others):
+see http://www.slf4j.org/android/
+
+- jcoord, see http://www.jstott.me.uk/jcoord/
+
+- Modified Java proj.4, 
+from http://www.free-map.org.uk/downloads/javalib/javaproj-1.0.6-noawt.jar
+
+- Freemaplib, 
+from http://www.free-map.org.uk/downloads/javalib/freemaplib.jar
+
+Licence of opentrail: GPL v2, or any later version.
+
+The "person.png" image is from osmdroid.
+The annotation "asterisk" icon is based on a similar one from the icons used in
+OSM Mapnik maps, but with the colour changed to red.
