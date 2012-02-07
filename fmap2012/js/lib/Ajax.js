@@ -23,10 +23,10 @@ function Ajax()
 
 Ajax.prototype.sendRequest = function(URL,options)
 {
-	this.callbackObject = options.callbackObject||null;
-	this.errorCallback = options.errorCallback || null;
-	this.callbackFunction = options.callback || null;
-	options.information = options.information||'';
+    this.callbackObject = options.callbackObject||null;
+    this.errorCallback = options.errorCallback || null;
+    this.callbackFunction = options.callback || null;
+    options.parameters = options.parameters||'';
 
     // This line specifies we are GETing the data (GET request)
     this.xmlHTTP.open('GET',URL+'?'+options.parameters, true);
@@ -36,7 +36,7 @@ Ajax.prototype.sendRequest = function(URL,options)
                     'application/x-www-form-urlencoded');
 
 
-	this.setupHandler(this);
+    this.setupHandler(this);
 
 
     // Send the data.
@@ -51,14 +51,14 @@ Ajax.prototype.setupHandler = function(self)
     this.xmlHTTP.onreadystatechange =  function()
         {
             if(self.xmlHTTP.readyState==4)
-			{
-				if(self.xmlHTTP.status!=200 && self.errorCallback)
-				{
-					self.errorCallback.apply(self.callbackObject,
-											[self.xmlHTTP.status]);
-				}
+            {
+                if(self.xmlHTTP.status!=200 && self.errorCallback)
+                {
+                    self.errorCallback.apply(self.callbackObject,
+                                            [self.xmlHTTP.status]);
+                }
                 self.callbackFunction.apply(self.callbackObject,
-											[self.xmlHTTP]);
-			}
+                                            [self.xmlHTTP]);
+            }
         }
 }
