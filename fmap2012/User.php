@@ -91,13 +91,13 @@ class User
                     "New Freemap account created for $username ".
                     "(email $email). ".
                     "<a href=".
-                    "\"http://www.free-map.org.uk/common/user.php?action=".
+                    "\"http://www.free-map.org.uk/0.6/user.php?action=".
                         "delete&id=$lastid\">Delete</a>");
             mail($email, 'New Freemap account created', 
                     "New Freemap account created for $username.".
                     "Please activate by visiting this address: ".
                     "http://www.free-map.org.uk".
-                    "/common/user.php?action=activate&id=$lastid".
+                    "/0.6/user.php?action=activate&id=$lastid".
                 "&key=$random");
             ?>
             <h1>Signed up!</h1>

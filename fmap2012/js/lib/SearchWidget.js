@@ -51,8 +51,8 @@ SearchWidget.prototype.sendRequest  =function()
 
     new Ajax().sendRequest (this.options.url,
                                 { parameters: p,
-                                callback: this.resultsReturned,
-                                callbackObject: this });
+                                method : 'GET',
+                                callback: this.resultsReturned.bind(this) } );
 }
 
 SearchWidget.prototype.resultsReturned = function(xmlHTTP)

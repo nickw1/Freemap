@@ -15,6 +15,7 @@ node[place]
 	font-weight: bold;
 	font-family: Helvetica; 
 	text: name;
+	text-allow-overlap: true;
 }
 
 node[place=suburb],node[place=hamlet]
@@ -42,6 +43,16 @@ node[natural=peak]
 	text-color: black;
 	font-weight: bold;
 	font-size: 10;
+	font-family: Helvetica; 
+	text: name;
+	text-allow-overlap: true;
+}
+
+node[amenity=pub]
+{
+	text-color: black;
+	font-weight: bold;
+	font-size: 8;
 	font-family: Helvetica; 
 	text: name;
 }

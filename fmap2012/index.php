@@ -11,7 +11,7 @@ $lon = (isset($_GET['lon'])) ? $_GET['lon']: -0.72;
 $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: 14;
     
 ?>
-
+<!DOCTYPE html>
 <html>
 <head>
 <title>FREEMAP 0.6 - EXPERIMENTAL!</title>
@@ -21,8 +21,10 @@ $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: 14;
 <script type='text/javascript' src='kothic/dist/kothic-leaflet.js'></script>
 <script type='text/javascript' src='style.js'></script>
 <link rel='stylesheet' type='text/css' href='leaflet/leaflet.css' />
+<script type='text/javascript' src='js/lib/Util.js'></script>
 <script type='text/javascript' src='js/lib/Ajax.js'></script>
 <script type='text/javascript' src='js/lib/SearchWidget.js'></script>
+<script type='text/javascript' src='js/lib/Dialog.js'></script>
 <script type='text/javascript'>
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;
@@ -39,13 +41,12 @@ title='The Freemap blog, revisited' href='/wordpress/' />
 
 <body onload='init()'>
 
+<?php write_sidebar(true); ?>
 
 <div id='main'>
 
+<div id="map"></div>
 
-<div id="map"> </div>
-
-<?php write_sidebar(true); ?>
 </div>
 
 
@@ -121,7 +122,7 @@ function write_login()
 	else
 	{
 		echo "<em>Logged in as $_SESSION[gatekeeper]</em>\n";
-		echo "<a href='/common/user.php?action=logout&redirect=".
+		echo "<a href='user.php?action=logout&redirect=".
 			htmlentities($_SERVER['PHP_SELF'])."'>Log out</a> ";
 	}
 	echo "</div>";
