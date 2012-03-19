@@ -1,7 +1,11 @@
 <?php
 
 require_once('/home/www-data/private/defines.php');
-require_once('../common/defines.php');
+require_once('/var/www/common/defines.php');
+require_once('latlong.php');
+
+define ('HALF_EARTH', 20037508.34);
+define ('EARTH', 40075016.68);
 
 // Generic stuff - might be useful for other projects
 // This code is licenced under the LGPL
@@ -247,7 +251,7 @@ function check_month($month)
     return in_array ( $month, $months );
 }
 
-function js_error($err, $redirect)
+function js_msg($err, $redirect)
 {
     ?>
     <html>
@@ -291,17 +295,18 @@ function pg_insert_id($table)
 
 function sphmerc_to_lon($m)
 {
-    return ($m/20037508.34) * 180.0;
+    return ($m/HALF_EARTH) * 180.0;
 }
 
 function lon_to_sphmerc($lon)
 {
-    return ($lon/180.0) * 20037508.34;
+    return ($lon/180.0) * HALF_EARTH;
+	
 }
 
 function sphmerc_to_lat($m)
 {
-    $lat=($m/20037508.34) * 180;
+    $lat=($m/HALF_EARTH) * 180;
     $lat = 180/M_PI * (2*atan(exp($lat*M_PI/180)) - M_PI/2);
     return $lat;
 }
@@ -309,7 +314,7 @@ function sphmerc_to_lat($m)
 function lat_to_sphmerc($lat)
 {
     $a = log(tan((90+$lat)*M_PI/360)) / (M_PI/180);
-    return $a *20037508.34/180;
+    return $a *HALF_EARTH/180;
 }
 
 function sphmerc_to_ll($x,$y)
@@ -317,10 +322,21 @@ function sphmerc_to_ll($x,$y)
     return array("lon"=>sphmerc_to_lon($x), "lat"=>sphmerc_to_lat($y) );
 }
 
-function ll_to_sphmerc($lat,$lon)
+function ll_to_sphmerc($lon,$lat)
 {
     return array ("e"=>lon_to_sphmerc($lon), "n"=>lat_to_sphmerc($lat) );
 }
+
+function get_sphmerc_bbox($x,$y,$z)
+{
+    $bbox=array();
+    $metresInTile = EARTH /pow(2,$z);
+    $bbox[0] = ($x*$metresInTile)-HALF_EARTH;
+    $bbox[3] = HALF_EARTH-($y*$metresInTile);
+    $bbox[2] = $bbox[0]+$metresInTile;
+    $bbox[1] = $bbox[3]-$metresInTile;
+    return $bbox;
+}    
 
 function get_bearing($dx,$dy)
 {
@@ -382,3 +398,102 @@ function haversine_dist($lon1,$lat1,$lon2,$lat2)
 	$c = 2 *asin(min(1,sqrt($a)));
 	return $R*$c;
 }
+
+function reproject($x,$y,$inProj,$outProj)
+{
+	// Project to wgs84 latlon
+	$inProj=strtoupper($inProj);
+	$outProj=strtoupper($outProj);
+	switch($inProj)
+	{
+		case 'GOOGLE':
+		case 'EPSG:900913':
+		case '900913':
+		case '3785':
+		case 'EPSG:3785':
+			$ll = sphmerc_to_ll($x,$y);
+			break;
+
+		case 'OSGB':
+		case '27700':
+		case 'EPSG:27700':
+			$ll = gr_to_wgs84_ll($x,$y);
+			break;
+
+		default:
+			$ll = array("lon"=>$x,"lat"=>$y);
+	}
+
+	// Project from wgs84 latlon to output format
+	switch($outProj)
+	{
+		case 'GOOGLE':
+		case 'EPSG:900913':
+		case '900913':
+		case '3785':
+		case 'EPSG:3785':
+			$sm = ll_to_sphmerc($ll['lon'],$ll['lat']);
+			$x = $sm['e'];
+			$y = $sm['n'];
+			break;
+
+		case 'OSGB':
+		case '27700':
+		case 'EPSG:27700':
+			$gr = wgs84_ll_to_gr($ll['lon'],$ll['lat']);
+			$x = $gr['e'];
+			$y = $gr['n'];
+			break;
+
+		default:
+			$x = $ll['lon'];
+			$y = $ll['lat'];
+			break;
+	}
+
+	return array($x,$y);
+}
+
+function adjustProj(&$proj)
+{
+    $proj=str_replace("EPSG:","",strtoupper($proj));
+
+    $projAliases = array
+        ("OSGB" => "27700",
+         "GOOGLE" => "900913",
+         "3785" => "900913",
+         "3857" => "900913",
+         "WGS84" => "4326" );
+
+    foreach($projAliases as $alias=>$srs)
+    {
+        if($proj==$alias)
+        {
+            $proj=$srs;
+            break;
+        }
+    }
+}
+
+function get_high_level ($tags)
+{
+    $highlevel = array("pub" => array ("amenity","pub"),
+              "car park"=>array("amenity","parking"),
+              "viewpoint"=>array("tourism","viewpoint"),
+              "hill"=>array("natural","peak"),
+              "village"=>array("place","village"),
+              "hamlet"=>array("place","hamlet"),
+              "suburb"=>array("place","suburb"),
+              "town"=>array("place","town"),
+              "restaurant"=>array("amenity","restaurant"),
+              "city"=>array("place","city"),
+			  "station"=>array("railway","station"));
+
+    foreach ($highlevel as $h=>$t)
+    {
+        if ($tags[$t[0]] && $tags[$t[0]] == $t[1])
+            return $h;
+    }
+    return "unknown"; 
+}
+?>

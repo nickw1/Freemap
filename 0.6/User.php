@@ -63,10 +63,7 @@ class User
 
     private static function doLogin($username,$password)
     {
-        $q="select * from users where username='$username' ".
-              "and password='".sha1($password)."' and active=1";
-        $result=pg_query($q);
-        if(pg_numrows($result)==1)
+        if($result=User::isValidLogin($username,$password))
         {
             $row=pg_fetch_array($result,null,PGSQL_ASSOC);
             $_SESSION["gatekeeper"] = $row["username"];
@@ -75,7 +72,15 @@ class User
         }
         return false;
     }
-
+    
+    static function isValidLogin($username,$password)
+    {
+        $q="select * from users where username='$username' ".
+              "and password='".sha1($password)."' and active=1";
+        $result=pg_query($q);
+        return (pg_numrows($result)==1) ? $result:null;
+    }
+   
     static function processSignup($username,$password,$email)
     {
         $result=pg_query("SELECT * FROM users WHERE username='$username'"); 
@@ -227,7 +232,7 @@ class User
         }
     }
 
-    function getUserFromUsername($user)
+    static function getUserFromUsername($user)
     {
         $result=pg_query("SELECT id FROM users WHERE username='$user'");
         if(pg_numrows($result)==1)

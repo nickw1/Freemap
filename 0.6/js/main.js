@@ -201,7 +201,8 @@ Freemap.prototype.dlgOkPressed = function(e)
 {
     e.stopPropagation();
     this.ajax.sendRequest('/0.6/ws/annotation.php',
-                            { parameters: 'text=' +
+                            { method: 'POST',
+							parameters: 'text=' +
                                 document.getElementById('annotation').value+
                                 '&lat='+this.mapClickPos.lat+'&lon='+
                                     this.mapClickPos.lng,
