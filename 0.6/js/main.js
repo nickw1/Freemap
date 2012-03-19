@@ -1,4 +1,3 @@
-
 function Freemap(lat,lon,zoom)
 {
     var tileUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php' +

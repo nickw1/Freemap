@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+
 require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
 require_once('../User.php');

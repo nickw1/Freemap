@@ -1,5 +1,6 @@
 <?php
 
+
 require_once('/home/www-data/private/defines.php');
 require_once('/var/www/common/defines.php');
 require_once('latlong.php');
