@@ -25,7 +25,6 @@ $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: "null";
 <script type='text/javascript' src='js/lib/Ajax.js'></script>
 <script type='text/javascript' src='js/lib/SearchWidget.js'></script>
 <script type='text/javascript' src='js/lib/Dialog.js'></script>
-<script type='text/javascript' src='OverlayCanvas.js'></script>
 <script type='text/javascript'>
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;
@@ -70,70 +69,70 @@ pg_close($conn);
 function write_sidebar($homepage=false)
 {
 ?>
-	<div id='sidebar'>
+    <div id='sidebar'>
 
-	<div class='titlebox'>
-	<img src='images/freemap_small.png' alt='freemap_small' /><br/>
-	</div>
+    <div class='titlebox'>
+    <img src='images/freemap_small.png' alt='freemap_small' /><br/>
+    </div>
 
-	<p>Welcome to <em>Freemap 0.6</em>, a new version of
-	Freemap using kothic-js client-side rendering. 
-	<a href='about.html'>More...</a> | <a href='/wordpress'>Blog</a></p>
+    <p>Welcome to <em>Freemap 0.6</em>, a new version of
+    Freemap using kothic-js client-side rendering. 
+    <a href='about.html'>More...</a> | <a href='/wordpress'>Blog</a></p>
 
-	<p>On Linux, Chrome recommended.</p>
-
-
-	<?php
-	write_login();
-	?>
+    <p>On Linux, Chrome recommended.</p>
 
 
-	<div>
-	<?php
-	write_milometer();
-	?>
-	</div>
+    <?php
+    write_login();
+    ?>
 
-	<div id='searchdiv'></div>
-	</div>
-	<?php
+
+    <div>
+    <?php
+    write_milometer();
+    ?>
+    </div>
+
+    <div id='searchdiv'></div>
+    </div>
+    <?php
 }
 
 function write_milometer()
 {
-	echo "<div id='dist'><span id='units'>000</span>.".
-			"<span id='tenths'>0</span>".
-			"<select id='distUnits'>".
-			"<option value='miles'>miles</option>".
-			"<option value='km'>km</option></select></div>";
+    echo "<div id='dist'><span id='units'>000</span>.".
+            "<span id='tenths'>0</span>".
+            "<select id='distUnits'>".
+            "<option value='miles'>miles</option>".
+            "<option value='km'>km</option></select></div>";
 }
 
 function write_login()
 {
-	echo "<div id='logindiv'>";
+    echo "<div id='logindiv'>";
 
-	if(!isset($_SESSION['gatekeeper']))
-	{
-		?>
-		<p>
-		<label for="username">Username</label> <br/>
-		<input name="username" id="username" /> <br/>
-		<label for="password">Password</label> <br/>
-		<input name="password" id="password" type="password" /> <br/>
-		<input type='button' value='go' id='loginbtn'/>
-		</p>
-		<p>
-		<a href='user.php?action=signup'>Sign up</a>
-		</p>
-		<?php
-	}
-	else
-	{
-		echo "<em>Logged in as $_SESSION[gatekeeper]</em>\n";
-		echo "<a href='#' id='myroutes'>My routes</a> | ".
-		"<a href='user.php?action=logout&redirect=".
-			htmlentities($_SERVER['PHP_SELF'])."'>Log out</a> ";
-	}
-	echo "</div>";
+    if(!isset($_SESSION['gatekeeper']))
+    {
+        ?>
+        <p>
+        <label for="username">Username</label> <br/>
+        <input name="username" id="username" /> <br/>
+        <label for="password">Password</label> <br/>
+        <input name="password" id="password" type="password" /> <br/>
+        <input type='button' value='go' id='loginbtn'/>
+        </p>
+        <p>
+        <a href='user.php?action=signup'>Sign up</a>
+        </p>
+        <?php
+    }
+    else
+    {
+        echo "<em>Logged in as $_SESSION[gatekeeper]</em>\n";
+        echo "<a href='#' id='myroutes'>My routes</a> | ".
+        "<a href='user.php?action=logout&redirect=".
+            htmlentities($_SERVER['PHP_SELF'])."'>Log out</a> ";
+    }
+    echo "</div>";
 }
 ?>

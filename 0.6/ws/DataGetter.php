@@ -2,7 +2,8 @@
 
 class DataGetter
 {
-    protected $data, $kothic_gran;
+    protected $data, $kothic_gran, $wayMustMatch, $poiFilter, $wayFilter,
+            $doWays, $doPolygons;
 
     function __construct($kothic_gran=null)
     {
@@ -10,6 +11,10 @@ class DataGetter
         $this->data["features"] = array();
         $this->data["type"] = "FeatureCollection";
         $this->kothic_gran = $kothic_gran;
+        $this->poiFilter=array();
+        $this->wayFilter=array();
+        $this->doWays=true;
+        $this->doPolygons=true;
     }
 
     function getData($options,$outProj=null)
@@ -48,6 +53,54 @@ class DataGetter
             }
             $qry .= ")";
         }
+
+
+        return $qry;
+    }
+
+    function addPOIFilter($k,$allowedValues)
+    {
+        $this->poiFilter[$k]=$allowedValues;
+    }
+
+    function addWayFilter($k,$allowedValues)
+    {
+        $this->wayFilter[$k]=$allowedValues;
+    }
+
+    function includeWays($w)
+    {
+        $this->doWays=$w;
+    }
+
+    function includePolygons($p)
+    {
+        $this->doPolygons=$p;
+    }
+
+    function applyFilter($type)
+    {
+        $qry="";
+        $filter = ($type=="poi") ? $this->poiFilter: $this->wayFilter;
+
+        if(count($filter) > 0)
+        {
+            foreach($filter as $tag=>$valuelist)
+            {
+                $qry .= " AND (";
+                $values = explode(",",$valuelist);
+                $first=true;
+                foreach($values as $value)
+                {
+                    if($first==false)
+                        $qry .= " OR ";
+                    else
+                        $first=false;
+                    $qry .= "$tag='$value'"; 
+                }
+                $qry .= ")";
+            }
+        }
         return $qry;
     }
 
@@ -57,8 +110,12 @@ class DataGetter
         $pqry = $this->getPOIQuery();
 
 
+
         if($plyrs[0]!="all")
             $pqry .= DataGetter::criteria($plyrs);
+
+        $pqry .= DataGetter::applyFilter("poi");
+
 
 
         $presult = pg_query($pqry);
@@ -92,7 +149,11 @@ class DataGetter
 
     function getWayData($wlyrs)
     {
-        $arr=array("way"=>"planet_osm_line","polygon"=>"planet_osm_polygon");
+        $arr=array();
+        if($this->doWays)
+            $arr["way"] = "planet_osm_line";
+        if($this->doPolygons)
+            $arr["polygon"]="planet_osm_polygon";
 
         foreach($arr as $type=>$table)
         {
@@ -100,7 +161,7 @@ class DataGetter
 
             if($wlyrs[0]!="all")
                 $wqry .= DataGetter::criteria($wlyrs);
-
+            $wqry .= DataGetter::applyFilter("way");
             $wresult = pg_query($wqry);
 
             $first=true;

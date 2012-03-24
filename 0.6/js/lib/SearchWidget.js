@@ -94,6 +94,10 @@ SearchWidget.prototype.resultsReturned = function(xmlHTTP)
             }
         }
     }
+    else
+    {
+        alert('No matches!');
+    }
 }
 
 SearchWidget.prototype.btnClick = function(e)

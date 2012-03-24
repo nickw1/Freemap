@@ -1,9 +1,10 @@
+
 function Freemap(lat,lon,zoom)
 {
     var tileUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php' +
         '?x={x}&y={y}&z={z}&way=all&poi=all&kothic=1&contour=1&coastline=1';
 
-    this.kothic=new L.TileLayer.Kothic(tileUrl,{minZoom:14,
+    this.kothic=new L.TileLayer.Kothic(tileUrl,{minZoom:11,
             attribution: 'Map data &copy; 2012 OpenStreetMap contributors,'+
                 'contours &copy; Crown Copyright and database right '+
                 'Ordnance Survey 2011, Rendering by '+
@@ -34,22 +35,22 @@ function Freemap(lat,lon,zoom)
     this.wrAddMgr=new WRAddMgr(this.walkrouteLayer,'main');
     if(lat===null) 
     {
-		lat = (window.localStorage && 
-			window.localStorage.getItem("lat")!==null) 
-			? window.localStorage.getItem("lat") : 51.05;
-	}
+        lat = (window.localStorage && 
+            window.localStorage.getItem("lat")!==null) 
+            ? window.localStorage.getItem("lat") : 51.05;
+    }
     if(lon===null) 
     {
-		lon = (window.localStorage && 
-			window.localStorage.getItem("lon")!==null) 
-			? window.localStorage.getItem("lon") : -0.72; 
-	}
+        lon = (window.localStorage && 
+            window.localStorage.getItem("lon")!==null) 
+            ? window.localStorage.getItem("lon") : -0.72; 
+    }
     if(zoom===null) 
     {
-		zoom = (window.localStorage && 
-			window.localStorage.getItem("zoom")!==null) 
-			? window.localStorage.getItem("zoom") : 14;
-	}
+        zoom = (window.localStorage && 
+            window.localStorage.getItem("zoom")!==null) 
+            ? window.localStorage.getItem("zoom") : 14;
+    }
 
     var startPos= new L.LatLng(lat,lon);
     this.map.setView(new L.LatLng(lat,lon),zoom).addLayer(this.kothic);
@@ -60,12 +61,16 @@ function Freemap(lat,lon,zoom)
 
     this.map.on('click',this.onMapClick,this);
 
-    this.geojsonLayer.on("featureparse", function(e)
+    this.geojsonLayer.on("featureparse", (function(e)
                         {
-                            e.layer.bindPopup
-                                (e.properties.text);
-                        }
-                    );
+                            e.layer.bindPopup (e.properties.text);
+                            e.layer.options.draggable = true;
+                            e.layer.id = e.properties.id;
+                            e.layer.on("dragstart",this.markerDragStart.
+                                bind(this));
+                            e.layer.on("dragend",this.markerDragEnd.
+                                bind(this));
+                        }).bind(this));
 
     this.walkrouteLayer.on("featureparse", function(e)
                         {
@@ -123,7 +128,7 @@ function Freemap(lat,lon,zoom)
             );
     
     this.dlg.setContent 
-        ("<p>Please enter details: </p>"+
+        ("<p>Please enter details of the annotation: </p>"+
             "<p><textarea id='annotation' " +
             "style='margin: 10px 10px 10px 10px;width:360px;height:150px'>"+
             "</textarea></p>" );
@@ -144,7 +149,7 @@ function Freemap(lat,lon,zoom)
 
     this.wrPointCount = 1;
 
-    this.modes = [ { name: "Normal"},
+    this.modes = [ { name: "Normal" },
                     { name: "Walk route",
                         submenu:  [
                             { name: "New", action:this.wrAddMgr.newWR.bind
@@ -161,7 +166,7 @@ function Freemap(lat,lon,zoom)
                             { name: "Save", action:this.wrAddMgr.wrDone.bind
                                 (this.wrAddMgr) },
                                 ]
-                    } ];
+                    } ]
 
     this.setupModes();
 
@@ -192,6 +197,30 @@ function Freemap(lat,lon,zoom)
     }
 
     this.loggedIn = false;
+
+    this.map.on("viewreset", (function(e) 
+        { 
+            if(this.map.getZoom()<=13)
+                this.map.removeLayer(this.geojsonLayer);
+            else
+                this.map.addLayer(this.geojsonLayer);
+
+            if(this.map.getZoom()<=11)
+                this.map.removeLayer(this.walkrouteStartsLayer);
+            else
+                this.map.addLayer(this.walkrouteStartsLayer);
+
+        } ).  bind(this) );
+
+    this.trash = document.createElement('img');
+    this.trash.src='images/trash2_b.png';
+    this.trash.style.zIndex = 999;
+    this.trash.style.position = 'absolute';
+    this.trash.style.left = '20px';
+    this.trash.style.top = '90%';
+    this.trash.style.visibility = 'hidden';
+    
+    document.getElementById('main').appendChild(this.trash);
 }
 
                             
@@ -201,7 +230,7 @@ Freemap.prototype.dlgOkPressed = function(e)
     e.stopPropagation();
     this.ajax.sendRequest('/0.6/ws/annotation.php',
                             { method: 'POST',
-							parameters: 'text=' +
+                            parameters: 'action=create&text=' +
                                 document.getElementById('annotation').value+
                                 '&lat='+this.mapClickPos.lat+'&lon='+
                                     this.mapClickPos.lng,
@@ -220,9 +249,12 @@ Freemap.prototype.dlgCancelPressed=function(e)
 Freemap.prototype.addAnnCallback = function(xmlHTTP,latlng)
 {
     alert('annotation added with ID: ' + xmlHTTP.responseText);
-    var marker = new L.Marker(latlng);
+    var marker = new L.Marker(latlng, {clickable:true, draggable:true});
     marker.bindPopup(document.getElementById('annotation').value);
-    this.map.addLayer(marker);
+    marker.on("dragstart",this.markerDragStart.bind(this));
+    marker.on("dragend",this.markerDragEnd.bind(this));
+    marker.id = xmlHTTP.responseText;
+    this.geojsonLayer.addLayer(marker);
     this.annotationLoader.indexedFeatures[xmlHTTP.responseText] = marker;
     this.dlg.hide();
     this.map.on('click',this.onMapClick,this);
@@ -281,7 +313,8 @@ Freemap.prototype.setupModes = function()
     var div = document.getElementById("modebar");
     for(var i=0; i<this.modes.length; i++)
     {
-        var modeDiv = document.createElement("div");
+        var modeDiv = document.createElement("a");
+        modeDiv.href='#';
         modeDiv.id = "_mode" + i;
         modeDiv.innerHTML = this.modes[i].name;
         modeDiv.onclick = function(e)
@@ -290,12 +323,12 @@ Freemap.prototype.setupModes = function()
             e.target.setAttribute("class","selected");
             var oldmode=this.mode;
             this.mode = e.target.id.substring(5);
-            if(this.mode==1 && oldmode==0)
+            if(this.mode==1 && oldmode!=1)
             {
                 this.map.removeLayer(this.geojsonLayer);
                 this.map.removeLayer(this.walkrouteStartsLayer);
             }
-            else if (oldmode==1 && this.mode==0)
+            else if (oldmode==1 && this.mode!=1)
             {
                 this.map.addLayer(this.geojsonLayer);
                 this.map.addLayer(this.walkrouteStartsLayer);
@@ -310,7 +343,14 @@ Freemap.prototype.setupModes = function()
                 a.href='#';
                 a.id = "_mode"+i+"_opt"+j;
                 a.innerHTML = this.modes[i].submenu[j].name;
-                a.onclick = this.modes[i].submenu[j].action;
+                a.onclick = ( function(e)
+                                {
+                                    var m=e.target.id[5];
+                                    var n = e.target.id[10];
+                                    e.stopPropagation();
+                                    this.modes[m].submenu[n].action(e);
+                                }
+                            ).bind(this);
                 childDiv.appendChild(a);
                 childDiv.appendChild(document.createElement("br"));
             }
@@ -365,7 +405,55 @@ Freemap.prototype.getImage = function()
     */
 }
 
+Freemap.prototype.markerDragStart= function(e)
+{
+    this.trash.style.visibility = 'visible';
+    e.target.dragStart = e.target.getLatLng();
+}
 
+Freemap.prototype.markerDragEnd = function(ev)
+{
+
+
+    var p = this.map.layerPointToContainerPoint
+        (this.map.latLngToLayerPoint(ev.target.getLatLng()));
+
+    var trashTop = 0.9 * this.map.getSize().y;
+
+    if(p.x>=20 && p.x<=51 && p.y>=trashTop && p.y<=trashTop+63)
+    {
+        this.ajax.sendRequest('/0.6/ws/annotation.php',
+                                { method: 'POST',
+                                  parameters: 'action=delete&id='+
+                                      ev.target.id,
+                                 callback: (function()
+                                     { this.geojsonLayer.removeLayer
+                                        (ev.target) }
+                                    ).bind(this),
+                                 errorCallback: function(code)
+                                     { alert('Could not delete: error=' +code);
+                                     }
+                                }
+                            );
+    }
+    else
+    {
+        this.ajax.sendRequest('/0.6/ws/annotation.php',
+                            { method: 'POST',
+                              parameters: 'action=move&lat=' +
+                              ev.target.getLatLng().lat+'&lon='+
+                              ev.target.getLatLng().lng + '&id='+
+                              ev.target.id,
+                              callback: function(xmlHTTP) { } ,
+                              errorCallback: function(err)
+                                  {
+                                    ev.target.setLatLng(ev.target.dragStart);
+                                }
+                            }
+                        );
+    }
+    this.trash.style.visibility = 'hidden';
+}
 
 function init()
 {

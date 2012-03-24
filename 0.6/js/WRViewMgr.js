@@ -33,19 +33,17 @@ WRViewMgr.prototype.receivedRoutes = function(xmlHTTP)
     var h3 = document.createElement("h3");
     h3.appendChild(document.createTextNode("My routes"));
     outerDiv.appendChild(h3);
-	var div = document.createElement("div");
+    var div = document.createElement("div");
     div.style.overflow='auto';
-	div.style.height = '200px';
+    div.style.height = '200px';
     for(var i=0; i<this.data.features.length; i++)
     {
         var a = document.createElement("a");
         a.href='#';
         a.id='rte'+i;
         a.onclick = this.displayRoute.bind(this);
-		var em = document.createElement("em");
         var t = document.createTextNode(this.data.features[i].properties.title);
-        em.appendChild(t);
-		a.appendChild(em);
+        a.appendChild(t);
         div.appendChild(a);
         div.appendChild(document.createTextNode(" "));
         var a2 = document.createElement("a");
@@ -53,14 +51,14 @@ WRViewMgr.prototype.receivedRoutes = function(xmlHTTP)
         a2.id='rte_togpx_' + this.data.features[i].properties.id;
         a2.onclick = (function(e)
             { window.location = 
-				'/0.6/ws/wr.php?id='+e.target.id.substr(10)+
-				'&action=get&format=gpx'; } ).bind(this);
+                '/0.6/ws/wr.php?id='+e.target.id.substr(10)+
+                '&action=get&format=gpx'; } ).bind(this);
         var t2 = document.createTextNode("Download GPX");
         a2.appendChild(t2);
         div.appendChild(a2);
         div.appendChild(document.createElement("br"));
     }
-	outerDiv.appendChild(div);
+    outerDiv.appendChild(div);
     this.myRoutesDlg.setDOMContent(outerDiv);
     this.myRoutesDlg.show();
 }

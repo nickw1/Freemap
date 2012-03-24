@@ -1,4 +1,6 @@
 <?php
+
+
 class User
 {
     private $id,$valid;

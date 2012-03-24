@@ -246,14 +246,14 @@ class Walkroute
 
     private static function doAddRoute(&$f,$userid)
     {
-		$f["properties"] = clean_input($f["properties"]);
-		for($i=0; $i<count($f["geometry"]["coordinates"]); $i++)
-		{	
-			$f["geometry"]["coordinates"][$i][0] = 
-				pg_escape_string($f["geometry"]["coordinates"][$i][0]);
-			$f["geometry"]["coordinates"][$i][1] = 
-				pg_escape_string($f["geometry"]["coordinates"][$i][1]);
-		}
+        $f["properties"] = clean_input($f["properties"]);
+        for($i=0; $i<count($f["geometry"]["coordinates"]); $i++)
+        {    
+            $f["geometry"]["coordinates"][$i][0] = 
+                pg_escape_string($f["geometry"]["coordinates"][$i][0]);
+            $f["geometry"]["coordinates"][$i][1] = 
+                pg_escape_string($f["geometry"]["coordinates"][$i][1]);
+        }
         $q=("INSERT INTO walkroutes(title,description,distance,the_geom,".
                 "startlon,startlat,userid) VALUES ('".
                 $f["properties"]["title"] . "','" .
@@ -271,7 +271,7 @@ class Walkroute
 
     private static function addRouteWaypoint($rteid,&$f)
     {
-		$f["properties"] = clean_input($f["properties"]);
+        $f["properties"] = clean_input($f["properties"]);
         $sphmerc = ll_to_sphmerc($f["geometry"]["coordinates"][0],
                                 $f["geometry"]["coordinates"][1]);
         pg_query("INSERT INTO wr_waypoints(wrid,wpid,description,x,y) ".
