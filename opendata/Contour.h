@@ -33,19 +33,10 @@ public:
 		
 	double getHeight() { return height; }
 
-	string toWKT()
-	{
-		std::stringstream ss;
-		ss<<"LINESTRING (";
-		for(int i=0; i<points.size(); i++)
-		{
-			if(i>0)
-				ss<<",";
-			ss<<(int)points[i].x<<" " <<(int)points[i].y;
-		}
-		ss<< ")";
-		return ss.str();
-	}
+	string toWKT();
+	string toOSM(long, long);
+
+	int nPoints() { return points.size(); }
 };
 
 #endif
