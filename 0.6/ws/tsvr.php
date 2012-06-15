@@ -11,6 +11,7 @@
 require_once('../../lib/functionsnew.php');
 require_once('DataGetter.php');
 require_once('xml.php');
+require_once('DBDetails.php');
 
 $cleaned = clean_input($_REQUEST);
 

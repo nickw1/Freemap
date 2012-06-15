@@ -1,0 +1,335 @@
+canvas
+{
+	fill-color: lightblue;	
+}
+
+area[natural=land]
+{
+	fill-color: #f2efe9;
+	z-index: 0;
+}
+
+node[place]
+{
+	text-color: black;
+	font-weight: bold;
+	font-family: Helvetica; 
+	text: name;
+	text-allow-overlap: true;
+}
+
+node|z14-18[place=suburb],node[place=hamlet]
+{
+	font-size: 10;
+}
+
+node|z14-18[place=village]
+{
+	font-size:12;
+}
+
+node|z14-18[place=town]
+{
+	font-size: 14;
+}
+
+node|z14-18[place=city]
+{
+	font-size: 16;
+}
+
+node|z12-13[place=village]
+{
+	font-size:10;
+}
+
+node|z12-13[place=town]
+{
+	font-size: 12;
+}
+
+node|z12-13[place=city]
+{
+	font-size: 14;
+}
+
+node|z10-11[place=town]
+{
+	font-size: 10;
+}
+
+node|z10-11[place=city]
+{
+	font-size: 12;
+}
+
+node[natural=peak]
+{
+	text-color: black;
+	font-weight: bold;
+	font-size: 10;
+	font-family: Helvetica; 
+	text: name;
+	text-allow-overlap: true;
+}
+
+node[amenity=pub]
+{
+	text-color: black;
+	font-weight: bold;
+	font-size: 8;
+	font-family: Helvetica; 
+	text: name;
+}
+
+line|z14-18[highway=motorway],line|z14-18[highway=motorway_link]
+{
+	casing-color: #506077;
+	casing-width: 1;
+	color: #809bc0;
+	width: 3;
+	z-index: 8;
+}
+
+line|z14-18[highway=trunk],line|z14-18[highway=trunk_link]
+{
+	casing-color: #477147;
+	casing-width: 1;
+	color: #cdeacd;
+	width: 3;
+	z-index: 7;
+}
+
+line|z14-18[highway=primary],line|z14-18[highway=primary_link]
+{
+	casing-color: #8d4346;
+	casing-width: 1;
+	color: #f4c3c4;
+	width: 3;
+	z-index: 6;
+}
+
+line|z14-18[highway=secondary],line|z14-18[highway=secondary_link]
+{
+	casing-color: #a37b48;
+	casing-width: 1;
+	color: #fee0b8;
+	width: 3;
+	z-index: 5;
+}
+
+line|z14-18[highway=tertiary],line|z14-18[highway=tertiary_link]
+{
+	casing-color: #bbb;
+	casing-width: 1;
+	color: #ffc;
+	width: 3;
+	z-index: 4;
+}
+
+line|z14-18[highway=unclassified],line|z14-18[highway=unclassified_link]
+{
+	casing-color: #999;
+	casing-width: 1;
+	color: white;
+	width: 3;
+	z-index: 3;
+}
+
+line|z14-18[highway=residential],line|z14-18[highway=service],line|z14-18[highway=residential_link],line|z14-18[highway=service_link]
+{
+	casing-color: #999;
+	casing-width: 1;
+	color: white;
+	width: 2;
+	z-index: 3;
+}
+
+line|z14-18[highway=track],line|z14-18[highway=byway]
+{
+	color: white; 
+	width: 2;
+	casing-color: #999; 
+	casing-width: 1;
+	casing-dashes: 4,2;
+	z-index: 2;
+}
+
+line|z14-18[highway=path],line|z14-18[highway=footway],line|z14-18[highway=bridleway]
+{
+	color: black;
+	width: 1;
+	dashes: 2,2;
+	z-index: 2;
+}
+
+line|z14-18[highway=path][bridge=yes],line|z14-18[highway=footway][bridge=yes],line|z14-18[highway=bridleway][bridge=yes]
+{
+	casing-color: #999; 
+	casing-width: 2;
+ 	casing-dashes: 1,0;	
+}
+
+line[contour]
+{
+	color: #fb9b67;
+	width: 0.5;
+	z-index: 1;
+	text: contour;
+	text-color: #fb9b67;
+	font-family: helvetica;
+	font-size: 8;
+}
+
+area[natural=wood],area[landuse=forest]
+{
+	fill-color: #c0ffc0;
+	z-index: 1;
+}
+
+area[natural=water]
+{
+	fill-color:lightblue;
+	z-index: 2;
+}
+
+line[waterway=river]
+{
+	color:lightblue;
+	width: 2;
+	z-index: 2;
+}
+
+line[waterway=stream]
+{
+	color:lightblue;
+	width: 1;
+	z-index: 2;
+}
+
+line[railway=rail],line[railway=preserved_rail]
+{
+	color: white; 
+	casing-color: black;
+	casing-width: 1;
+	dashes: 4,4;
+	casing-dashes: 1,0;
+	width: 2;
+}
+
+line|z12-13[highway=motorway],line|z12-13[highway=motorway_link]
+{
+	casing-color: #506077;
+	casing-width: 1;
+	color: #809bc0;
+	width: 3;
+	z-index: 8;
+}
+
+line|z12-13[highway=trunk],line|z12-13[highway=trunk_link]
+{
+	casing-color: #477147;
+	casing-width: 1;
+	color: #cdeacd;
+	width: 3;
+	z-index: 7;
+}
+
+line|z12-13[highway=primary],line|z12-13[highway=primary_link]
+{
+	casing-color: #8d4346;
+	casing-width: 1;
+	color: #f4c3c4;
+	width: 3;
+	z-index: 6;
+}
+
+line|z12-13[highway=secondary],line|z12-13[highway=secondary_link]
+{
+	casing-color: #a37b48;
+	casing-width: 1;
+	color: #fee0b8;
+	width: 3;
+	z-index: 5;
+}
+
+line|z12-13[highway=tertiary],line|z12-13[highway=tertiary_link]
+{
+	casing-color: #bbb;
+	casing-width: 1;
+	color: #ffc;
+	width: 2;
+	z-index: 4;
+}
+
+line|z12-13[highway=unclassified],line|z12-13[highway=unclassified_link]
+{
+	casing-color: #999;
+	casing-width: 1;
+	color: white;
+	width: 2;
+	z-index: 3;
+}
+
+line|z10-11[highway=motorway],line|z10-11[highway=motorway_link]
+{
+	casing-color: #506077;
+	casing-width: 2;
+	color: #809bc0;
+	width: 2;
+	z-index: 8;
+}
+
+line|z10-11[highway=trunk],line|z10-11[highway=trunk_link]
+{
+	casing-color: #477147;
+	casing-width: 1;
+	color: #cdeacd;
+	width: 2;
+	z-index: 7;
+}
+
+line|z10-11[highway=primary],line|z10-11[highway=primary_link]
+{
+	casing-color: #8d4346;
+	casing-width: 1;
+	color: #f4c3c4;
+	width: 2;
+	z-index: 6;
+}
+
+line|z10-11[highway=secondary],line|z10-11[highway=secondary_link]
+{
+	casing-color: #a37b48;
+	casing-width: 1;
+	color: #fee0b8;
+	width: 2;
+	z-index: 5;
+}
+
+line|z1-9[highway=motorway],line|z1-9[highway=motorway_link]
+{
+	casing-color: #506077;
+	casing-width: 2;
+	color: #809bc0;
+	width: 1;
+	z-index: 8;
+}
+
+line|z1-9[highway=trunk],line|z1-9[highway=trunk_link]
+{
+	casing-color: #477147;
+	casing-width: 1;
+	color: #cdeacd;
+	width: 1;
+	z-index: 7;
+}
+
+line|z1-9[highway=primary],line|z1-9[highway=primary_link]
+{
+	casing-color: #8d4346;
+	casing-width: 1;
+	color: #f4c3c4;
+	width: 1;
+	z-index: 6;
+}

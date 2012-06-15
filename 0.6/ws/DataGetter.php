@@ -3,18 +3,43 @@
 class DataGetter
 {
     protected $data, $kothic_gran, $wayMustMatch, $poiFilter, $wayFilter,
-            $doWays, $doPolygons;
+            $doWays, $doPolygons, $dbq;
 
-    function __construct($kothic_gran=null)
+    function __construct($kothic_gran=null, $dbdetails=null, $srid="900913")
     {
         $this->data = array();
         $this->data["features"] = array();
         $this->data["type"] = "FeatureCollection";
+        $this->data["properties"]["copyright"] =
+            "Map data OpenStreetMap Contributors, CC-by-SA; ".
+            "contours Ordnance Survey, OS OpenData licence";
         $this->kothic_gran = $kothic_gran;
         $this->poiFilter=array();
         $this->wayFilter=array();
         $this->doWays=true;
         $this->doPolygons=true;
+        $this->dbq = $dbdetails===null ?
+                new DBDetails(
+                    array("table"=>"planet_osm_point",
+                            "col"=>"way"),
+                    array("table"=>"planet_osm_line",
+                            "col"=>"way"),
+                    array("table"=>"planet_osm_polygon",
+                            "col"=>"way"),
+                    array("table"=>"contours",
+                            "col"=>"way"),
+                    array("table"=>"coastlines",
+                            "col"=>"the_geom"),
+                    array("table"=>"annotations",
+                            "col"=>"xy")
+                            ) : 
+                $dbdetails;
+        $this->SRID = $srid;
+    }
+
+    function setCopyright($copyright)
+    {
+        $this->data["properties"]["copyright"] = $copyright;
     }
 
     function getData($options,$outProj=null)
@@ -107,6 +132,7 @@ class DataGetter
     function getPOIData($plyrs)
     {
 
+        //$pqry = $this->dbq->getPOIQuery();
         $pqry = $this->getPOIQuery();
 
 
@@ -126,9 +152,10 @@ class DataGetter
             $feature["type"] = $this->kothic_gran===null?"Feature":"Point";
             $f= json_decode($prow["geojson"],true);
             $counteddata=array();
+
             foreach($prow as $k=>$v)    
                 if($k!='way' && $k!='geojson' && $v!='')
-                    $counteddata[$k]=$v;
+                    $counteddata[$k]=htmlspecialchars($v);
             $feature["properties"] = $counteddata;
             $feature["properties"]["featuretype"]=get_high_level
                 ($feature["properties"]);
@@ -150,12 +177,12 @@ class DataGetter
     function getWayData($wlyrs)
     {
         $arr=array();
-        if($this->doWays)
-            $arr["way"] = "planet_osm_line";
+        if($this->doWays) 
+            $arr[]="way";
         if($this->doPolygons)
-            $arr["polygon"]="planet_osm_polygon";
+            $arr[]= "polygon"; 
 
-        foreach($arr as $type=>$table)
+        foreach($arr as $table)
         {
             $wqry = $this->getWayQuery($table);
 
@@ -163,8 +190,11 @@ class DataGetter
                 $wqry .= DataGetter::criteria($wlyrs);
             $wqry .= DataGetter::applyFilter("way");
             $wresult = pg_query($wqry);
-
             $first=true;
+
+            $excluded_col = ($table=="polygon") ?
+                $this->dbq->polygonDetails["col"]:
+                $this->dbq->wayDetails["col"];
 
             while($wrow=pg_fetch_array($wresult,null,PGSQL_ASSOC))
             {
@@ -172,8 +202,8 @@ class DataGetter
                 $f = json_decode($wrow['geojson'],true);
                 $tags = array();
                 foreach($wrow as $k=>$v)
-                    if($k!='way' && $k!='geojson' && $v!='')
-                    $tags[$k] = $v;
+                    if($k!=$excluded_col && $k!='geojson' && $v!='')
+                        $tags[$k] = htmlentities($v);
                 $feature["properties"] = $tags;
                 if($this->kothic_gran===null)
                 {
@@ -198,14 +228,13 @@ class DataGetter
 
     function getPOIQuery()
     {
-        $pqry = "SELECT *,ST_AsGeoJSON(way) AS geojson ".
-        " FROM planet_osm_point WHERE true";
-        return $pqry;
+        return $this->dbq->getPOIQuery();
     }
 
     function getWayQuery($table)
     {
-        return "SELECT *,ST_AsGeoJSON(way) AS geojson FROM $table WHERE true";
+        return ($table=="polygon") ?
+            $this->dbq->getPolygonQuery(): $this->dbq->getWayQuery();
     }
 
     function reprojectData($outProj)
@@ -219,7 +248,7 @@ class DataGetter
                     reproject
                     ($this->data["features"][$f]["geometry"]["coordinates"][0],
                     $this->data["features"][$f]["geometry"]["coordinates"][1],
-                    '900913',$outProj);
+                    $this->SRID,$outProj);
                     break;
 
                 case "LineString":
@@ -236,10 +265,11 @@ class DataGetter
                             [$i][0],
                             $this->data["features"][$f]["geometry"]
                             ["coordinates"][$i][1],
-                            '900913',$outProj);
+                            $this->SRID,$outProj);
                     }
                     break;
 
+                case "MultiLineString":
                 case "Polygon":
                     for($i=0; $i<count($this->data["features"][$f]["geometry"]
                         ["coordinates"]); $i++)
@@ -254,7 +284,7 @@ class DataGetter
                                 ["geometry"]["coordinates"][$i][$j][0],
                                 $this->data["features"][$f]
                                 ["geometry"]["coordinates"][$i][$j][1],
-                                '900913',$outProj);
+                                $this->SRID,$outProj);
                         }
                     }
                     break;
@@ -278,7 +308,7 @@ class DataGetter
                                     ["geometry"]["coordinates"][$i][$j][$k][0],
                                     $this->data["features"][$f]
                                     ["geometry"]["coordinates"][$i][$j][$k][1],
-                                    '900913',$outProj);
+                                    $this->SRID,$outProj);
                             }
                         }
                     }
@@ -314,9 +344,9 @@ class BboxGetter extends DataGetter
 {
     private $bbox;
 
-    function __construct($bbox,$kothic_gran=null)
+    function __construct($bbox,$kothic_gran=null,$dbdetails=null,$srid="900913")
     {
-        parent::__construct($kothic_gran);
+        parent::__construct($kothic_gran,$dbdetails,$srid);
         $this->bbox = $bbox;
         $this->geomtxt = $this->mkgeom();
         $this->geomtxt2 = $this->mkgeom2();
@@ -332,8 +362,11 @@ class BboxGetter extends DataGetter
         if(isset($options["contour"]) && $options["contour"])
             $this->getContourData($contourCache);
 
-        if(isset($options["ann"]) && $options["ann"])
+        if( (isset($options["ann"]) && $options["ann"]) ||
+         (isset($options["annotation"]) && $options["annotation"]) ) 
+        {
             $this->getAnnotationData();
+        }
 
         if($outProj!==null)
             $this->reprojectData($outProj);
@@ -368,10 +401,10 @@ class BboxGetter extends DataGetter
     function doGetContourData()
     {
         $features=array();
-        $result=pg_query("SELECT ST_AsGeoJSON(ST_Intersection(".
-            $this->geomtxt.",way)) ".
-                    "AS geojson,height ".
-                    "FROM contours WHERE way && ".$this->geomtxt);
+        $q=$this->dbq->getContourQuery($this->geomtxt);
+        if($q===null)
+            return;
+        $result=pg_query($q);
         while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
         {
             $feature=array();
@@ -405,10 +438,10 @@ class BboxGetter extends DataGetter
         {
             $factor = $this->kothic_gran / ($this->bbox[2]-$this->bbox[0]);
         }
-        $result=pg_query("SELECT ST_AsGeoJSON".
-            "(ST_Intersection(".$this->geomtxt.",the_geom)) ".
-                    "AS geojson ".
-                    "FROM coastlines WHERE the_geom && ".$this->geomtxt);
+        $q=$this->dbq->getCoastlineQuery($this->geomtxt);
+        if($q===null)
+            return;
+        $result=pg_query($q);
         while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
         {
             $feature=array();
@@ -437,8 +470,9 @@ class BboxGetter extends DataGetter
     
     function getAnnotationData()
     {
-        $pqry = "SELECT *,ST_AsGeoJSON(xy) AS geojson ".
-        " FROM annotations WHERE xy && ". $this->geomtxt;
+        $pqry = $this->dbq->getAnnotationQuery($this->geomtxt);
+        if($pqry===null)
+            return;
 
         $presult = pg_query($pqry);
 
@@ -449,7 +483,8 @@ class BboxGetter extends DataGetter
             $f= json_decode($prow["geojson"],true);
             $counteddata=array();
             foreach($prow as $k=>$v)    
-                if($k!='authorised' && $k!='geojson' && $k!='xy' && $v!='')
+                if($k!='authorised' && $k!='geojson' && 
+                    $k!=$this->dbq->annotationDetails["col"] && $v!='')
                     $counteddata[$k]=$v;
             $feature["properties"] = $counteddata;
             $feature["properties"]["annotation"] = "yes";
@@ -465,7 +500,8 @@ class BboxGetter extends DataGetter
     {
         $bbox=$this->bbox;
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
-            "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',900913)";
+            "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
+            $this->SRID.")";
         return $g; 
     }
 
@@ -480,7 +516,8 @@ class BboxGetter extends DataGetter
         $bbox[1] = $bbox[1] - $h*0.2; 
         $bbox[3] = $bbox[3] + $h*0.2;
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
-            "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',900913)";
+            "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
+            $this->SRID.")";
         return $g; 
     }
 
@@ -579,14 +616,15 @@ class BboxGetter extends DataGetter
 
     function getPOIQuery()
     {
-        return parent::getPOIQuery() . " AND way && ".$this->geomtxt2;
+        return parent::getPOIQuery() . " AND ".$this->dbq->poiDetails["col"].
+            " && ".$this->geomtxt2;
     }
 
     function getWayQuery($table)
     {
-        return "SELECT *,ST_AsGeoJSON(ST_Intersection(".$this->geomtxt.
-            ",way)) AS geojson ".
-            "FROM $table WHERE way && ".$this->geomtxt." AND ST_IsValid(way)";
+        return ($table=="polygon") ?
+            $this->dbq->getBboxPolygonQuery($this->geomtxt) :
+            $this->dbq->getBboxWayQuery($this->geomtxt);
     }
 }
 

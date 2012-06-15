@@ -25,18 +25,22 @@ function to_xml(&$data)
 
 function poiToXML(&$poi)
 {
-    $tag = isset($poi["properties"]["annotation"]) && 
-        $poi["properties"]["annotation"]=="yes"?
-        "annotation" : "poi";
     $x = $poi["geometry"]["coordinates"][0];
     $y = $poi["geometry"]["coordinates"][1];
-    echo "<$tag x='$x' y='$y'>";
-    foreach($poi["properties"] as $k=>$v)
+    if(isset($poi["properties"]["annotation"]) &&
+            $poi["properties"]["annotation"] == "yes")
     {
-        if($k!="annotation")
-            echo "<tag k=\"$k\" v=\"$v\" />";
+        echo "<annotation x='$x' y='$y' id='".$poi["properties"]["id"]."'>";
+        echo "<description>".$poi["properties"]["text"]."</description>";
+        echo "</annotation>";
     }
-    echo "</$tag>";
+    else
+    {
+        echo "<poi x='$x' y='$y'>";
+        foreach($poi["properties"] as $k=>$v)
+            echo "<tag k=\"$k\" v=\"$v\" />";
+        echo "</poi>";
+    }
 }
 
 function wayToXML(&$way)

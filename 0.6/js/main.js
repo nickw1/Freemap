@@ -6,6 +6,7 @@ function Freemap(lat,lon,zoom)
 
     this.kothic=new L.TileLayer.Kothic(tileUrl,{minZoom:11,
             attribution: 'Map data &copy; 2012 OpenStreetMap contributors,'+
+                'CC-by-SA,'+
                 'contours &copy; Crown Copyright and database right '+
                 'Ordnance Survey 2011, Rendering by '+
                 '<a href="http://github.com/kothic/kothic-js">Kothic JS</a>'} );
@@ -223,7 +224,10 @@ function Freemap(lat,lon,zoom)
     document.getElementById('main').appendChild(this.trash);
 }
 
-                            
+Freemap.prototype.setLoggedIn = function(status)
+{
+    this.loggedIn = status;
+}
 
 Freemap.prototype.dlgOkPressed = function(e)
 {
@@ -269,13 +273,20 @@ Freemap.prototype.onMapClick = function(e)
     switch(parseInt(this.mode))
     {
         case 0:
-            this.dlg.setPosition((p.x<500 ? p.x:500),(p.y<500 ? p.y:500));
-            if(!this.dlg.isVisible())
+            if(this.loggedIn===true)
             {
-                this.dlg.show();
-                this.map.off('click',this.onMapClick,this);
+                this.dlg.setPosition((p.x<500 ? p.x:500),(p.y<500 ? p.y:500));
+                if(!this.dlg.isVisible())
+                {
+                    this.dlg.show();
+                    this.map.off('click',this.onMapClick,this);
+                }
+                document.getElementById('annotation').focus();
             }
-            document.getElementById('annotation').focus();
+            else
+            {
+                alert("Must be logged in to add annotation.");
+            }
             break;
 
         case 1:
@@ -432,6 +443,8 @@ Freemap.prototype.markerDragEnd = function(ev)
                                     ).bind(this),
                                  errorCallback: function(code)
                                      { alert('Could not delete: error=' +code);
+                                         ev.target.setLatLng
+                                            (ev.target.dragStart);
                                      }
                                 }
                             );
@@ -457,5 +470,6 @@ Freemap.prototype.markerDragEnd = function(ev)
 
 function init()
 {
-    new Freemap(lat,lon,zoom);
+    var freemap = new Freemap(lat,lon,zoom);
+	freemap.setLoggedIn(loggedIn);
 }

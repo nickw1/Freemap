@@ -58,6 +58,7 @@ switch($cleaned["format"])
 
     default:
         header("Content-type: text/xml");
+		echo '<?xml version="1.0"?>';
         to_xml($data);
         break;
 }

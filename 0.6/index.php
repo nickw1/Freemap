@@ -9,6 +9,7 @@ $conn=pg_connect("dbname=gis user=gis");
 $lat = (isset($_GET['lat'])) ? $_GET['lat']: "null"; 
 $lon = (isset($_GET['lon'])) ? $_GET['lon']: "null";
 $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: "null";
+$loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
     
 ?>
 <!DOCTYPE html>
@@ -29,6 +30,7 @@ $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: "null";
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;
 var zoom=<?php echo $zoom;?>;
+var loggedIn=<?php echo $loggedIn;?>;
 </script>
 
 <script type='text/javascript' src='js/main.js'> </script>
