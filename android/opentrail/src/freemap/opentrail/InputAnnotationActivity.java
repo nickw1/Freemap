@@ -5,12 +5,16 @@ package freemap.opentrail;
 
 import org.apache.http.HttpResponse;
 
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.message.BasicNameValuePair;
+import java.util.ArrayList;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 
 
 import android.app.Activity;
@@ -96,11 +100,14 @@ public class InputAnnotationActivity extends Activity
 				HttpConnectionParams.setConnectionTimeout(params,20000);
 				HttpConnectionParams.setSoTimeout(params,20000);
 				HttpClient client = new DefaultHttpClient(params);
-				HttpGet request = new HttpGet(	
-					"http://www.free-map.org.uk/freemap/annotation.php?action=create"+
-							"&proj=4326&x="+loc.getLongitude()+"&y="+
-							loc.getLatitude()+"&text=" + annText
-							);
+				HttpPost request = new HttpPost("http://www.free-map.org.uk/0.6/ws/annotation.php");
+				ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
+				postData.add(new BasicNameValuePair("action","create"));
+				postData.add(new BasicNameValuePair("lon",String.valueOf(loc.getLongitude())));
+				postData.add(new BasicNameValuePair("lat",String.valueOf(loc.getLatitude())));
+				postData.add(new BasicNameValuePair("text",annText));
+				request.setEntity(new UrlEncodedFormEntity(postData));
+				
 					
 				HttpResponse response = client.execute(request);
 				InputStream in = response.getEntity().getContent();

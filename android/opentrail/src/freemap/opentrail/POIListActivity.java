@@ -23,6 +23,8 @@ public class POIListActivity extends ListActivity {
 		
 		public void onCreate(Bundle savedInstanceState)
 		{
+			try
+			{
 			super.onCreate(savedInstanceState);
 		
 			ArrayAdapter<String> adapter=null;
@@ -52,6 +54,12 @@ public class POIListActivity extends ListActivity {
 				adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,new String[]{"none found"});
 			}
 			setListAdapter(adapter);
+			}
+			catch(Exception e)
+			{
+				Log.d("OpenTrail", e.getMessage());
+				
+			}
 		}
 		
 		public void onListItemClick(ListView listView,View view,int index,long id)

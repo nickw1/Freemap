@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rendertheme xmlns="http://mapsforge.org/renderTheme"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://mapsforge.org/renderTheme renderTheme.xsd"
+version="1">
+
+<rule e="way" k="natural" v="wood" zoom-min="8">
+<area fill="#c0ffc0" />
+</rule>
+
+<rule e="way" k="landuse" v="forest" zoom-min="8">
+<area fill="#c0ffc0" />
+</rule>
+
+<rule e="way" k="contour" v="major" zoom-min="13">
+<line stroke="#fb9b67" stroke-width="0.5" />
+</rule>
+
+<rule e="way" k="contour" v="minor" zoom-min="14">
+<line stroke="#fb9b67" stroke-width="0.25" />
+</rule>
+
+<rule e="way" k="natural" v="water" zoom-min="8">
+<area fill="#add8e6" />
+</rule>
+
+<rule e="way" k="waterway" v="stream" zoom-min="12">
+<line stroke="#add8e6" stroke-width="1" />
+</rule>
+
+<rule e="way" k="waterway" v="river" zoom-min="8">
+<line stroke="#add8e6" stroke-width="2" />
+</rule>
+
+<rule e="way" k="highway" v="path|footway|bridleway|cycleway" zoom-min="14">
+<line stroke="#000000" stroke-width="0.5" stroke-dasharray="2,4" />
+</rule>
+
+
+
+<rule e="way" k="highway" v="track|byway" zoom-min="13">
+<line stroke="#000000" stroke-width="0.5" stroke-dasharray="4,4" />
+</rule>
+
+<rule e="way" k="highway" v="residential|residential_link|service|service_link"
+zoom-min="12">
+<line stroke="#000000" stroke-width="2" />
+</rule>
+
+<rule e="way" k="highway" v="unclassified|unclassified_link|tertiary|tertiary_link" zoom-min="10">
+<line stroke="#000000" stroke-width="3" />
+</rule>
+
+<rule e="way" k="highway" v="secondary|secondary_link|primary|primary_link|trunk|trunk_link|motorway|motorway_link" zoom-min="8">
+<line stroke="#000000" stroke-width="4" />
+</rule>
+
+
+<rule e="way" k="highway" v="residential|residential_link|service|service_link" zoom-min="12">
+<line stroke="#ffffff" stroke-width="1" />
+<pathText k="name" font-size="8" /> 
+</rule>
+
+<rule e="way" k="highway" v="unclassified|unclassified_link" zoom-min="10">
+<line stroke="#ffffff" stroke-width="2" />
+<pathText k="name" font-size="8" /> 
+</rule>
+
+<rule e="way" k="designation" v="public_footpath" zoom-min="14">
+<line stroke="#00ff00" stroke-width="1" />
+</rule>
+
+<rule e="way" k="designation" v="public_bridleway" zoom-min="14">
+<line stroke="#ff8000" stroke-width="1"  />
+</rule>
+
+<rule e="way" k="designation" 
+v="public_byway|byway|byway_open_to_all_traffic|restricted_byway"
+zoom-min="14">
+<line stroke="#ff0000" stroke-width="1"  />
+</rule>
+
+<rule e="way" k="highway" v="tertiary|tertiary_link" zoom-min="10">
+<line stroke="#ffffcc" stroke-width="2" />
+<pathText k="name" font-size="8" /> 
+</rule>
+
+<rule e="way" k="highway" v="secondary|secondary_link" zoom-min="8">
+<line stroke="#fee0b8" stroke-width="3" />
+<pathText k="name" font-size="8" /> 
+</rule>
+
+<rule e="way" k="highway" v="primary|primary_link" zoom-min="8">
+<line stroke="#f4c3c4" stroke-width="3" />
+<pathText k="name" font-size="8" /> 
+</rule>
+
+<rule e="way" k="highway" v="trunk|trunk_link" zoom-min="8">
+<line stroke="#cdeacd" stroke-width="3" />
+<pathText k="name" font-size="8" /> 
+</rule>
+
+<rule e="way" k="highway" v="motorway|motorway_link" zoom-min="8">
+<line stroke="#809bc0" stroke-width="3" />
+</rule>
+
+<rule e="node" k="place" v="village" zoom-min="10">
+<caption k="name" font-size="12" font-style="bold" />
+</rule>
+
+<rule e="node" k="place" v="town" zoom-min="8">
+<caption k="name" font-size="14" font-style="bold" />
+</rule>
+
+<rule e="node" k="place" v="city" zoom-min="8">
+<caption k="name" font-size="16" font-style="bold" />
+</rule>
+
+<rule e="node" k="place" v="hamlet" zoom-min="12">
+<caption k="name" font-size="10" font-style="bold" />
+</rule>
+
+<rule e="node" k="place" v="suburb" zoom-min="12">
+<caption k="name" font-size="10" font-style="bold"/>
+</rule>
+
+<rule e="node" k="natural" v="peak" zoom-min="13">
+<caption k="name" font-size="10" fill="black" />
+</rule>
+
+</rendertheme>

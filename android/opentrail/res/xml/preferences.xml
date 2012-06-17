@@ -16,12 +16,4 @@ android:title="Auto-download"
 android:defaultValue="false"
 android:summary="Auto-download POIs and annotations as you move to a new area."
 android:key="prefAutoDownload" />
-<ListPreference
-android:title="Map source"
-android:summary="Specify the map source."
-android:entries="@array/mapSourceOpts"
-android:entryValues="@array/mapSourceOptValues"
-android:key="prefMapSource"
-android:defaultValue="FREEMAP"
-/>
 </PreferenceScreen>
