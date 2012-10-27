@@ -45,9 +45,9 @@ public class POIListActivity extends ListActivity {
 				{
 					names[i] = pois.get(i).getValue("name");
 					types[i] = pois.get(i).getValue(keyval[0])+", distance="+df.format(pois.get(i).distanceTo(p)/1000.0)
-					+"km " + pois.get(i).directionFrom(p);
+						+"km " + pois.get(i).directionFrom(p);
 				}
-				adapter = new POIListAdapter(this,android.R.layout.simple_list_item_1,names);
+				adapter = new AnnotatedListAdapter(this,android.R.layout.simple_list_item_1,names,types);
 			}
 			else
 			{
@@ -71,29 +71,5 @@ public class POIListActivity extends ListActivity {
 			intent.putExtras(extras);
 			setResult(RESULT_OK,intent);
 			finish();
-		}
-		
-		class POIListAdapter extends ArrayAdapter<String>
-		{
-			Context ctx;
-			
-			public POIListAdapter(Context ctx,int res,String[] n)
-			{
-				super(ctx,res,n);
-				this.ctx=ctx;
-			}
-			
-			public View getView (int position, View convertView, ViewGroup parent)
-			{
-				LayoutInflater inflater = (LayoutInflater)
-					ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				View rowView = inflater.inflate(R.layout.poilistitem, parent, false);
-				TextView nameView = (TextView) rowView.findViewById(R.id.poiListPOIName),
-						detailsView = (TextView) rowView.findViewById(R.id.poiListPOIDetails);
-				nameView.setText(names[position]);
-				detailsView.setText(types[position]);
-				Log.d("OpenTrail","Name="+names[position]+" Type="+types[position]);
-				return rowView;
-			}
 		}
 }

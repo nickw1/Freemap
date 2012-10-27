@@ -252,6 +252,31 @@ public class FreemapDataset implements TiledData
 	{
 		return annotations.get(id);
 	}
+	
+	// limit is in whatever the units the projection uses
+	public Annotation findNearestAnnotation(Point inPoint, double limit, Projection inProj)
+	{
+		if (inProj!=null)
+			inPoint = inProj.unproject(inPoint);
+		if(proj != null)
+			inPoint = proj.project(inPoint);
+		
+	
+		Annotation found = null;
+		double lastDist = Double.MAX_VALUE, d = 0.0;
+		for(Map.Entry<Integer, Annotation> e : annotations.entrySet())
+		{
+			d = inPoint.distanceTo(e.getValue().getPoint());
+			
+			if(d <= limit && d < lastDist)
+			{
+				lastDist = d;
+				found= e.getValue();
+			}
+			
+		}
+		return found;
+	}
 }
 
 

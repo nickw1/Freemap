@@ -28,10 +28,13 @@
 		<activity android:name=".POITypesListActivity"
 				android:label="POI Types">
 		</activity>
+		<activity android:name=".WalkrouteListActivity"
+				android:label="Nearby walk routes">
+		</activity>
     </application>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

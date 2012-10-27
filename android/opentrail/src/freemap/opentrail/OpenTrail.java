@@ -6,8 +6,6 @@ package freemap.opentrail;
 
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 
 import java.io.File;
@@ -17,25 +15,32 @@ import org.mapsforge.core.GeoPoint;
 import android.app.AlertDialog;
 import java.io.IOException;
 import android.util.Log;
-import android.content.Context;
+import java.util.ArrayList;
+
+import java.io.FileNotFoundException;
+
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.MenuItem;
 import android.view.Menu;
 import android.view.MenuInflater;
+
 import android.location.Location;
-import android.location.LocationManager;
-import android.location.LocationListener;
-import org.mapsforge.android.maps.overlay.ArrayItemizedOverlay;
+import android.os.Vibrator;
+import android.os.AsyncTask;
+
 import org.mapsforge.android.maps.overlay.OverlayItem;
-import org.mapsforge.android.maps.overlay.ItemizedOverlay;
+
 import android.graphics.drawable.Drawable;
-import android.content.DialogInterface;
-import java.util.HashMap;
+
+
+
 
 import freemap.data.Annotation;
 import freemap.data.POI;
 import freemap.data.Point;
+import freemap.data.Walkroute;
 import freemap.datasource.FreemapDataHandler;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.FreemapFileFormatter;
@@ -43,103 +48,119 @@ import freemap.datasource.TileDeliverer;
 import freemap.datasource.WebDataSource;
 import freemap.datasource.XMLDataInterpreter;
 
-import java.io.FileWriter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.FileNotFoundException;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
+import freemap.andromaps.MapLocationProcessor;
+import freemap.andromaps.DataCallbackTask;
+import freemap.andromaps.ConfigChangeSafeTask;
 
 
 
-public class OpenTrail extends MapActivity implements freemap.datasource.FreemapDataset.AnnotationVisitor{
+/*
+References to this
+
+mapView
+alertDisplayMgr
+mapLocationProcessor
+tasks
+
+dataDisplayer: mapView
+*/
+
+public class OpenTrail extends MapActivity implements 
+						AlertDisplay, MapLocationProcessor.MapLocationReceiver,
+						DataReceiver, DownloadFilesTask.Callback {
 	
-	String mapFile, sdcard;
+	String mapFile, sdcard, styleFile;
 	MapView mapView;
-	GPSListener gpsListener;
-	ArrayItemizedOverlay overlay;
-	OverlayItem myLocOverlayItem, lastAddedPOI;
+	MapLocationProcessor mapLocationProcessor;
+	
 	boolean tracking;
-	DownloadPOIsThread t;
-	DownloadHandler handler;
+	
 	FreemapFileFormatter formatter;
 	TileDeliverer poiDeliverer;
 	String cachedir;
 	boolean prefGPSTracking, prefAutoDownload, prefAnnotations;
 	Drawable personIcon, annotationIcon, markerIcon;
-	HashMap<Integer,OverlayItem> indexedAnnotations;
+
+	AlertDisplayManager alertDisplayMgr;
+	
+
+
+	
+	DataDisplayer dataDisplayer;
+	
+	DataCallbackTask<?,?> dataTask;
+	DownloadFilesTask dfTask;
+	
+	int walkrouteIdx;
+	
+	public static class SavedData
+	{
+		DataCallbackTask<?,?> dataTask;
+		ConfigChangeSafeTask<?,?> dfTask;	
+	}
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
   
+    	
+    	
         super.onCreate(savedInstanceState);
         try
         {
-        	sdcard = Environment.getExternalStorageDirectory().getAbsolutePath() + "/opentrail";
+        	sdcard = Environment.getExternalStorageDirectory().getAbsolutePath() ;
         	
-        	mapFile = sdcard + "/west_sussex.map";
+        	mapFile = sdcard + "/opentrail/hampshire.map";
         	mapView = new MapView(this); 
         	mapView.setClickable(true);
         	mapView.setBuiltInZoomControls(true);
         	
-    
-        	
-        	
-        	File styleFile = new File (sdcard+"/freemap.xml");
-        	if(!styleFile.exists())
-        	{
-        		downloadStyleFile();
-        	}
-        	else
-        	{
-        		mapView.setRenderTheme(styleFile);
-        	}
-        	setContentView(mapView);
-        	
-        	
-        	
-        	personIcon = getResources().getDrawable(R.drawable.person);
-        	annotationIcon = getResources().getDrawable(R.drawable.annotation);
-        	markerIcon = getResources().getDrawable(R.drawable.marker);	
-        	
-        	overlay = new ArrayItemizedOverlay(getResources().getDrawable(R.drawable.person));
-        	
-        	handler = new DownloadHandler();
-        	GeoPoint pos = new GeoPoint(51.05,-0.72);
-        	SavedConfig lastConfig = (SavedConfig)getLastNonConfigurationInstance();
-        	if(lastConfig!=null)
-        	{
-        		if(lastConfig.properties!=null)
-        		{
-        			Log.d("OpenTrail", "zoom="+lastConfig.properties.getInt("zoom"));
-        			Log.d("OpenTrail", "lat="+lastConfig.properties.getDouble("lat"));
-        			Log.d("OpenTrail", "lon="+lastConfig.properties.getDouble("lon"));
-        			Log.d("OpenTrail", "mapFile="+lastConfig.properties.getString("mapFile"));
-        			pos = new GeoPoint(lastConfig.properties.getDouble("lat"),
-        								lastConfig.properties.getDouble("lon"));
-        			mapView.getController().setZoom(lastConfig.properties.getInt("zoom"));
-        			mapFile = lastConfig.properties.getString("mapFile");
-        		}
-        		
-        		if(lastConfig.downloadThread != null)
-        		{
-        			t = lastConfig.downloadThread;
-        			t.reconnect(handler);
-        		}
-        	}
-        	
-        	mapView.setMapFile(new File(mapFile));
-        	mapView.setCenter(pos);
-        
-        	mapView.getOverlays().add(overlay);
-        
-        	
-        	
+
         	Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
         	String proj="epsg:27700";
     		Shared.proj = factory.generate(proj);
+        	
+    		SavedData savedData=(SavedData)getLastNonConfigurationInstance();
+        	if(savedData!=null)
+        	{
+        		Log.d("OpenTrail","Restarting task");	
+        		if(savedData.dataTask!=null)
+        			savedData.dataTask.reconnect(this, this);
+        		else if (savedData.dfTask!=null)
+        			savedData.dfTask.reconnect(this);
+        	}
+        	
+        	walkrouteIdx = -1;
+        	
+        	GeoPoint pos = new GeoPoint(51, -1);
+        	
+        	dataDisplayer = new DataDisplayer(getApplicationContext(),mapView,
+					getResources().getDrawable(R.drawable.person),
+					getResources().getDrawable(R.drawable.marker),
+					getResources().getDrawable(R.drawable.annotation),
+					Shared.proj);
+        	
+        	
+        	if(savedInstanceState!=null)
+        	{
+        			
+        			
+        		pos = new GeoPoint(savedInstanceState.getDouble("lat"),
+        								savedInstanceState.getDouble("lon"));
+       			mapView.getController().setZoom(savedInstanceState.getInt("zoom"));
+       			mapFile = savedInstanceState.getString("mapFile");
+       			walkrouteIdx = savedInstanceState.getInt("walkrouteIdx");
+       			loadAnnotationOverlay();
+       		}   	
+    		
+        	setContentView(mapView);
+        	
+          	File mf = new File(mapFile);
+        	if(mf.exists())
+        		mapView.setMapFile(mf);
+        	
+        	mapView.setCenter(pos);
+     
     		cachedir=makeCacheDir(proj);
     		FreemapFileFormatter formatter=new FreemapFileFormatter(Shared.proj.getID());
     		formatter.setScript("bsvr.php");
@@ -149,17 +170,61 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     		poiDeliverer=new TileDeliverer("poi",ds, new XMLDataInterpreter
     				(new FreemapDataHandler()),5000,5000,Shared.proj,cachedir);
         	
-        	Shared.pois = new FreemapDataset();
-        	indexedAnnotations = new HashMap<Integer,OverlayItem> ();
+    		
+    		
+    		if (Shared.pois==null)
+    			Shared.pois = new FreemapDataset();
+        
         	
-       
-       
+    		alertDisplayMgr = AlertDisplayManager.getInstance(this, 10);
+    		alertDisplayMgr.setPOIs(Shared.pois);
+    		
+    	
+    		
+    		mapLocationProcessor=new MapLocationProcessor(this,getApplicationContext(),dataDisplayer);
+    		
+    		if(walkrouteIdx > -1 && walkrouteIdx < Shared.walkroutes.size())
+    		 	dataDisplayer.showWalkroute(Shared.walkroutes.get(walkrouteIdx));
+    	
+        	
+        	
+        	styleFile = sdcard+"/opentrail/freemap.xml";
+        	File sf = new File(styleFile);
+        	if(!sf.exists())
+        	{
+        		dfTask = new DownloadFilesTask(this,  new String[] 
+        		                                   { "http://www.free-map.org.uk/data/android/freemap.xml" }, 
+        		                           new String[] { styleFile }, 
+        		                           "No style file found. Download?", this, 0);
+        		dfTask.setDialogDetails("Downloading...","Downloading style file...");
+        		dfTask.confirmAndExecute();
+        	}
+        	else
+        	{
+        		mapView.setRenderTheme(sf);
+        	}
+        	
+        	
+      
         }
         catch(IOException e)
         {
         	new AlertDialog.Builder(this).setPositiveButton("OK",null).
         		setCancelable(false).setMessage(e.getMessage()).show();
         } 
+    }
+    
+    public void downloadFinished(int id)
+    {
+    	try
+    	{
+    		mapView.setRenderTheme(new File(styleFile));
+    	}
+    	catch(FileNotFoundException e)
+    	{
+    		new AlertDialog.Builder(this).setPositiveButton("OK",null).
+    			setCancelable(false).setMessage(e.getMessage()).show();
+    	}
     }
     
     public void onStart()
@@ -172,31 +237,42 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
      	prefAnnotations = prefs.getBoolean("prefAnnotations", true);
      	prefAutoDownload = prefs.getBoolean("prefAutoDownload", false);
      	
-     	gpsListener=new GPSListener();
-    	gpsListener.startUpdates();
+     	if(prefGPSTracking)
+     	{
+     		mapLocationProcessor.startUpdates();
+     	}
      	
      	if(prefAnnotations==false && oldPrefAnnotations==true)
-     		mapView.getOverlays().remove(overlay);
+     	{
+     		dataDisplayer.hideAnnotations();
+     		mapView.invalidate();
+     		dataDisplayer.requestRedraw();
+     	}
+     	
      	else if (prefAnnotations==true && oldPrefAnnotations==false)
-     		mapView.getOverlays().add(overlay);
+     	{
+     		dataDisplayer.showAnnotations();
+     		mapView.invalidate();
+     		dataDisplayer.requestRedraw();
+     	}
     }
     
     public void onStop()
     {
     	super.onStop();
-    	gpsListener.stopUpdates();
-    	gpsListener = null;
+    	Log.d("OpenTrail","***onStop()***");
+    	mapLocationProcessor.stopUpdates();
     }
     
     public void onDestroy()
     {
     	super.onDestroy();
-    	indexedAnnotations.clear();
-    	overlay.clear();
-    	indexedAnnotations = null;
-    	overlay = null;
+    	Log.d("OpenTrail","***onDestroy()***");
+    	dataDisplayer.cleanup();
+    	mapLocationProcessor=null;
     	mapView = null;
-    	
+    	alertDisplayMgr=null;
+    	dataDisplayer=null;
     }
     
     public boolean onCreateOptionsMenu(Menu menu)
@@ -253,6 +329,22 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     			intent = new Intent(this,POITypesListActivity.class);
     			startActivityForResult(intent,2);
     			break;
+    			
+    		case R.id.walkroutesMenuItem:
+    			if(Shared.location==null)
+    				new AlertDialog.Builder(this).setMessage("Location not known").setPositiveButton("OK",null).
+    					setCancelable(false).show();
+    			else
+    			{
+    				dataTask = new DownloadWalkroutesTask(this, this);
+    				((DownloadWalkroutesTask)dataTask).execute();
+    			}
+    			break;
+    			
+    		case R.id.findWalkroutesMenuItem:
+    			intent = new Intent(this,WalkrouteListActivity.class);
+    			startActivityForResult(intent,3);
+    			break;
     	}
     	return retcode;
     }
@@ -283,7 +375,7 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     				Point p = Shared.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
     				OverlayItem item = new OverlayItem(gp,"Annotation #"+id,description);
     				item.setMarker(annotationIcon);
-    				overlay.addItem(item);
+    				dataDisplayer.addIconItem(item);
     				Annotation ann=new Annotation(Integer.parseInt(id),p.x,p.y,description);
     				Shared.pois.add(ann);
     				mapView.invalidate();
@@ -293,7 +385,15 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     				POI poi = Shared.pois.getPOIById(Integer.parseInt(extras.getString("osmId")));
     				Log.d("OpenTrail","found POI="+poi);
     				if(poi!=null)
-    					displayPOI(poi);
+    					dataDisplayer.displayPOI(poi);
+    				break;
+    				
+    			case 3:
+    				extras = i.getExtras();
+    				int idx = extras.getInt("selectedRoute");
+    				dataTask = new DownloadWalkrouteTask(this, this);
+    				((DownloadWalkrouteTask)dataTask).execute(idx);
+    				
     				break;
     		}
     	}
@@ -312,11 +412,10 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     {
     	if(Shared.location!=null)
     	{
-    		if(t==null)
+    		if(dataTask==null || dataTask.getStatus()!=AsyncTask.Status.RUNNING)
     		{
-    			t=new DownloadPOIsThread(this,handler);
-    			t.createDialog();
-    			t.start();
+            	dataTask = new DownloadPOIsTask(this, poiDeliverer, this);
+            	((DownloadPOIsTask)dataTask).execute();
     		}
     		else
     		{
@@ -331,66 +430,31 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     	}
     }
     
-    public void displayPOI(POI poi)
-    {
-    	if(lastAddedPOI!=null)
-    		overlay.removeItem(lastAddedPOI);
-    	Log.d("OpenTrail","Found POI: " + poi.getPoint());
-    	Point unproj = Shared.proj.unproject(poi.getPoint());
-    	Log.d("OpenTrail","unprojected: " + unproj);
-    	GeoPoint gp = new GeoPoint(unproj.y,unproj.x);
-    	mapView.setCenter(gp);
-    	String name=poi.getValue("name");
-    	name=(name==null) ? "unnamed":name;
-    	OverlayItem item = new OverlayItem(gp,name,name,ItemizedOverlay.boundCenterBottom(markerIcon));
-    	overlay.
-\
-
-    	overlay.on
-    	lastAddedPOI = item;
-    }
+ 
     
     public void loadAnnotationOverlay()
     {
-    	Shared.pois.operateOnAnnotations(this);
-    }
-    
-    public void visit(Annotation ann)
-    {
-    	if(indexedAnnotations.get(ann.getId()) == null)
-    	{
-    		Point unproj = Shared.proj.unproject(ann.getPoint());
-    		GeoPoint gp = new GeoPoint(unproj.y,unproj.x);
-    		OverlayItem item = new OverlayItem(gp,"Annotation #"+ann.getId(),ann.getDescription(),
-    				ItemizedOverlay.boundCenterBottom(annotationIcon));
-    		overlay.addItem(item);
-    		
-    		indexedAnnotations.put(ann.getId(), item);
-    	}
+    	Shared.pois.operateOnAnnotations(dataDisplayer);
     }
     
     public Object onRetainNonConfigurationInstance()
     {
-    	SavedConfig config = new SavedConfig();
+    	SavedData saved = new SavedData();
     	
-    	config.properties = new Bundle();
-    	
-  
-    	GeoPoint gp = mapView.getMapPosition().getMapCenter();
- 
-    	
-    	config.properties.putDouble("lat", gp.getLatitude());
-    	config.properties.putDouble("lon", gp.getLongitude());
-    	config.properties.putInt("zoom",mapView.getMapPosition().getZoomLevel());
-    	config.properties.putString("mapFile",mapFile);
-    	
-    	Log.d("OpenTrail", "Saving properties");
-    	if(t!=null)
+    	if(dataTask!=null && dataTask.getStatus()==AsyncTask.Status.RUNNING)
     	{
-    		t.disconnect();
-    		config.downloadThread = t;
+    		dataTask.disconnect();
+    		saved.dataTask = dataTask;
+    		
     	}
-    	return config;
+    	
+    	else if(dfTask!=null && dfTask.getStatus()==AsyncTask.Status.RUNNING)
+    	{
+    		dfTask.disconnect();
+    		saved.dfTask = dfTask;
+    	}
+    	
+    	return saved;
     }
     
     
@@ -404,202 +468,61 @@ public class OpenTrail extends MapActivity implements freemap.datasource.Freemap
     	return cachedir;
     }
     
-    private void downloadStyleFile()
+    public void displayAnnotationInfo(String msg)
     {
-    	new AlertDialog.Builder(this).setMessage("No style file found. Download?").setPositiveButton("OK",
-    			new DialogInterface.OnClickListener() { public void onClick(DialogInterface i,int which) { doDownloadStyleFile(); } } ).
-    		setCancelable(true).setNegativeButton("Cancel",null).show();
+    	new AlertDialog.Builder(this).setMessage(msg).setCancelable(false).setPositiveButton("OK",null).show();
+    	/*
+    	Vibrator vib = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+    	vib.vibrate(1000);
+    	*/
     }
     
-    private void doDownloadStyleFile()
+    public void receiveLocation(Location loc)
     {
-    	DownloadThread dsfThread = null;
-    	Handler downloadStyleFileHandler = new Handler()
+    	GeoPoint p = new GeoPoint(loc.getLatitude(),loc.getLongitude());
+		Point pt = new Point(loc.getLongitude(), loc.getLatitude());
+    	Shared.location = loc;
+    	if(prefGPSTracking==true)
     	{
-    		public void handleMessage(Message msg)
-    		{
-    			Bundle b = msg.getData();
-    			new AlertDialog.Builder(OpenTrail.this).setMessage(b.getString("content")).setPositiveButton("OK",null).
-					setCancelable(false).show();
-    			if(b.getBoolean("success")==true)
-    			{
-    				try
-    				{
-    					mapView.setRenderTheme(new File(sdcard+"/freemap.xml"));
-    					mapView.redrawTiles();
-    				}
-    				catch(FileNotFoundException e)
-    				{
-    					new AlertDialog.Builder(OpenTrail.this).setPositiveButton("OK",null).
-    						setCancelable(false).setMessage("Unable to read style file from SD card").show();
-    				}
-    			}
-    		}
-    	};
-    	
-    	dsfThread = new DownloadThread(this,downloadStyleFileHandler)
-    	{
-    		public void run()
-    		{
-    			boolean success=true;
-    			String content = "";
-    			try
-    			{
-    				InputStream in = HTTPDownloader.getStream("http://www.free-map.org.uk/data/android/freemap.xml");
-    				PrintWriter writer = new PrintWriter(new FileWriter(sdcard+"/freemap.xml"));
-    				BufferedReader reader=new BufferedReader(new InputStreamReader(in));
-    				String line;
-    				while((line=reader.readLine()) != null)		
-    				{
-    					Log.d("OpenTrail", line);
-    					System.out.println(line);
-    					writer.println(line);
-    				}
-    				writer.close();
-    				content="Successfully downloaded";
-    			}
-    			catch(IOException e)
-    			{
-    				success=false;
-    				content=e.getMessage();
-    				
-    			}
-    			finally
-    			{
-    				dlg.dismiss();
-    				Message m = new Message();
-    				Bundle details = new Bundle();
-    				details.putBoolean("success",success);
-    				details.putString("content",content);
-    				m.setData(details);
-    				handler.sendMessage(m);
-    			}
-    		}
-    	};
-    	dsfThread.setDialogDetails("Downloading style","Downloading style file...");
-    	dsfThread.createDialog();
-    	dsfThread.start();
-    }
-    
-    class GPSListener implements LocationListener
-    {
-    	LocationManager mgr;
-    	public GPSListener()
-    	{
-    		mgr = (LocationManager)getSystemService(LOCATION_SERVICE);
-    	
-    	}
-    	public void startUpdates()
-    	{
-    		mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,this);
-    		if(myLocOverlayItem!=null)
-    		{
-    			overlay.addItem(myLocOverlayItem);
-    		}
-    	}
-    	
-    	public void stopUpdates()
-    	{
-    		mgr.removeUpdates(this);
-    		if(myLocOverlayItem != null)
-    		{
-    			overlay.removeItem(myLocOverlayItem);
-    		}
-    	}
-    	
-    	public void onLocationChanged(Location loc)
-    	{
-    		GeoPoint p = new GeoPoint(loc.getLatitude(),loc.getLongitude());
-    		
-    		Shared.location = loc;
-    		
-    		if(myLocOverlayItem==null)
-    		{
-    			myLocOverlayItem = new OverlayItem(p,"My location","My location",ItemizedOverlay.boundCenterBottom(personIcon));//,personIcon);
-    			overlay.addItem(myLocOverlayItem);
-    		}
+    		if(mapView==null)
+    			Log.e("OpenTrail","mapView is null - HELP! this should never happen, wtf is going on here???");
     		else
-    		{
-    			myLocOverlayItem.setPoint(p);
-    		}
-    		if(prefGPSTracking==true)
     			mapView.setCenter(p);
-    		if(prefAutoDownload && poiDeliverer.needNewData(new Point(loc.getLongitude(),loc.getLatitude())))
-    	    	startPOIDownload();
-    		
     	}
-    	
-    	public void onProviderEnabled(String provider)
-    	{
-    	}
-    
-    	public void onProviderDisabled(String provider)
-    	{
-    	}
-    
-    	public void onStatusChanged(String provider, int status, Bundle extras)
-    	{
-    	
-    	}
+    	if(prefAutoDownload && poiDeliverer.needNewData(pt))
+    		startPOIDownload();
+    	alertDisplayMgr.update(pt);
     }
-    
-    public class DownloadPOIsThread extends DownloadThread
-    {   	
-    	public DownloadPOIsThread(Context ctx,Handler h)
-    	{
-    		super(ctx,h);
-    		setDialogDetails("Downloading POIs","Please wait, downloading POIs...");
-    	}
-    	
-    	public void run()
-    	{
-    		String msg="Successfully downloaded";
-    		boolean success=true;
-    		Message m = new Message();
-    		Point p = new Point(Shared.location.getLongitude(),Shared.location.getLatitude());
-    		try
-    		{
-    			poiDeliverer.updateSurroundingTiles(p,true);
-    			Log.d("OpenTrail","Data: " + poiDeliverer.getData());
-    			Shared.pois = (FreemapDataset)poiDeliverer.getAllData();
-    		}
-    		catch(Exception e)
-    		{
-    			msg="Error downloading: " + e;
-    			success=false;
-    		}
-    		finally
-    		{
-    			dlg.dismiss();
-    			Bundle b = new Bundle();
-    			b.putString("msg",msg);
-    			b.putBoolean("success", success);
-    			m.setData(b);
-    			Log.d("OpenTrail","Sending message: " + msg);
-    			this.handler.sendMessage(m);
+   
+   
 
-    		}
-    	}
+    public void receivePOIs(FreemapDataset ds)
+    {
+    	Shared.pois = ds;
+    	alertDisplayMgr.setPOIs(Shared.pois);
+    	loadAnnotationOverlay();
     }
     
-    public class DownloadHandler extends Handler
+    public void receiveWalkroutes(ArrayList<Walkroute> walkroutes)
     {
-    	public void handleMessage(Message msg)
-    	{
-    		new AlertDialog.Builder(OpenTrail.this).setMessage
-    			(msg.getData().getString("msg")).setCancelable(false).
-    			setPositiveButton("OK",null).show();
-    		if(msg.getData().getBoolean("success")==true)
-    		{
-    			loadAnnotationOverlay();
-    		}
-    		t=null;
-    	}
+    	Shared.walkroutes = walkroutes;
+    }
+   
+    public void receiveWalkroute(int idx, Walkroute walkroute)
+    {
+		Shared.walkroutes.set(idx, walkroute);
+    	alertDisplayMgr.setWalkroute(walkroute);
+    	dataDisplayer.showWalkroute(walkroute);
+    	walkrouteIdx = idx;
     }
     
-    public class SavedConfig
+    public void onSaveInstanceState(Bundle state)
     {
-    	public Bundle properties;
-    	public DownloadPOIsThread downloadThread;
+      	GeoPoint gp = mapView.getMapPosition().getMapCenter();
+    	state.putDouble("lat", gp.getLatitude());
+    	state.putDouble("lon", gp.getLongitude());
+    	state.putInt("zoom",mapView.getMapPosition().getZoomLevel());
+    	state.putString("mapFile",mapFile);
+    	state.putInt("walkrouteIdx", walkrouteIdx);
     }
 }

@@ -12,13 +12,10 @@ import freemap.data.Projection;
 import freemap.data.Way;
 
 public abstract class XMLDataHandler extends DefaultHandler  {
-	protected Object data;
+	//protected Object data;
 	
 	public abstract void reset(); // for initialising the data, e.g. if we want to load multiple tiles
 	
-	public Object getData()
-	{
-		return data;
-	}
+	public abstract Object getData();
 }
 

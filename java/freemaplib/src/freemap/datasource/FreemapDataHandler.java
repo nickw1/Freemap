@@ -25,6 +25,7 @@ public class FreemapDataHandler extends XMLDataHandler
 	ProjectionFactory factory;
 	int curID;
 	String curDescription;
+	FreemapDataset data;
 	
 	class DefaultProjectionFactory implements ProjectionFactory
 	{
@@ -161,5 +162,10 @@ public class FreemapDataHandler extends XMLDataHandler
 		{
 			curDescription+=str;
 		}
+	}
+	
+	public Object getData()
+	{
+		return data;
 	}
 }

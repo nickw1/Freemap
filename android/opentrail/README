@@ -1,7 +1,0 @@
-The new version of OpenTrail, using mapsforge vector maps.
-
-To install maps to your device, you must make an "opentrail" directory on
-your SD card and place the desired map files in there. 
-
-The XML style file will be automatically downloaded if not present on your
-device.

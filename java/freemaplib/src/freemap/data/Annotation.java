@@ -52,4 +52,9 @@ public class Annotation extends Projectable {
 	{
 		return description;
 	}
+	
+	public double distanceTo(Point p)
+	{
+		return point.distanceTo(p);
+	}
 }

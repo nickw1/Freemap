@@ -21,6 +21,7 @@ public final class R {
         public static final int btnOkInputAnnotation=0x7f070001;
         public static final int etAnnotation=0x7f070003;
         public static final int findPoisMenuItem=0x7f07000b;
+        public static final int findWalkroutesMenuItem=0x7f07000d;
         public static final int inputAnnotationMenuItem=0x7f070008;
         public static final int myLocationMenuItem=0x7f070007;
         public static final int poiListPOIDetails=0x7f070005;
@@ -29,6 +30,7 @@ public final class R {
         public static final int selectMapMenuItem=0x7f070006;
         public static final int settingsMenuItem=0x7f070009;
         public static final int tlInputAnnotation=0x7f070000;
+        public static final int walkroutesMenuItem=0x7f07000c;
     }
     public static final class layout {
         public static final int inputannotation=0x7f030000;
@@ -39,11 +41,11 @@ public final class R {
         public static final int menu=0x7f060000;
     }
     public static final class string {
-        public static final int app_name=0x7f050003;
+        public static final int app_name=0x7f050001;
         public static final int cancel=0x7f050005;
         public static final int hello=0x7f050000;
-        public static final int input_annotation_name=0x7f050002;
-        public static final int map_source_option_view_name=0x7f050001;
+        public static final int input_annotation_name=0x7f050003;
+        public static final int map_source_option_view_name=0x7f050002;
         public static final int ok=0x7f050004;
     }
     public static final class xml {

@@ -6,4 +6,6 @@
 <item android:id="@+id/settingsMenuItem" android:title="Settings" />
 <item android:id="@+id/poisMenuItem" android:title="Download POIs" />
 <item android:id="@+id/findPoisMenuItem" android:title="Find nearby POIs" />
+<item android:id="@+id/walkroutesMenuItem" android:title="Download walk routes" />
+<item android:id="@+id/findWalkroutesMenuItem" android:title="Find walk routes" />
 </menu>
