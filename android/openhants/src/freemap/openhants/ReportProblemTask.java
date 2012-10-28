@@ -18,7 +18,7 @@ public class ReportProblemTask extends ConfigChangeSafeTask<ArrayList<NameValueP
 	{
 		try
 		{
-			HTTPDownloader.post("", postData[0]);
+			HTTPDownloader.post("http://www.free-map.org.uk/hampshire/row.php", postData[0]);
 			return "ok";
 		}
 		catch(IOException e)

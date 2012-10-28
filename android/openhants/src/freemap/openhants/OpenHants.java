@@ -30,7 +30,7 @@ import org.mapsforge.android.maps.MapView;
 
 import freemap.andromaps.MapLocationProcessor;
 import freemap.andromaps.LocationDisplayer;
-
+import freemap.andromaps.DownloadFilesTask;
 
 
 
@@ -214,6 +214,8 @@ public class OpenHants extends MapActivity implements MapLocationProcessor.MapLo
     	Bundle extras = new Bundle();
     	for(HashMap.Entry<String,String> keyval: currentROW.entrySet())
     		extras.putString(keyval.getKey(), keyval.getValue());
+    	extras.putDouble("lat", location.getLatitude());
+    	extras.putDouble("lon", location.getLongitude());
     	i.putExtras(extras);
     	startActivityForResult(i, 0);
     

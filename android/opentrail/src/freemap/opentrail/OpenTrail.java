@@ -51,7 +51,7 @@ import freemap.datasource.XMLDataInterpreter;
 import freemap.andromaps.MapLocationProcessor;
 import freemap.andromaps.DataCallbackTask;
 import freemap.andromaps.ConfigChangeSafeTask;
-
+import freemap.andromaps.DownloadFilesTask;
 
 
 /*

@@ -35,7 +35,8 @@ public class ReportProblemActivity extends Activity{
 		Button ok = (Button)findViewById(R.id.buttonReportProblemOK),
 			cancel = (Button)findViewById(R.id.buttonReportProblemCancel);
 		
-		((EditText)findViewById(R.id.editTextPathID)).setText(rowDetails.getString("parish_row") + "(" +
+		((EditText)findViewById(R.id.editTextPathID)).setText(rowDetails.getString("parish") + 
+						" " + rowDetails.getString("routeno") + " (" +
 						rowDetails.getString("row_type") + ")");
 		
 		ok.setOnClickListener(new View.OnClickListener()
@@ -50,12 +51,15 @@ public class ReportProblemActivity extends Activity{
 					
 					ArrayList<NameValuePair> postData;
 					postData = new ArrayList<NameValuePair>();
-					postData.add(new BasicNameValuePair("rowcode",rowDetails.getString("parish_row")));
+					postData.add(new BasicNameValuePair("action", "addProblem"));
+					postData.add(new BasicNameValuePair("routeno",rowDetails.getString("routeno")));
 					postData.add(new BasicNameValuePair("rowtype",rowDetails.getString("row_type")));
 					postData.add(new BasicNameValuePair("parish",rowDetails.getString("parish")));
 					postData.add(new BasicNameValuePair("email","countryside@hants.gov.uk"));
-					postData.add(new BasicNameValuePair("cboCategory",problemType));
-					postData.add(new BasicNameValuePair("txtProblem",problemDetails));
+					postData.add(new BasicNameValuePair("category",problemType)); // cboCategory
+					postData.add(new BasicNameValuePair("problem",problemDetails)); // txtProblem
+					postData.add(new BasicNameValuePair("lat",String.valueOf(rowDetails.getDouble("lat"))));
+					postData.add(new BasicNameValuePair("lon",String.valueOf(rowDetails.getDouble("lon"))));
 					
 					/// ... asynctask
 					
