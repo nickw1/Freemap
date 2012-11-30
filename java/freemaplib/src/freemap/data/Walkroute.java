@@ -1,5 +1,6 @@
 package freemap.data;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class Walkroute {
@@ -93,6 +94,26 @@ public class Walkroute {
 
 	}
 	
+	public String toXML()
+	{
+		DecimalFormat format=new DecimalFormat("000");
+		String desc = "<gpx><trk><name>" + title + "</name><desc>" + description + "</desc><number>"+id+
+				"</number><trkseg>";
+		for(int i=0; i<points.size(); i++)
+		{
+			desc += "<trkpt lat='" + points.get(i).y+"' lon='" + points.get(i).x+"'></trkpt>";
+		}
+		desc+="</trkseg></trk>";
+		for(int i=0; i<stages.size(); i++)
+		{
+			desc += "<wpt lat='" + stages.get(i).start.y+"' lon='" + stages.get(i).start.x+"'>" +
+					"<name>" + format.format(stages.get(i).id)+"</name><desc>"+
+					stages.get(i).description+"</desc><type>stage</type></wpt>";
+		}
+		desc+="</gpx>";
+		return desc;
+
+	}
 	public String getTitle()
 	{
 		return title;

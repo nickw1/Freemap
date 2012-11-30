@@ -166,7 +166,8 @@ class Walkroute
     public function toGPX($doAnnotations=false)
     {
         $str="<gpx><trk><name>$this->title</name><desc>$this->description".
-            "</desc><extensions><distance>$this->distance</distance>".
+            "</desc><number>".$this->id."</number>".
+			"<extensions><distance>$this->distance</distance>".
             "</extensions><trkseg>";
         foreach($this->points as $pt)
         {
@@ -203,7 +204,8 @@ class Walkroute
     {
         $ll = sphmerc_to_ll($this->points[0][0],$this->points[0][1]);
         return "<wpt lat='$ll[lat]' lon='$ll[lon]'><name>$this->title</name>".
-                "<desc>$this->description</desc></wpt>";
+                "<desc>$this->description</desc>".
+				"<cmt>$this->id</cmt></wpt>";
     }
 
     public static function addWR($geojson,$userid)
@@ -223,6 +225,26 @@ class Walkroute
             ("SELECT *,astext(the_geom) FROM walkroutes WHERE startlat ".
                             "BETWEEN $s AND $n AND startlon ".
                             "BETWEEN $w AND $e");
+    }
+
+	// TODO startlon and startlat really needs to be a geometry then we
+	// can just use postgis distance
+    public static function getRoutesByRadius($lon,$lat,$radius)
+    {
+        
+        $routes=array();
+        $result=pg_query("SELECT *,astext(the_geom) FROM walkroutes");
+        while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
+        {
+            if(haversine_dist($row["startlon"],$row["startlat"],$lon,$lat)
+                < $radius)
+            {
+                $wr=new Walkroute();
+                $wr->loadFromRow($row);
+                $routes[] = $wr; 
+            }
+        }
+        return $routes;
     }
 
     public static function getRoutesByUser($userid)

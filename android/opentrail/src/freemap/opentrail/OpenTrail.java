@@ -31,6 +31,7 @@ import android.os.Vibrator;
 import android.os.AsyncTask;
 
 import org.mapsforge.android.maps.overlay.OverlayItem;
+import org.mapsforge.android.maps.overlay.ItemizedOverlay;
 
 import android.graphics.drawable.Drawable;
 
@@ -51,8 +52,8 @@ import freemap.datasource.XMLDataInterpreter;
 import freemap.andromaps.MapLocationProcessor;
 import freemap.andromaps.DataCallbackTask;
 import freemap.andromaps.ConfigChangeSafeTask;
+import freemap.andromaps.DownloadTextFilesTask;
 import freemap.andromaps.DownloadFilesTask;
-
 
 /*
 References to this
@@ -64,6 +65,8 @@ tasks
 
 dataDisplayer: mapView
 */
+
+// key for ACRA: dGZ6RDJDaWxCMTlfcEJqYTJDRFEtTmc6MQ
 
 public class OpenTrail extends MapActivity implements 
 						AlertDisplay, MapLocationProcessor.MapLocationReceiver,
@@ -93,6 +96,8 @@ public class OpenTrail extends MapActivity implements
 	
 	int walkrouteIdx;
 	
+	WalkrouteCacheManager wrCacheMgr;
+	
 	public static class SavedData
 	{
 		DataCallbackTask<?,?> dataTask;
@@ -109,7 +114,10 @@ public class OpenTrail extends MapActivity implements
         try
         {
         	sdcard = Environment.getExternalStorageDirectory().getAbsolutePath() ;
-        	
+        	//sdcard="/mnt/extSdCard";
+        	File opentrailDir = new File(sdcard+"/opentrail");
+        	if(!opentrailDir.exists())
+        		opentrailDir.mkdir();
         	mapFile = sdcard + "/opentrail/hampshire.map";
         	mapView = new MapView(this); 
         	mapView.setClickable(true);
@@ -141,6 +149,7 @@ public class OpenTrail extends MapActivity implements
 					Shared.proj);
         	
         	
+        	
         	if(savedInstanceState!=null)
         	{
         			
@@ -150,6 +159,7 @@ public class OpenTrail extends MapActivity implements
        			mapView.getController().setZoom(savedInstanceState.getInt("zoom"));
        			mapFile = savedInstanceState.getString("mapFile");
        			walkrouteIdx = savedInstanceState.getInt("walkrouteIdx");
+       			
        			loadAnnotationOverlay();
        		}   	
     		
@@ -176,26 +186,30 @@ public class OpenTrail extends MapActivity implements
     			Shared.pois = new FreemapDataset();
         
         	
-    		alertDisplayMgr = AlertDisplayManager.getInstance(this, 10);
+    		alertDisplayMgr = new AlertDisplayManager(this, 50);
     		alertDisplayMgr.setPOIs(Shared.pois);
-    		
+    		if(walkrouteIdx > -1 && walkrouteIdx < Shared.walkroutes.size())
+    		 	alertDisplayMgr.setWalkroute(Shared.walkroutes.get(walkrouteIdx));
     	
     		
     		mapLocationProcessor=new MapLocationProcessor(this,getApplicationContext(),dataDisplayer);
     		
-    		if(walkrouteIdx > -1 && walkrouteIdx < Shared.walkroutes.size())
-    		 	dataDisplayer.showWalkroute(Shared.walkroutes.get(walkrouteIdx));
-    	
-        	
+    		
+    		
+    		File wrDir = new File(sdcard+"/opentrail/walkroutes/");
+    		if(!wrDir.exists())
+    			wrDir.mkdir();
+    			
+        	wrCacheMgr=new WalkrouteCacheManager(sdcard+"/opentrail/walkroutes/");
         	
         	styleFile = sdcard+"/opentrail/freemap.xml";
         	File sf = new File(styleFile);
         	if(!sf.exists())
         	{
-        		dfTask = new DownloadFilesTask(this,  new String[] 
+        		dfTask = new DownloadTextFilesTask(this,  new String[] 
         		                                   { "http://www.free-map.org.uk/data/android/freemap.xml" }, 
         		                           new String[] { styleFile }, 
-        		                           "No style file found. Download?", this, 0);
+        		                           "No Freemap style file found. Download?", this, 0);
         		dfTask.setDialogDetails("Downloading...","Downloading style file...");
         		dfTask.confirmAndExecute();
         	}
@@ -227,6 +241,12 @@ public class OpenTrail extends MapActivity implements
     	}
     }
     
+    public void downloadCancelled(int id)
+    {
+    	new AlertDialog.Builder(this).setPositiveButton("OK",null).
+			setMessage("Freemap style will not be used, using default osmarender style").show();
+    }
+    
     public void onStart()
     {
     	super.onStart();
@@ -238,23 +258,23 @@ public class OpenTrail extends MapActivity implements
      	prefAutoDownload = prefs.getBoolean("prefAutoDownload", false);
      	
      	if(prefGPSTracking)
-     	{
      		mapLocationProcessor.startUpdates();
-     	}
+     	
+     	
+     	if(walkrouteIdx > -1 && walkrouteIdx < Shared.walkroutes.size())
+		 	dataDisplayer.showWalkroute(Shared.walkroutes.get(walkrouteIdx));
+		 	
      	
      	if(prefAnnotations==false && oldPrefAnnotations==true)
-     	{
      		dataDisplayer.hideAnnotations();
-     		mapView.invalidate();
-     		dataDisplayer.requestRedraw();
-     	}
+     		
+     
      	
      	else if (prefAnnotations==true && oldPrefAnnotations==false)
-     	{
      		dataDisplayer.showAnnotations();
-     		mapView.invalidate();
-     		dataDisplayer.requestRedraw();
-     	}
+   
+     	mapView.invalidate();
+    	dataDisplayer.requestRedraw();
     }
     
     public void onStop()
@@ -370,15 +390,18 @@ public class OpenTrail extends MapActivity implements
     				break;
     			case 1:
     				extras = i.getExtras();
-    				String id=extras.getString("ID"),description=extras.getString("description");
-    				GeoPoint gp = new GeoPoint(extras.getDouble("lat"),extras.getDouble("lon"));
-    				Point p = Shared.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
-    				OverlayItem item = new OverlayItem(gp,"Annotation #"+id,description);
-    				item.setMarker(annotationIcon);
-    				dataDisplayer.addIconItem(item);
-    				Annotation ann=new Annotation(Integer.parseInt(id),p.x,p.y,description);
-    				Shared.pois.add(ann);
-    				mapView.invalidate();
+    				if(extras.getBoolean("success"))
+    				{
+    					String id=extras.getString("ID"),description=extras.getString("description");
+    					GeoPoint gp = new GeoPoint(extras.getDouble("lat"),extras.getDouble("lon"));
+    					Point p = Shared.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
+    					OverlayItem item = new OverlayItem(gp,"Annotation #"+id,description);
+    					item.setMarker(ItemizedOverlay.boundCenterBottom(getResources().getDrawable(R.drawable.annotation)));
+    					dataDisplayer.addIconItem(item);
+    					Annotation ann=new Annotation(Integer.parseInt(id),p.x,p.y,description);
+    					Shared.pois.add(ann);
+    					mapView.invalidate();
+    				}
     				break;
     			case 2:
     				extras = i.getExtras();
@@ -390,10 +413,30 @@ public class OpenTrail extends MapActivity implements
     				
     			case 3:
     				extras = i.getExtras();
-    				int idx = extras.getInt("selectedRoute");
-    				dataTask = new DownloadWalkrouteTask(this, this);
-    				((DownloadWalkrouteTask)dataTask).execute(idx);
-    				
+    				int idx = extras.getInt("selectedRoute"), wrId = Shared.walkroutes.get(idx).getId();
+    				boolean loadSuccess=false;
+    				if(wrCacheMgr.isInCache(wrId))
+    				{
+    					try
+    					{
+    						Walkroute wr= wrCacheMgr.getWalkrouteFromCache(wrId);
+    						loadSuccess=true;
+    						setWalkroute(idx,wr);
+    						
+    					}
+    					catch(Exception e)
+    					{
+    						new AlertDialog.Builder(this).setMessage("Unable to retrieve route from cache: " +
+									e.getMessage()+". Loading from network").setCancelable(false).
+									setPositiveButton("OK",null).
+									show();
+    					}
+    				}
+    				if(!loadSuccess)
+    				{
+    					dataTask = new DownloadWalkrouteTask(this, this);
+    					((DownloadWalkrouteTask)dataTask).execute(idx);
+    				}
     				break;
     		}
     	}
@@ -460,8 +503,7 @@ public class OpenTrail extends MapActivity implements
     
     private String makeCacheDir(String projID)
     {
-    	String cachedir = Environment.getExternalStorageDirectory().getAbsolutePath()
-    		+"/opentrail/cache/" + projID.toLowerCase().replace("epsg:", "")+"/";
+    	String cachedir = sdcard+"/opentrail/cache/" + projID.toLowerCase().replace("epsg:", "")+"/";
     	File dir = new File(cachedir);
     	if(!dir.exists())
     		dir.mkdirs();
@@ -471,10 +513,10 @@ public class OpenTrail extends MapActivity implements
     public void displayAnnotationInfo(String msg)
     {
     	new AlertDialog.Builder(this).setMessage(msg).setCancelable(false).setPositiveButton("OK",null).show();
-    	/*
+    	
     	Vibrator vib = (Vibrator)getSystemService(VIBRATOR_SERVICE);
     	vib.vibrate(1000);
-    	*/
+    	
     }
     
     public void receiveLocation(Location loc)
@@ -510,10 +552,26 @@ public class OpenTrail extends MapActivity implements
    
     public void receiveWalkroute(int idx, Walkroute walkroute)
     {
+    	setWalkroute(idx,walkroute);
+  
+    	try
+    	{
+    		wrCacheMgr.addWalkrouteToCache(walkroute);
+    	}
+    	catch(IOException e)
+    	{
+    		new AlertDialog.Builder(this).setMessage("Downloaded walk route, but unable to save to cache: " +
+    												e.getMessage()).setCancelable(false).setPositiveButton("OK",null).
+    												show();
+    	}
+    }
+    
+    private void setWalkroute(int idx, Walkroute walkroute)
+    {
+      	walkrouteIdx = idx;
 		Shared.walkroutes.set(idx, walkroute);
     	alertDisplayMgr.setWalkroute(walkroute);
     	dataDisplayer.showWalkroute(walkroute);
-    	walkrouteIdx = idx;
     }
     
     public void onSaveInstanceState(Bundle state)

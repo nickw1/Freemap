@@ -73,9 +73,18 @@ public abstract class ConfigChangeSafeTask<Params,Progress> extends AsyncTask<Pa
 			if(dlg!=null )
 				dlg.dismiss();
 			if(showDialogOnFinish)
-				new AlertDialog.Builder(ctx).setPositiveButton("OK",null).setMessage(result).setCancelable(false).show();
+				showFinishDialog(result);
 		}
 	}
 	
+	public String getResultMsg()
+	{
+		return resultMsg;
+	}
 	
+	protected void showFinishDialog(String result)
+	{
+		new AlertDialog.Builder(ctx).setPositiveButton("OK",null).setMessage(result).setCancelable(false).show();
+	}
+
 }

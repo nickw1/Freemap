@@ -16,21 +16,24 @@ import java.io.InputStreamReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.InputStream;
+import java.io.IOException;
 
-import freemap.datasource.HTTPDownloader;
+import freemap.datasource.HTTPCommunicator;
 import freemap.andromaps.ConfigChangeSafeTask;
 
-public class DownloadFilesTask extends ConfigChangeSafeTask<Void,Void> {
+public abstract class DownloadFilesTask extends ConfigChangeSafeTask<Void,Void> {
 
 	public interface Callback
 	{
 		public void downloadFinished(int taskId);
+		public void downloadCancelled(int taskId);
 	}
 	
 	String alertMsg;
 	Callback callback;
 	int taskId;
 	String[] urls, localFiles;
+	
 	
 	public DownloadFilesTask(Context ctx,  String[] urls, String[] localFiles, String alertMsg, Callback callback, int taskId)
 	{
@@ -45,7 +48,14 @@ public class DownloadFilesTask extends ConfigChangeSafeTask<Void,Void> {
 	public void confirmAndExecute()
 	{
 		new AlertDialog.Builder(ctx).setMessage(alertMsg).
-			setNegativeButton("Cancel",null).setPositiveButton("OK",
+			setNegativeButton("Cancel",new DialogInterface.OnClickListener()
+			{
+				public void onClick(DialogInterface i, int which)
+				{
+					callback.downloadCancelled(taskId);
+				}
+			}).
+			setPositiveButton("OK",
 					new DialogInterface.OnClickListener()
 				{
 					public void onClick(DialogInterface i, int which)
@@ -56,23 +66,20 @@ public class DownloadFilesTask extends ConfigChangeSafeTask<Void,Void> {
 		 ).show();
 	}
 
+	
+	
 	public String doInBackground(Void... unused)
 	{
 		
+		HTTPCommunicator communicator = new HTTPCommunicator();
 		
 		try
 		{
 			for(int i=0; i<urls.length; i++)
 			{
-				InputStream in = HTTPDownloader.getStream(urls[i]);
-				PrintWriter writer = new PrintWriter(new FileWriter(localFiles[i]));
-				BufferedReader reader=new BufferedReader(new InputStreamReader(in));
-				String line;
-				while((line=reader.readLine()) != null)		
-				{
-					writer.println(line);
-				}	    					
-				writer.close();
+				InputStream in = communicator.getInputStream(urls[i]);
+				if(in!=null)
+					doWriteFile(in,localFiles[i]);
 			}
 			return "Successfully downloaded";
 		}
@@ -82,10 +89,21 @@ public class DownloadFilesTask extends ConfigChangeSafeTask<Void,Void> {
 		}
 	}
 	
-	protected void onPostExecute(String result)
+	
+	
+	protected void showFinishDialog(String result)
 	{
-		super.onPostExecute(result);
-		callback.downloadFinished(taskId);
+		new AlertDialog.Builder(ctx).setPositiveButton("OK",
+				
+				new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface i, int which)
+					{
+						callback.downloadFinished(taskId);
+					}
+				}
+				
+				).setMessage(result).setCancelable(false).show();
 	}
 	
 	public void disconnect()
@@ -105,4 +123,6 @@ public class DownloadFilesTask extends ConfigChangeSafeTask<Void,Void> {
 			super.reconnect(ctx);
 		}
 	}
+	
+	public abstract void doWriteFile(InputStream in, String localFile) throws IOException;
 }

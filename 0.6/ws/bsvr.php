@@ -5,6 +5,7 @@
 
 require_once('../../lib/functionsnew.php');
 require_once('DataGetter.php');
+require_once('DBDetails.php');
 require_once('xml.php');
 require_once('../../lib/latlong.php');
 

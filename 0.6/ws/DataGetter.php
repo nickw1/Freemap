@@ -18,13 +18,15 @@ class DataGetter
         $this->wayFilter=array();
         $this->doWays=true;
         $this->doPolygons=true;
-        $this->dbq = $dbdetails===null ?
+		$prefix = is_string($dbdetails) ? $dbdetails: "planet_osm";
+        $this->dbq = is_object($dbdetails)&&get_class($dbdetails)=="DBDetails"? 
+				$dbdetails:
                 new DBDetails(
-                    array("table"=>"planet_osm_point",
+                    array("table"=>"${prefix}_point",
                             "col"=>"way"),
-                    array("table"=>"planet_osm_line",
+                    array("table"=>"${prefix}_line",
                             "col"=>"way"),
-                    array("table"=>"planet_osm_polygon",
+                    array("table"=>"${prefix}_polygon",
                             "col"=>"way"),
                     array("table"=>"contours",
                             "col"=>"way"),
@@ -32,8 +34,7 @@ class DataGetter
                             "col"=>"the_geom"),
                     array("table"=>"annotations",
                             "col"=>"xy")
-                            ) : 
-                $dbdetails;
+                            ); 
         $this->SRID = $srid;
     }
 
@@ -155,7 +156,9 @@ class DataGetter
 
             foreach($prow as $k=>$v)    
                 if($k!='way' && $k!='geojson' && $v!='')
-                    $counteddata[$k]=htmlspecialchars($v);
+                    $counteddata[$k]=htmlspecialchars
+                        (str_replace("&","and",$v));
+
             $feature["properties"] = $counteddata;
             $feature["properties"]["featuretype"]=get_high_level
                 ($feature["properties"]);
@@ -201,9 +204,13 @@ class DataGetter
                 $feature=array();
                 $f = json_decode($wrow['geojson'],true);
                 $tags = array();
+            
+                // Replace ampersands with the word "and".
+                // Note to mappers who do this... use "and". Thanks! ;-)
                 foreach($wrow as $k=>$v)
                     if($k!=$excluded_col && $k!='geojson' && $v!='')
-                        $tags[$k] = htmlentities($v);
+                        $tags[$k] = htmlspecialchars(str_replace("&","and",$v));
+
                 $feature["properties"] = $tags;
                 if($this->kothic_gran===null)
                 {
@@ -322,9 +329,9 @@ class NameSearch extends DataGetter
 {
     protected $name;
 
-    function __construct($name)
+    function __construct($name,$tbl_prefix="planet_osm")
     {
-        parent::__construct();
+        parent::__construct(null,$tbl_prefix);
         $this->name=$name;
     }
 

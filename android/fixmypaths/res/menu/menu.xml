@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+ <item android:title="Report Problem" android:id="@+id/menuItemReportProblem" />
+
+ <item android:title="Download existing problems" android:id="@+id/menuItemExistingProblems" />
+ 
+ <item android:title="Preferences" android:id="@+id/menuItemPreferences" />
+</menu>

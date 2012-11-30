@@ -13,6 +13,12 @@ class DBDetails
         $this->contourDetails = $contour;
         $this->coastlineDetails = $coast;
         $this->annotationDetails = $ann;
+        $this->intersection = true;
+    }
+
+    public function setIntersection($i)
+    {
+        $this->intersection = $i;
     }
 
     public function getPOIQuery()
@@ -76,13 +82,24 @@ class DBDetails
 
     public function getBboxWayQuery($geomtxt)
     {
-        return ($this->wayDetails) ?
+        $q = ($this->intersection==true) ?
+
+        "SELECT *,ST_AsGeoJSON(ST_Intersection($geomtxt,".
+            $this->wayDetails["col"].")) AS geojson ".
+            "FROM ".$this->wayDetails["table"]. 
+            " WHERE ".
+            $this->wayDetails["col"] .
+            "&& $geomtxt AND ST_IsValid(".$this->wayDetails["col"].")" 
+
+            :
+
         "SELECT *,ST_AsGeoJSON(".$this->wayDetails["col"].") AS geojson ".
             "FROM ".$this->wayDetails["table"]. 
             " WHERE ".
             $this->wayDetails["col"] .
-            "&& $geomtxt AND ST_IsValid(".$this->wayDetails["col"].")" :
-            null;
+            "&& $geomtxt AND ST_IsValid(".$this->wayDetails["col"].")" ;
+
+        return ($this->wayDetails) ? $q:null;
     }
 
     public function getBboxPolygonQuery($geomtxt)

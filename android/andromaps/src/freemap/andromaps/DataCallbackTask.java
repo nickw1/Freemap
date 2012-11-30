@@ -1,8 +1,10 @@
 package freemap.andromaps;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.content.DialogInterface;
 
 
 public abstract class DataCallbackTask<Params,Progress> extends ConfigChangeSafeTask<Params,Progress> {
@@ -54,7 +56,23 @@ public abstract class DataCallbackTask<Params,Progress> extends ConfigChangeSafe
 	protected void onPostExecute(String result)
 	{
 		super.onPostExecute(result);
-		receive(data);
+		if(!showDialogOnFinish)
+			receive(data);
+	}
+	
+	protected void showFinishDialog(String result)
+	{
+		new AlertDialog.Builder(ctx).setPositiveButton("OK",
+				
+				new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface i, int which)
+					{
+						receive(data);
+					}
+				}
+				
+				).setMessage(result).setCancelable(false).show();
 	}
 	
 	public abstract void receive(Object data);

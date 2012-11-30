@@ -4,8 +4,17 @@ if (! Function.prototype.bind)
 {
     Function.prototype.bind = function(target)
     {
+		var args = new Array(); 
+		for(var i=1; i<arguments.length; i++)
+			args.push(arguments[i]);
+		
         var self=this;
-        return function() { self.apply(target); } 
+        return function() 
+		{ 
+			for(var i=0; i<arguments.length; i++)
+				args.push(arguments[i]);
+			self.apply(target,args); 
+		} 
     }
 }
 

@@ -100,6 +100,22 @@ switch($cleaned["action"])
             echo "Please supply a bounding box and a format, and use GET";
         }
         break;
+    
+    case "getByRadius":
+        if($_SERVER['REQUEST_METHOD']=='GET' &&
+            isset($cleaned["radius"]) && isset($cleaned["format"]) &&
+            isset($cleaned['lon']) && isset($cleaned['lat']))
+        {
+            $routes=Walkroute::getRoutesByRadius
+                ($cleaned['lon'],$cleaned['lat'],$cleaned["radius"]);
+            Walkroute::outputRoutes($routes,$cleaned["format"]);
+        }
+        else
+        {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Please supply a lon, lat, radius and a format, and use GET";
+        }
+        break;
 
     case "getByUser":
         if($_SERVER['REQUEST_METHOD'] != 'GET')

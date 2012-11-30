@@ -222,6 +222,11 @@ function Freemap(lat,lon,zoom)
     this.trash.style.visibility = 'hidden';
     
     document.getElementById('main').appendChild(this.trash);
+
+    window.onpopstate = (function(e)
+    {
+        this.setLocation(e.state.x/1000000,e.state.y/1000000);
+    }).bind(this);
 }
 
 Freemap.prototype.setLoggedIn = function(status)
@@ -303,6 +308,9 @@ Freemap.prototype.setLocation = function(x,y)
 
 Freemap.prototype.onDragEnd=function(e)
 {
+    var x=Math.round(this.map.getCenter().lng*1000000),
+        y=Math.round(this.map.getCenter().lat*1000000);
+    //history.pushState({x:x,y:y},"","?x="+x+"&y="+y);
     this.annotationLoader.loadFeatures(e.target.getBounds());
     this.walkrouteStartsLoader.loadFeatures(e.target.getBounds());
     this.saveLocation();
@@ -442,7 +450,11 @@ Freemap.prototype.markerDragEnd = function(ev)
                                         (ev.target) }
                                     ).bind(this),
                                  errorCallback: function(code)
-                                     { alert('Could not delete: error=' +code);
+                                     { 
+                                        if(code==401)
+                                            alert('Need to login to delete.');
+                                        else
+                                            alert('Server error:' +code);
                                          ev.target.setLatLng
                                             (ev.target.dragStart);
                                      }
@@ -460,6 +472,10 @@ Freemap.prototype.markerDragEnd = function(ev)
                               callback: function(xmlHTTP) { } ,
                               errorCallback: function(err)
                                   {
+                                    if(err==401)
+                                        alert('Need to login to move markers.');
+                                    else
+                                        alert('Server error: ' + err);
                                     ev.target.setLatLng(ev.target.dragStart);
                                 }
                             }
@@ -471,5 +487,5 @@ Freemap.prototype.markerDragEnd = function(ev)
 function init()
 {
     var freemap = new Freemap(lat,lon,zoom);
-	freemap.setLoggedIn(loggedIn);
+    freemap.setLoggedIn(loggedIn);
 }

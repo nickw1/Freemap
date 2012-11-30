@@ -6,8 +6,10 @@ session_start();
 
 $conn=pg_connect("dbname=gis user=gis");
 
-$lat = (isset($_GET['lat'])) ? $_GET['lat']: "null"; 
-$lon = (isset($_GET['lon'])) ? $_GET['lon']: "null";
+$lat = (isset($_GET['lat'])) ? $_GET['lat']: 
+	(isset($_GET['y']) ? $_GET["y"]/1000000 : "null");
+$lon = (isset($_GET['lon'])) ? $_GET['lon']: 
+	(isset($_GET['x']) ? $_GET["x"]/1000000 : "null");
 $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: "null";
 $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
     

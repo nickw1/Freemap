@@ -7,6 +7,7 @@
 // kothic - output kothic-js format geojson rather than standard geojson if !=0
 // contours - output LandForm Panorama contours if !=0
 // coastline - output coastline if !=0
+// tbl_prefix - prefix for tables (default planet_osm)
 
 require_once('../../lib/functionsnew.php');
 require_once('DataGetter.php');
@@ -15,11 +16,15 @@ require_once('DBDetails.php');
 
 $cleaned = clean_input($_REQUEST);
 
+// DBDetails: poi way poly contour coast ann
+
 define('CONTOUR_CACHE','/var/www/images/contours');
 
 $x = $cleaned["x"];
 $y = $cleaned["y"];
 $z = $cleaned["z"];
+
+$tbl_prefix=isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"]:"planet_osm";
 
 
 $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '900913';
@@ -35,7 +40,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     $kg=isset($cleaned["kg"]) ? $cleaned["kg"]: 1000;
     if(!file_exists(CONTOUR_CACHE."/$kg/$z/$x"))
         mkdir(CONTOUR_CACHE."/$kg/$z/$x",0755,true);
-    $bg = new BboxGetter($bbox,$kg);
+    $bg = new BboxGetter($bbox,$kg,$tbl_prefix);
 
     if($z<=7)
     {
@@ -73,7 +78,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
 else
 {
     header("Content-type: application/json");
-    $bg=new BboxGetter($bbox);
+    $bg=new BboxGetter($bbox,null,$tbl_prefix);
     $data=$bg->getData($cleaned,null,$outProj);
     echo json_encode($data);
 }

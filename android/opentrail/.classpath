@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry exported="true" kind="lib" path="/home/nick/java/lib/javaproj-1.0.6-noawt.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/nick/java/lib/jcoord-1.0.jar"/>
+	<classpathentry kind="src" path="andromaps_src"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry exported="true" kind="lib" path="/home/nick/java/lib/acra-4.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/nick/java/lib/freemaplib.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/nick/java/lib/mapsforge-map-0.3.0-jar-with-dependencies.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
