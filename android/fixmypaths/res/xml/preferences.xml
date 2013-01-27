@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-<EditTextPreference android:key="name" android:title="Name" 
-    android:summary="Your name, will be used when sending problem reports" />
-<EditTextPreference android:key="email" android:title="Email"
-    android:summary="Your email, will be used when sending problem reports" />
-<EditTextPreference android:key="searchDistance" android:title="Search distance"
-    android:summary="Distance in metres from current point to search for rights of way" />
-</PreferenceScreen>

@@ -3,14 +3,14 @@ package freemap.datasource;
 
 import freemap.data.Walkroute;
 import org.xml.sax.Attributes;
-import freemap.data.Point;
+import freemap.data.TrackPoint;
 import java.util.ArrayList;
 
 public class WalkroutesHandler extends XMLDataHandler{
 	ArrayList<Walkroute> routes = new ArrayList<Walkroute>();
 	String curTag, routeName,routeDescription, routeId;
 	boolean  inName, inDesc,inWpt, inId;
-	Point curPoint = new Point();
+	TrackPoint curPoint = new TrackPoint();
 	
 	public void startElement(String uri,String localName, String qName,Attributes attrs)
 	{
@@ -97,6 +97,5 @@ public class WalkroutesHandler extends XMLDataHandler{
 	{
 		routes = new ArrayList<Walkroute>();
 	}
-
 }
 

@@ -9,11 +9,11 @@ public class Walkroute {
 	
 	public class Stage
 	{
-		public Point start;
+		public TrackPoint start;
 		public String description;
 		public int id;
 		
-		public Stage(int id, Point start, String description)
+		public Stage(int id, TrackPoint start, String description)
 		{
 			this.id=id;
 			this.start=start;
@@ -29,7 +29,7 @@ public class Walkroute {
 	String title, description;
 	int id;
 	
-	ArrayList<Point> points = new ArrayList<Point>();
+	ArrayList<TrackPoint> points = new ArrayList<TrackPoint>();
 	ArrayList<Stage> stages = new ArrayList<Stage>();
 
 	public Walkroute()
@@ -43,12 +43,12 @@ public class Walkroute {
 		setDescription(description);
 	}
 	
-	public void addStage(Point start,String description)
+	public void addStage(TrackPoint start,String description)
 	{
 		stages.add(new Stage(stages.size()+1,start,description));
 	}
 	
-	public void addPoint(Point p)
+	public void addPoint(TrackPoint p)
 	{
 		points.add(p);
 	}
@@ -101,12 +101,17 @@ public class Walkroute {
 				"</number><trkseg>";
 		for(int i=0; i<points.size(); i++)
 		{
-			desc += "<trkpt lat='" + points.get(i).y+"' lon='" + points.get(i).x+"'></trkpt>";
+			desc += "<trkpt lat='" + points.get(i).y+"' lon='" + points.get(i).x+"'>";
+			if(points.get(i).timestamp>=0L)
+				desc += "<time>" + points.get(i).getGPXTimestamp()+"</time>";
+			desc += "</trkpt>";
 		}
 		desc+="</trkseg></trk>";
 		for(int i=0; i<stages.size(); i++)
 		{
 			desc += "<wpt lat='" + stages.get(i).start.y+"' lon='" + stages.get(i).start.x+"'>" +
+					(stages.get(i).start.timestamp>=0L ? 
+					"<time>" + stages.get(i).start.getGPXTimestamp()+"</time>":"")+
 					"<name>" + format.format(stages.get(i).id)+"</name><desc>"+
 					stages.get(i).description+"</desc><type>stage</type></wpt>";
 		}
@@ -124,7 +129,7 @@ public class Walkroute {
 		return description;
 	}
 	
-	public ArrayList<Point> getPoints()
+	public ArrayList<TrackPoint> getPoints()
 	{
 		return points;
 	}
@@ -157,5 +162,11 @@ public class Walkroute {
 	public void setProjection(Projection proj)
 	{
 		this.proj = proj;
+	}
+	
+	public void clear()
+	{
+		points.clear();
+		stages.clear();
 	}
 }

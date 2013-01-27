@@ -1,14 +1,26 @@
 package freemap.datasource;
 
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+import java.util.Date;
+import java.text.ParseException;
+
 import freemap.data.Walkroute;
 import org.xml.sax.Attributes;
-import freemap.data.Point;
+import freemap.data.TrackPoint;
 
 public class WalkrouteHandler extends XMLDataHandler{
 	Walkroute theRoute;
-	String curTag, routeName,routeDescription,stageName,stageDescription,routeNumber;
-	boolean inTrk, inName, inDesc,inWpt,inNumber;
-	Point curPoint;
+	String curTag, routeName,routeDescription,stageName,stageDescription,routeNumber,curTime;
+	boolean inTrk, inName, inDesc,inWpt,inTrkpt,inNumber,inTime;
+	TrackPoint curPoint;
+	SimpleDateFormat timestampFormat;
+	
+	public WalkrouteHandler()
+	{
+		timestampFormat = new SimpleDateFormat("yyyy-MM-dd 'T'HH:mm:ss'Z'");
+		timestampFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 	
 	public void startElement(String uri,String localName, String qName,Attributes attrs)
 	{
@@ -22,18 +34,20 @@ public class WalkrouteHandler extends XMLDataHandler{
 		{
 			if(attrs.getValue("lat")!=null && attrs.getValue("lon")!=null)
 			{
-				curPoint = new Point(Double.parseDouble(attrs.getValue("lon")),
+				curPoint = new TrackPoint(Double.parseDouble(attrs.getValue("lon")),
 									Double.parseDouble(attrs.getValue("lat")));
+				if(curTag.equals("trkpt"))
+				{
+					curTime = "";
+					inTrkpt = true;
+				}
+				else
+				{
+					inWpt = true;
+				}
 			}
 			
-			if(curTag.equals("trkpt"))
-			{
-				theRoute.addPoint(curPoint);
-			}
-			else
-			{
-				inWpt = true;
-			}
+			
 		}
 		else if (curTag.equals("name"))
 		{
@@ -56,6 +70,11 @@ public class WalkrouteHandler extends XMLDataHandler{
 			inNumber = true;
 			routeNumber = "";
 		}
+		else if (curTag.equals("time")&& inTrkpt)
+		{
+			inTime = true;
+			
+		}
 	}
 	
 	public void endElement(String uri,String localName,String qName)
@@ -66,6 +85,17 @@ public class WalkrouteHandler extends XMLDataHandler{
 		{
 			theRoute.addStage(curPoint,stageDescription);
 			inWpt = false;
+		}
+		else if (closingTag.equals("trkpt"))
+		{
+			inTrkpt = false;
+			try
+			{
+				Date date = timestampFormat.parse(curTime);
+				curPoint.setTime(date.getTime());
+			}
+			catch(ParseException e) { }
+			theRoute.addPoint(curPoint);
 		}
 		else if (closingTag.equals("trk"))
 		{
@@ -86,6 +116,10 @@ public class WalkrouteHandler extends XMLDataHandler{
 		else if (closingTag.equals("number"))
 		{
 			inNumber=false;
+		}
+		else if (closingTag.equals("time") && inTrkpt)
+		{
+			inTime = false;
 		}
 	}
 
@@ -110,6 +144,10 @@ public class WalkrouteHandler extends XMLDataHandler{
 		{
 			routeNumber += text;
 		}
+		else if (inTime)
+		{
+			curTime += text;
+		}
 	}
 	
 	public Object getData()
@@ -121,5 +159,4 @@ public class WalkrouteHandler extends XMLDataHandler{
 	{
 		theRoute = new Walkroute();
 	}
-	
 }

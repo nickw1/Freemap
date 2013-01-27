@@ -106,7 +106,13 @@ public class TileDeliverer {
 	
 	protected String getCacheFile()
 	{
-		Point origin=getOrigin(curPos);
+		return getCacheFile(curPos);
+	}
+	
+	
+	protected String getCacheFile(Point p)
+	{
+		Point origin=getOrigin(p);
 		String key="" + ((int)origin.x)+"."+((int)origin.y);
 		return cachedir+"/"+name+"."+key;
 	}
@@ -189,7 +195,13 @@ public class TileDeliverer {
 	
 	public boolean isCache()
 	{
-		return isCache(getCacheFile());
+		return curPos!=null && isCache(getCacheFile());
+	}
+	
+	public boolean isCache(Point lonLat)
+	{
+		String cacheFile=getCacheFile(proj.project(lonLat));
+		return new File(cacheFile).exists();
 	}
 	
 	public boolean isCache(String cachefile)
@@ -200,7 +212,7 @@ public class TileDeliverer {
 	
 	public boolean needNewData(Point p)
 	{
-		return isNewObject(curPos,proj.project(p));
+		return curPos==null || isNewObject(curPos,proj.project(p));
 	}
 	
 	protected boolean isNewObject(Point oldPos, Point newPos)

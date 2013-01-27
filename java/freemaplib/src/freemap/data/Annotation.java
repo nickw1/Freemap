@@ -1,11 +1,14 @@
 package freemap.data;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Annotation extends Projectable {
-	Point point;
-	String description, type;
-	int id;
+	protected Point point;
+	protected String description, type;
+	protected int id;
+	HashMap<String,String> extras;
 	
 	public Annotation(int id,double x,double y,String description)
 	{
@@ -17,6 +20,7 @@ public class Annotation extends Projectable {
 		this.description=description;
 		this.type=type;
 		this.id=id;
+		extras=new HashMap<String,String>();
 	}
 	
 	public String toString()
@@ -31,10 +35,28 @@ public class Annotation extends Projectable {
 		proj=newProj;
 	}
 	
+	public void putExtra(String key,String value)
+	{
+		extras.put(key,value);
+	}
+	
 	public void save (PrintWriter pw)
 	{
+		String curKey;
 		pw.println("<annotation x='"+point.x+"' y='"+point.y+"' id='"+id+"'>");
 		pw.println("<description>"+description+"</description>");
+		if(!(type.equals("")))
+			pw.println("<type>"+type+"</type>");
+		if(!extras.isEmpty())
+		{
+			pw.println("<extras>");
+			for(Map.Entry<String,String> entry: extras.entrySet())
+			{
+				curKey = entry.getKey();
+				pw.println("<"+curKey+">"+entry.getValue()+"</"+curKey+">");
+			}
+			pw.println("</extras>");
+		}
 		pw.println("</annotation>");
 	}
 	
@@ -51,6 +73,16 @@ public class Annotation extends Projectable {
 	public String getDescription()
 	{
 		return description;
+	}
+	
+	public void setDescription(String description)
+	{
+		this.description=description;
+	}
+	
+	public void setType(String type)
+	{
+		this.type=type;
 	}
 	
 	public double distanceTo(Point p)

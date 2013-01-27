@@ -71,7 +71,9 @@ public class FreemapDataHandler extends XMLDataHandler
 	public void startElement(String uri,String localName,String qName,Attributes attributes)
 		throws SAXException
 	{
+		
 		curTag = (localName.equals("")) ? qName:localName;
+		System.out.println("curTag="+curTag);
 		
 		if(curTag.equals("way"))
 		{
@@ -119,6 +121,7 @@ public class FreemapDataHandler extends XMLDataHandler
 	public void endElement(String uri,String localName,String qName) 
 		throws SAXException
 	{
+		
 		curTag = (localName.equals("")) ? qName:localName;
 	
 		if(curTag.equals("projection"))
