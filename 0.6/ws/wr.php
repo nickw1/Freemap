@@ -5,9 +5,9 @@ require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
 require_once('../User.php');
 
-
 $pconn=pg_connect("dbname=gis user=gis");
 $cleaned=clean_input($_REQUEST,'pgsql');
+$cleaned["format"] = isset($cleaned["format"]) ? $cleaned["format"]:"geojson";
 
 
 switch($cleaned["action"])
@@ -19,6 +19,7 @@ switch($cleaned["action"])
             if(isset($_SERVER['PHP_AUTH_USER']) &&
                 isset($_SERVER['PHP_AUTH_PW']))
             {
+				$userid=-1;
                 if(($result==User::isValidLogin
                         ($_SERVER['PHP_AUTH_USER'],
                         $_SERVER['PHP_AUTH_PW']))!==null)
@@ -31,14 +32,16 @@ switch($cleaned["action"])
             {
                 $userid=get_user_id ($_SESSION['gatekeeper'],
                                 'users','username','id','pgsql');
+				$userid = ($userid>0) ? $userid: -1;
             }
-            if($userid==0)
+            if($userid<0)
             {
                 header("HTTP/1.1 401 Unauthorized");
             }
             else
             {
-                $j=Walkroute::addWR(stripslashes($_POST["route"]),$userid);
+                $j=Walkroute::addWR(stripslashes($_POST["route"]),$userid,
+										$cleaned["format"]);
                 echo $j;
             }
         }
@@ -73,6 +76,11 @@ switch($cleaned["action"])
                         echo $wr->toGPX($doAnnotations);
                         break;
                 }
+            }
+            else
+            {
+                header("HTTP/1.1 404 Not Found");
+                echo "Cannot find walkroute with that ID";
             }
         }
         else

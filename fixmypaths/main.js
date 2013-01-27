@@ -46,10 +46,10 @@ function OpenHants(lat,lon,zoom)
         { 
 			try
 			{
-            var colours = { "Footpath" : "#00ff00",
-                    "Bridleway" : "#aa5500",
-                    "BOAT" : "#ff0000",
-                    "Restricted Byway" : "magenta" };
+            var colours = { "Footpath" : "#ff00ff",
+                    "Bridleway" : "#00ff00",
+                    "BOAT" : "#aa5500",
+                    "Restricted Byway" : "#0000ff" };
 			var p = document.createElement("p");
 			p.appendChild(document.createTextNode(e.properties.parish_row));
 			var a =document.createElement("a");
@@ -121,11 +121,10 @@ OpenHants.prototype.loadGeoJSON = function()
 
 OpenHants.prototype.addGeoJSON = function(xmlHTTP)
 {
-
 	var json = JSON.parse(xmlHTTP.responseText);
 	for(var i=0; i<json.features.length; i++)
 	{
-		if(!this.indexedFeatures[json.features[i].properties.gid])
+		if(!(this.indexedFeatures[json.features[i].properties.gid]))
 		{
 			this.row.addGeoJSON(json.features[i]);
 			this.indexedFeatures[json.features[i].properties.gid] =

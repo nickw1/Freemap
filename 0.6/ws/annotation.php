@@ -7,7 +7,11 @@ session_start();
 $conn=pg_connect("dbname=gis user=gis");
 $cleaned = clean_input($_POST,'pgsql');
 
+$inProj = isset($cleaned['inProj']) ? $cleaned['inProj']:'4326';
+adjustProj($inProj);
+
 $expected = array ("create" => array("lon","lat","text"),
+					"createMulti"=>array("data"),
                     "delete" => array("id"),
                     "move" =>array("id","lat","lon"));
 
@@ -55,7 +59,8 @@ switch($cleaned['action'])
     case 'create':
 		if($userid>=0)
 		{
-            $goog = ll_to_sphmerc($cleaned['lon'],$cleaned['lat']);
+			list($goog['e'],$goog['n']) = 
+				reproject($cleaned['lon'],$cleaned['lat'],$inProj,'900913');
             $q= "INSERT INTO annotations(text,xy,dir,userid,authorised) ".
                 "VALUES ('$cleaned[text]',".
                 "PointFromText('POINT ($goog[e] $goog[n])',900913)".
@@ -69,6 +74,37 @@ switch($cleaned['action'])
 			header("HTTP/1.1 401 Unauthorized");
         break;
 
+	case 'createMulti':
+		if($userid>=0)
+		{
+			$valid=false;
+			$data = @simplexml_load_string(stripslashes($_POST['data']));
+			if($data)
+			{
+				foreach($data->annotation as $annotation)
+				{
+					$attrs = $annotation->attributes();
+					$desc=pg_escape_string($annotation->description);
+					list($goog['e'],$goog['n']) = 
+						reproject(pg_escape_string($attrs['x']),
+								  pg_escape_string($attrs['y']),
+								  $inProj,'900913');
+					pg_query 
+						("INSERT INTO annotations(text,xy,dir,userid,".
+						"authorised) VALUES ('$desc',".
+						"PointFromText('POINT($goog[e] $goog[n])',900913),".
+						"0,$userid,".($userid==0 ? 0:1).")");
+				}
+			}
+			else
+			{
+				header("HTTP/1.1 400 Bad Request");
+				echo "Unexpected format";
+			}
+		}
+		else
+			header("HTTP/1.1 401 Unauthorized");
+		break;
     case "delete":
         if($userid>0)
         {

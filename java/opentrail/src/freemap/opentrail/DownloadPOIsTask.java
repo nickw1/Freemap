@@ -24,6 +24,7 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 	{
 		super(ctx,receiver);
 		setShowProgressDialog(showDialog);
+		setShowDialogOnFinish(showDialog);
 		setDialogDetails("Downloading...","Downloading POIs...");
 		this.td=td;
 	}

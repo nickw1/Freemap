@@ -6,5 +6,5 @@
 	<classpathentry kind="lib" path="/home/nick/java/lib/freemaplib.jar"/>
 	<classpathentry kind="lib" path="/home/nick/java/lib/javaproj-1.0.6-noawt.jar"/>
 	<classpathentry kind="lib" path="/home/nick/java/lib/jcoord-1.0.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

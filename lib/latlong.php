@@ -66,22 +66,22 @@ print_r ( merc_to_ll (-80150.033371157, 6596892,2297583) );
 // Modifications:
 // Altered to take advantage of PHP associative arrays.
 
-function ll_to_gr ( $pos )
+function ll_to_gr ( $lon,$lat )
 {
-    $gridref = GPS_Math_LatLon_To_EN($pos['lat'],$pos['long'],N0,E0,PHI0,
+    $gridref = GPS_Math_LatLon_To_EN($lat,$lon,N0,E0,PHI0,
 										LAMBDA0,F0, A,B);
 
     return $gridref;
 }
 
-function wgs84_ll_to_gr ( $pos )
+function wgs84_ll_to_gr ( $lon,$lat )
 {
 	$outlat = 0;
 	$outlon = 0;
 	$ht = 0;
-	GPS_Math_WGS84_To_Known_Datum_M($pos['lat'],$pos['long'],30,
+	GPS_Math_WGS84_To_Known_Datum_M($lat,$lon,30,
 					$outlat,$outlon,$ht);
-	return ll_to_gr(array("lat"=>$outlat,"long"=>$outlon));
+	return ll_to_gr($outlon,$outlat);
 }
 
 /* @func  GPS_Math_LatLon_To_EN **********************************
@@ -185,24 +185,24 @@ function GPS_Math_LatLon_To_EN($phi, $lambda, $N0, $E0, $phi0,
 
 // Modifications:
 // Altered to take advantage of PHP associative arrays.
-function gr_to_ll($gridref)
+function gr_to_ll($e,$n)
 {
-    $point = GPS_Math_EN_To_LatLon($gridref['e'],$gridref['n'],
+    $point = GPS_Math_EN_To_LatLon($e,$n,
 									N0,E0,PHI0,LAMBDA0,F0,A,B);
     
     return $point;
 }
 
-function gr_to_wgs84_ll($gridref)
+function gr_to_wgs84_ll($e,$n)
 {
 	$outlat = 0;
 	$outlon = 0;
 	$ht = 0;
 	
-	$latlon = gr_to_ll($gridref);
-	GPS_Math_Known_Datum_To_WGS84_M ($latlon['lat'],$latlon['long'],0,
+	$latlon = gr_to_ll($e,$n);
+	GPS_Math_Known_Datum_To_WGS84_M ($latlon['lat'],$latlon['lon'],0,
 							$outlat,$outlon,$ht);
-	return array ("lat"=>$outlat,"long"=>$outlon);
+	return array ("lat"=>$outlat,"lon"=>$outlon);
 }
 
 /* @func  GPS_Math_EN_To_LatLon **************************************
@@ -310,13 +310,13 @@ function GPS_Math_EN_To_LatLon($E,  $N,
     $point['lat'] = $nphi - $VII*pow(($E-$E0),2.0) + $VIII*pow(($E-$E0),4.0) -
 	   $IX*pow(($E-$E0),6.0);
     
-    $point['long'] = $lambda0 + $X*($E-$E0) - $XI*pow(($E-$E0),3.0) +
+    $point['lon'] = $lambda0 + $X*($E-$E0) - $XI*pow(($E-$E0),3.0) +
 	      $XII*pow(($E-$E0),5.0) - $XIIA*pow(($E-$E0),7.0);
 
 	// Replaced these rad/deg conversions (originally done with a function)
 	// with simple multiplication
     $point['lat']   *= (180.0/M_PI); 
-    $point['long'] *= (180.0/M_PI); 
+    $point['lon'] *= (180.0/M_PI); 
 
     return $point;
 }

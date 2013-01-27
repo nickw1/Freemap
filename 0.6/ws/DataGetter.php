@@ -11,7 +11,7 @@ class DataGetter
         $this->data["features"] = array();
         $this->data["type"] = "FeatureCollection";
         $this->data["properties"]["copyright"] =
-            "Map data OpenStreetMap Contributors, CC-by-SA; ".
+            "Map data OpenStreetMap Contributors, Open Database Licence; ".
             "contours Ordnance Survey, OS OpenData licence";
         $this->kothic_gran = $kothic_gran;
         $this->poiFilter=array();
@@ -359,27 +359,76 @@ class BboxGetter extends DataGetter
         $this->geomtxt2 = $this->mkgeom2();
     }
 
-    function getData($options, $contourCache=null, $outProj=null)
+    function getData($options, $contourCache=null, $cache=null, $outProj=null)
     {
-        parent::doGetData($options);
-        
-        if(isset($options["coastline"]) && $options["coastline"])
-            $this->getCoastlineData();
-            
+
+		// Only cache if all was requested and we're in kothic mode 
+		$all = isset($options["coastline"]) && $options["coastline"]
+			&& isset($options["poi"]) && $options["poi"]=="all"
+			&& isset($options["way"]) && $options["way"]=="all"
+			&& $this->kothic_gran;
+
+		if($cache!==null && $all)
+		{
+			$result = $this->getCachedData($cache);
+			//$result=false;
+			if($result===false)
+			{
+				$this->getDataFromDB($options);
+				$this->cacheData($cache);	
+			}
+		}
+		else
+		{
+			$this->getDataFromDB($options);
+		}
+
         if(isset($options["contour"]) && $options["contour"])
             $this->getContourData($contourCache);
-
-        if( (isset($options["ann"]) && $options["ann"]) ||
-         (isset($options["annotation"]) && $options["annotation"]) ) 
-        {
-            $this->getAnnotationData();
-        }
 
         if($outProj!==null)
             $this->reprojectData($outProj);
 
         return $this->data;
     }
+
+	function getDataFromDB($options)
+	{
+        parent::doGetData($options);
+        
+        if(isset($options["coastline"]) && $options["coastline"])
+            $this->getCoastlineData();
+            
+
+        if( (isset($options["ann"]) && $options["ann"]) ||
+         (isset($options["annotation"]) && $options["annotation"]) ) 
+        {
+            $this->getAnnotationData();
+        }
+	}
+
+	function cacheData($cache)
+	{
+		file_put_contents($cache,json_encode($this->data["features"]));
+	}
+
+	function getCachedData($cache)
+	{
+        if($this->kothic_gran!==null && $cache!==null)
+        {
+            if(!file_exists($cache))
+            {
+				return false;
+            }
+            else
+            {
+                $txt=file_get_contents($cache);
+                $this->data["features"]=json_decode($txt,true);
+				return true;
+            }
+        }
+		return false;
+	}
 
     function getContourData($contourCache=null)
     {

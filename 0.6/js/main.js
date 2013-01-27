@@ -6,7 +6,7 @@ function Freemap(lat,lon,zoom)
 
     this.kothic=new L.TileLayer.Kothic(tileUrl,{minZoom:11,
             attribution: 'Map data &copy; 2012 OpenStreetMap contributors,'+
-                'CC-by-SA,'+
+                'Open Database Licence,'+
                 'contours &copy; Crown Copyright and database right '+
                 'Ordnance Survey 2011, Rendering by '+
                 '<a href="http://github.com/kothic/kothic-js">Kothic JS</a>'} );

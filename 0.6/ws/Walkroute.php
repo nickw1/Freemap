@@ -1,5 +1,7 @@
 <?php
 
+require_once('../../lib/gpx.php');
+
 class Walkroute
 {
     private $id, $points, $waypoints, $title, $description, $valid, $distance,
@@ -208,14 +210,34 @@ class Walkroute
 				"<cmt>$this->id</cmt></wpt>";
     }
 
-    public static function addWR($geojson,$userid)
+    public static function addWR($txtdata,$userid,$format="geojson")
     {
-        $data = json_decode($geojson,true);
-        $id=Walkroute::doAddRoute($data["features"][0],$userid);
-        for($i=1; $i<count($data["features"]); $i++)
-        {
-            Walkroute::addRouteWaypoint($id,$data["features"][$i]);
-        }
+        $data = $format=="gpx" ? parseGPX($txtdata):json_decode($txtdata,true);
+		$d = $format=="gpx" ? $data:$data["features"][0];
+        $id=Walkroute::doAddRoute ($d,$userid,$format);
+		switch($format)
+		{
+			case "geojson":
+        		for($i=1; $i<count($data["features"]); $i++)
+        		{
+					$f=$data["features"][$i];
+            		Walkroute::addRouteWaypoint
+										($id,$f["geometry"]["coordinates"][0],
+											$f["geometry"]["coordinates"][1],
+											$f["properties"]["id"],
+											$f["properties"]["description"]);
+        		}
+				break;
+
+			case "gpx":
+        		for($i=0; $i<count($data["wp"]); $i++)
+        		{
+					$f=$data["wp"][$i];
+            		Walkroute::addRouteWaypoint($id,$f["lon"],$f["lat"],
+											$i+1, $f["desc"]);
+        		}
+				break;
+		}
         return $id;
     }
 
@@ -266,8 +288,12 @@ class Walkroute
         return $routes;
     }
 
-    private static function doAddRoute(&$f,$userid)
+    private static function doAddRoute(&$f,$userid,$format="geojson")
     {
+	  $i=0;
+	  switch($format)
+	  {
+	   case "geojson":
         $f["properties"] = clean_input($f["properties"]);
         for($i=0; $i<count($f["geometry"]["coordinates"]); $i++)
         {    
@@ -277,7 +303,7 @@ class Walkroute
                 pg_escape_string($f["geometry"]["coordinates"][$i][1]);
         }
         $q=("INSERT INTO walkroutes(title,description,distance,the_geom,".
-                "startlon,startlat,userid) VALUES ('".
+                "startlon,startlat,userid,authorised) VALUES ('".
                 $f["properties"]["title"] . "','" .
                 $f["properties"]["description"] . "'," .
                 $f["properties"]["distance"] . "," .
@@ -285,23 +311,37 @@ class Walkroute
                 Walkroute::mkgeom($f["geometry"]["coordinates"]) .
                     "', 900913) , ".
                 $f["geometry"]["coordinates"][0][0] . ",".
-                $f["geometry"]["coordinates"][0][1] . ",$userid)" );
+                $f["geometry"]["coordinates"][0][1] . ",$userid,".
+			    ($userid>0 ? 1:0).")" );
         pg_query($q);
         $i= pg_insert_id('walkroutes');
-        return $i;
+		break;
+	   case "gpx":
+        $q=("INSERT INTO walkroutes(title,description,the_geom,".
+                "startlon,startlat,userid,authorised) VALUES ('".
+                $f["name"] . "','" .
+                $f["desc"] . "'," .
+                "GeomFromText('" . 
+                Walkroute::mkgeom($f["trk"],"lon","lat") .
+                    "', 900913) , ".
+                $f["trk"][0]["lon"] . ",".
+                $f["trk"][0]["lat"]. ",$userid,".
+			    ($userid>0 ? 1:0).")" );
+        pg_query($q);
+        $i= pg_insert_id('walkroutes');
+		break;
+	  }
+	  return $i;
     }
 
-    private static function addRouteWaypoint($rteid,&$f)
+    private static function addRouteWaypoint($rteid,$lon,$lat,$wpid,$wpdesc)
     {
-        $f["properties"] = clean_input($f["properties"]);
-        $sphmerc = ll_to_sphmerc($f["geometry"]["coordinates"][0],
-                                $f["geometry"]["coordinates"][1]);
+		$sphmerc = ll_to_sphmerc($lon,$lat);
         pg_query("INSERT INTO wr_waypoints(wrid,wpid,description,x,y) ".
-            "VALUES ($rteid," . $f["properties"]["id"] . ",'" .
-                $f["properties"]["description"] . "',$sphmerc[e],$sphmerc[n])");
+            "VALUES ($rteid,$wpid,'$wpdesc',$sphmerc[e],$sphmerc[n])");
     }
 
-    private static function mkgeom(&$coords)
+    private static function mkgeom(&$coords,$lonidx=0,$latidx=1)
     {
         $first=true;
         $txt = "LINESTRING(";
@@ -311,7 +351,7 @@ class Walkroute
                 $txt .= ",";
             else
                 $first=false;
-            $sphmerc = ll_to_sphmerc($c[0],$c[1]);
+            $sphmerc = ll_to_sphmerc($c[$lonidx],$c[$latidx]);
             $txt.="$sphmerc[e] $sphmerc[n]";
         }
         $txt .= ")";

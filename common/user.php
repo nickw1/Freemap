@@ -22,6 +22,8 @@ switch($cleaned["action"])
             if($row)
             {
                 $_SESSION["gatekeeper"] = $row["id"];
+				if($row['isadmin']==1)
+					$_SESSION['admin']=1;
                 $qs="";
                 foreach ($cleaned as $k=>$v)
                 {
@@ -42,7 +44,7 @@ switch($cleaned["action"])
             else
             {
                 pg_close($conn);
-                js_error('Invalid login',$cleaned['redirect']);
+                js_msg('Invalid login',$cleaned['redirect']);
             }
         }
 		else
@@ -282,7 +284,9 @@ switch($cleaned["action"])
 	case "logout":
 		session_start();
 		session_destroy();
-		header("Location: /index.php");
+		if(!isset($cleaned['redirect']))
+			$cleaned['redirect'] = '/index.php';
+		header("Location: $cleaned[redirect]");
 		break;
 
 	case "routes":
@@ -310,7 +314,8 @@ switch($cleaned["action"])
 				(round($row['length']/1000,2))." km ";
 			foreach($formats as $qsformat=>$txtformat)
 			{
-				echo "<a href='route.php?action=get&id=$row[id]&source=db".
+				echo "<a href='/freemap/route.php?action=route".
+					"&id=$row[id]&source=db".
 					"&format=$qsformat'>$txtformat</a> ";
 			}
 			echo "</li>\n";

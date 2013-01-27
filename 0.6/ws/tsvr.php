@@ -19,6 +19,7 @@ $cleaned = clean_input($_REQUEST);
 // DBDetails: poi way poly contour coast ann
 
 define('CONTOUR_CACHE','/var/www/images/contours');
+define('CACHE','/home/www-data/fmapcache');
 
 $x = $cleaned["x"];
 $y = $cleaned["y"];
@@ -40,6 +41,9 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     $kg=isset($cleaned["kg"]) ? $cleaned["kg"]: 1000;
     if(!file_exists(CONTOUR_CACHE."/$kg/$z/$x"))
         mkdir(CONTOUR_CACHE."/$kg/$z/$x",0755,true);
+    if(!file_exists(CACHE."/$kg/$z/$x"))
+        mkdir(CACHE."/$kg/$z/$x",0755,true);
+		
     $bg = new BboxGetter($bbox,$kg,$tbl_prefix);
 
     if($z<=7)
@@ -70,7 +74,8 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         unset($cleaned["contour"]);
     }
 
-    $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",$outProj);
+    $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
+						CACHE."/$kg/$z/$x/$y.json",$outProj);
     $data["granularity"] = $kg;
     $data["bbox"] = array($sw['lon'],$sw['lat'],$ne['lon'],$ne['lat']);
     echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
@@ -79,7 +84,7 @@ else
 {
     header("Content-type: application/json");
     $bg=new BboxGetter($bbox,null,$tbl_prefix);
-    $data=$bg->getData($cleaned,null,$outProj);
+    $data=$bg->getData($cleaned,null,null,$outProj);
     echo json_encode($data);
 }
 

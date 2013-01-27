@@ -7,7 +7,8 @@ $cleaned = clean_input($_REQUEST);
 
 $inProj =  isset($cleaned["inProj"]) ? $cleaned["inProj"]: "4326";
 $outProj =  isset($cleaned["outProj"]) ? $cleaned["outProj"]: "3857";
-$xy = reproject($cleaned["x"],$cleaned["y"],$inProj,"3857");
+if(isset($cleaned["x"]) && isset($cleaned["y"]))
+	$xy = reproject($cleaned["x"],$cleaned["y"],$inProj,"3857");
 $format = isset($cleaned["format"]) ? $cleaned["format"] : "geojson";
 $mimetypes = array ("geojson"=>"application/json",
                     "xml"=>"text/xml");
@@ -16,7 +17,7 @@ $conn=pg_connect("dbname=gis user=gis");
 switch($cleaned["action"])
 {
     case "findNearest":
-        header("Content-type: application/json");
+        //header("Content-type: application/json");
         $rightofway = RightOfWay::findClosest($xy[0],$xy[1],$cleaned["dist"]);
         if($rightofway!==null)
         {
@@ -59,6 +60,53 @@ switch($cleaned["action"])
             header("HTTP/1.1 400 Bad Request");
             echo "Required information missing or email in invalid format";
         }
+        break;
+
+    case "addMultiProblems":
+            $valid=false;
+            if(isset($cleaned["data"]) && $cleaned["data"]!="" &&
+                isset($cleaned["reporter_name"])&&$cleaned["reporter_name"]!=""
+                &&isset($cleaned["reporter_email"]) && 
+                filter_var($cleaned["reporter_email"],FILTER_VALIDATE_EMAIL))
+            {
+                $data = @simplexml_load_string(stripslashes($_POST["data"]));
+                if($data)
+                {
+                    foreach($data->annotation as $annotation)
+                    {
+                        $attrs = $annotation->attributes();
+						if(isset($attrs["x"]) && isset($attrs["y"]) &&
+								isset($annotation->description) &&
+								isset($annotation->extras) &&
+								isset($annotation->extras->row_id))
+						{
+                        	$desc=pg_escape_string($annotation->description);
+							$type=isset($annotation->type) ?
+								pg_escape_string($annotation->type):
+								"unknown";
+							$id=pg_escape_string($annotation->extras->row_id);
+                        	$rightofway=new RightOfWay($id);
+                        	if($rightofway->isValid())
+                        	{
+								// Note attributes need to be cast to float
+								// otherwise this will not work
+								$xy1 = reproject((float)$attrs["x"],
+										(float)$attrs["y"],
+									$inProj,"3857");
+                            	$rightofway->addProblem($desc, $type,
+                                	$cleaned["reporter_name"],
+                                	$cleaned["reporter_email"],
+									$xy1[0],$xy1[1]);
+							}
+                        }
+                    }
+                }
+            }
+            else
+            {
+                header("HTTP/1.1 400 Bad Request");
+                echo "Unexpected format";
+            }
         break;
 
     case "getProblems":

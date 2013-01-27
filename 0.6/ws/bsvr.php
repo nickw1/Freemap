@@ -47,7 +47,7 @@ list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'900913');
 $bbox = array($sw["e"],$sw["n"],$ne["e"],$ne["n"]);
 
 $bg=new BboxGetter($bbox);
-$data=$bg->getData($cleaned,null,$outProj=='900913'?null:$outProj);
+$data=$bg->getData($cleaned,null,null,$outProj=='900913'?null:$outProj);
 
 switch($cleaned["format"])
 {

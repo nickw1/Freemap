@@ -33,7 +33,7 @@ public class DownloadWalkroutesTask extends DataCallbackTask<Void,Void> {
 		try
 		{
 			
-				String url = "http://www.free-map.org.uk/0.6/ws/wr.php?action=getByRadius&format=gpx&radius=100&lat="
+				String url = "http://www.free-map.org.uk/0.6/ws/wr.php?action=getByRadius&format=gpx&radius=20&lat="
 					+ Shared.location.getLatitude()
 					+ "&lon="
 					+ Shared.location.getLongitude();
@@ -46,7 +46,7 @@ public class DownloadWalkroutesTask extends DataCallbackTask<Void,Void> {
 		} 
 		catch (org.xml.sax.SAXException e) 
 		{	
-			return "sacexxeption:" +e.getMessage();	
+			return "saxexception:" +e.getMessage();	
 		}
 		catch(java.io.IOException e)
 		{

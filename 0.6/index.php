@@ -19,11 +19,15 @@ $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
 <head>
 <title>FREEMAP</title>
 <link rel='stylesheet' type='text/css' href='css/style.css' />
-<script type='text/javascript' src='Leaflet/dist/leaflet.js'></script>
-<script type='text/javascript' src='kothic/dist/kothic.js'></script>
-<script type='text/javascript' src='kothic/dist/kothic-leaflet.js'></script>
+<script type='text/javascript' src='../javascript/Leaflet/dist/leaflet.js'>
+</script>
+<script type='text/javascript' src='../javascript/kothic/dist/kothic.js'>
+</script>
+<script type='text/javascript' 
+src='../javascript/kothic/dist/kothic-leaflet.js'></script>
 <script type='text/javascript' src='style.js'></script>
-<link rel='stylesheet' type='text/css' href='Leaflet/dist/leaflet.css' />
+<link rel='stylesheet' type='text/css' 
+href='../javascript/Leaflet/dist/leaflet.css' />
 <script type='text/javascript' src='js/lib/Util.js'></script>
 <script type='text/javascript' src='js/lib/Ajax.js'></script>
 <script type='text/javascript' src='js/lib/SearchWidget.js'></script>
@@ -128,6 +132,11 @@ function write_login()
         <p>
         <a href='user.php?action=signup'>Sign up</a>
         </p>
+		<!--
+		<p><em>Please note that logging in will place a cookie on your
+		machine to identify you to the server. Please only proceed if
+		you are happy with this.</em></p>
+		-->
         <?php
     }
     else

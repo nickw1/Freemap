@@ -1,9 +1,9 @@
 <?php
 
-
 require_once('/home/www-data/private/defines.php');
 require_once('/var/www/common/defines.php');
 require_once('latlong.php');
+require_once('/var/www/phpcoord/phpcoord.php');
 
 define ('HALF_EARTH', 20037508.34);
 define ('EARTH', 40075016.68);
@@ -400,6 +400,9 @@ function haversine_dist($lon1,$lat1,$lon2,$lat2)
 	return $R*$c;
 }
 
+// 29/12/12 Jeeps OSGB<->latlon seems to be inaccurate.
+// Replaced with Jonathan Stott's PHPCoord.
+
 function reproject($x,$y,$inProj,$outProj)
 {
 	// Project to wgs84 latlon
@@ -412,13 +415,18 @@ function reproject($x,$y,$inProj,$outProj)
 		case '900913':
 		case '3785':
 		case 'EPSG:3785':
+		case '3857':
+		case 'EPSG:3857':
 			$ll = sphmerc_to_ll($x,$y);
 			break;
 
 		case 'OSGB':
 		case '27700':
 		case 'EPSG:27700':
-			$ll = gr_to_wgs84_ll($x,$y);
+			//$ll = gr_to_wgs84_ll($x,$y);
+			$ref = new OSRef($x,$y);
+			$latlng = OSRefToLatLng($ref);
+			$ll = array("lon"=>$latlng->lng,"lat"=>$latlng->lat);
 			break;
 
 		default:
@@ -433,6 +441,8 @@ function reproject($x,$y,$inProj,$outProj)
 		case '900913':
 		case '3785':
 		case 'EPSG:3785':
+		case '3857':
+		case 'EPSG:3857':
 			$sm = ll_to_sphmerc($ll['lon'],$ll['lat']);
 			$x = $sm['e'];
 			$y = $sm['n'];
@@ -441,9 +451,15 @@ function reproject($x,$y,$inProj,$outProj)
 		case 'OSGB':
 		case '27700':
 		case 'EPSG:27700':
+			/*
 			$gr = wgs84_ll_to_gr($ll['lon'],$ll['lat']);
 			$x = $gr['e'];
 			$y = $gr['n'];
+			*/
+			$ll = new LatLng($ll['lat'],$ll['lon']);
+			$gr = LatLngToOSRef($ll);
+			$x = $gr->easting;
+			$y = $gr->northing;
 			break;
 
 		default:

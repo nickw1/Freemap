@@ -4,6 +4,9 @@
 // code, which in turn was based on the Python tile generation script 
 // generate_tiles.py from OSM.
 
+define ('HALF_EARTH', 20037508.34);
+define ('EARTH', 40075016.68);
+
 function minmax($a,$b,$c)
 {
 	$a = max($a,$b);
@@ -53,13 +56,4 @@ class GoogleProjection
 	}
 }
 
-/*
-$goog = new GoogleProjection(18);
-$xy=$goog->fromLLToPixel(-0.72,51.05,13);
-echo floor($xy['x'] / 256) . " " . floor($xy['y']/256). "<br />";
-$latlon = $goog->fromPixelToLL(4079*256,2740*256,13);
-$latlon2 = $goog->fromPixelToLL(4079*256,2741*256,13);
-print_r($latlon);
-print_r($latlon2);
-*/
 ?>

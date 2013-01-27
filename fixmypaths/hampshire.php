@@ -25,7 +25,7 @@ $bg=new BboxGetter($bbox,null,$dbd,3857);
 $bg->includePolygons(false);
 $bg->setCopyright("Hampshire County Council 2012, Ordnance Survey ".
             "OpenData Licence");
-$data=$bg->getData(array("way"=>"all"),null,$outProj);
+$data=$bg->getData(array("way"=>"all"),null,null,$outProj);
 echo json_encode($data);
 
 pg_close($conn);

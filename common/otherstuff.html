@@ -1,22 +1,20 @@
 <html>
 <head>
-<link rel='stylesheet' type='text/css' href='../freemap/css/freemap2.css' />
+<link rel='stylesheet' type='text/css' href='../0.6/css/style.css' />
 <title>Other stuff available on the Freemap server</title>
 </head>
 <body>
 <div id='content'>
 <h1>Other stuff...</h1>
-<p>The Freemap server hosts both 
-<a href='http://www.free-map.org.uk'>Freemap</a> and
-<a href='http://www.opentrailview.org'>OpenTrailView</a>. However there's
-also a range of extra software both hosted on, and available for download
-from, this site. 
-Much of it is for historical interest only, but some
-of it may be useful to you and it's all open source so needs to be offered
-for download somewhere :-)</p>
 <hr />
+<p>This page collects together various online and standalone
+software that I have developed over the years.
+Much of it is for historical interest only, but some of it may be useful to you
+and it's all open source so needs to be offered
+for download somewhere :-)</p>
 <h2>Online software</h2>
-<p>Source code for all online software 
+<p>Source code for all online software, and 
+<a href='#opentrail'>OpenTrail</a>
 is available via Subversion, under the
 address <em>svn://free-map.org.uk/svn/freemap</em>. Please email me on
 nick underscore whitelegg at yahoo dot co dot uk if you would like to 
@@ -27,15 +25,72 @@ browsed online <a href='http://www.free-map.org.uk/svn/'>here</a>.</p>
 A demo 3D OSM viewer using WebGL and NASA SRTM height data. Available
 <a href='http://www.free-map.org.uk/3d/'>here</a>.
 </p>
-<h2>Downloadable standalone software</h2>
-<p>A range of standalone software is available for download. As said above
-much of it is for historical interest only but you might find some of it
-interesting.</p>
+<h2>Downloadable software</h2>
+<h3 id='opentrail'>OpenTrail</h3>
+<p>OpenTrail is an in-the-field Android app for walkers, using Freemap maps.
+Currently it shows
+Freemap and out-of-copyright OS maps for navigation, and allows you to: 
+<ul>
+<li>Submit annotations to Freemap in the field;</li>
+<li>Download and search for selected nearby points of interest (pubs,
+restaurants, peaks, places);</li>
+<li>View existing annotations on the map and tap on them for more info.</li>
+</ul>
+A range of new features are planned, including integration with Freemap
+walking routes and the ability to display information about an annotation as
+you pass it in the field; this could include, for instance, displaying 
+directions that a previous user has contributed. It's available
+<a href='/downloads/android/opentrail.apk'>here</a>.</p>
+<h3 id='walknotes'>Walknotes</h3>
+<p>Android app for making Freemap annotations in the field. Make notes on
+the walk you're doing, e.g. a nice view or path blockage, and upload to the
+Freemap server while out on your walk. Currently requires in-the-field
+net access, GPS and the APK needs Android 2.1+, though the source can  
+probably be compiled for 1.x. Available
+<a href='/downloads/android/walknotes.apk'>here</a>; source code
+available <a href='/downloads/android/walknotes.tar.bz2'>here</a>.
+<strong>NOTE:</strong>This was an experimental "first Android app" to get
+used to Android development; Walknotes is now incorporated into
+OpenTrail, above</p>
 <h3>FreemapMobile</h3>
 <p>A JavaME client for Freemap, written mostly in summer 2008. 
 Available <a href='../downloads/FreemapMobile/FreemapMobile_r3fe.zip'>
 here</a>. Shows Freemap, OSM Mapnik, Osmarender, or out-of-copyright OS maps
-on your Java ME-enabled phone with GPS.</p>
+on your Java ME-enabled phone with GPS. Tested on the Nokia N95. 
+Superseded by OpenTrail, above</p>
+<h3>Footnav</h3>
+<p>A start on an OpenGL and Qt based 3D viewer 
+of OSM and SRTM data. Not taken further
+as my interest shifted to WebGL and Android, but source available
+<a href='/downloads/footnav/'>here</a> should you wish to develop it further.
+</p>
+<h3>ZXLIB</h3>
+<p>C++ library for developing ZX Spectrum-style 2D games on Linux and
+Windows systems. Comes with tutorial,
+documentation and simple examples. Based on SDL;
+developed in 2002 so not guaranteed to work with current SDL. Available
+<a href='/downloads/zxlib/'>here</a>.</p>
+<h3>Old versions of Freemap</h3>
+<p>The source code for various old versions of Freemap is available
+<a href='/downloads/freemap'>here</a>.</p>
+<h3>Other things</h3>
+<p>A range of other software can be downloaded here; browse the
+<a href='/downloads'>downloads directory</a>. Just about all of it is for 
+historical interest only but is open source so here goes.
+	<ul>
+	<li>Mapmaker: a Qt application for hand-drawing maps to illustrate
+	walks. Fairly obviously deprecated by Freemap and OSM. </li>
+	<li>Convict: a demo of how to create a platform game with ZXLIB.</li>
+	<li>fmapedit: how I used to process GPX traces back in the days when
+	OSM barely existed and Freemap was a completely separate project. 
+	And t'shoebox was considered luxury ;-)</li>
+	<li>Some early Java experiments from way back in the late 90s, including
+	a sprite designer and version of Pacman.</li>
+	</ul>
+Sadly my first ever PC program, an ASCII version of Pacman developed with
+Turbo-C++ (remember that?), in which you were a smiley face and the ghosts
+were Greek letters, appears to be lost forever ;-)
+</p>
 </div>
 </body>
 </html>

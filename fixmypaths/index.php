@@ -29,30 +29,39 @@ position: fixed; height:100%; text-align: center }
 #appmsg a { color: blue; }
 #sidebar a#permalink { font-weight: bold; color: blue; }
 </style>
-<script type='text/javascript' src='freemap/Leaflet/dist/leaflet.js'></script>
-<script type='text/javascript' src='freemap/kothic/dist/kothic.js'></script>
 <script type='text/javascript' 
-src='freemap/kothic/dist/kothic-leaflet.js'></script>
+src='http://www.free-map.org.uk/javascript/Leaflet/dist/leaflet.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/javascript/kothic/dist/kothic.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/javascript/kothic/dist/kothic-leaflet.js'>
+</script>
 <script type='text/javascript' src='hampshire.js'></script>
 <link rel='stylesheet' type='text/css' 
-href='freemap/Leaflet/dist/leaflet.css' />
-<script type='text/javascript' src='freemap/js/lib/Ajax.js'></script>
-<script type='text/javascript' src='freemap/js/lib/Util.js'></script>
-<script type='text/javascript' src='freemap/js/lib/Dialog.js'></script>
-<script type='text/javascript' src='freemap/js/lib/SearchWidget.js'></script>
+href='http://www.free-map.org.uk/javascript/Leaflet/dist/leaflet.css' />
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/0.6/js/lib/Ajax.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/0.6/js/lib/Util.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/0.6/js/lib/Dialog.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/0.6/js/lib/SearchWidget.js'></script>
 <script type='text/javascript'>
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;
 var zoom=<?php echo $zoom;?>;
 </script>
-<script type='text/javascript' src='rootjs/proj4js/lib/proj4js-combined.js'>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
 </script>
 
 <script type='text/javascript' src='main.js'> </script>
 
 
 <link rel='alternate' type='application/rss+xml'
-title='The Freemap blog, revisited' href='http://www.free-map.org.uk/wordpress/'
+title='The Freemap blog, revisited' 
+href='http://www.free-map.org.uk/wordpress/'
 />
 
 </head>
@@ -69,7 +78,7 @@ Click on a right of way to report a problem (<em>real</em> problems
 only!).</p>
 <p><strong>Disclaimer:</strong> An independent project, 
 not officially affiliated with Hampshire County Council.</p>
-<p>Green=footpath; brown=bridleway; red=byway; purple=restricted byway.</p>
+<p>Purple=footpath; green=bridleway; brown=byway; blue=restricted byway.</p>
 </div>
 <div id='appmsg'><strong>WANTED!</strong> Testers for the
 <a href='app.html'>FixMyPaths Android App</a>!</div>

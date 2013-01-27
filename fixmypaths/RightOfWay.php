@@ -1,4 +1,6 @@
 <?php
+//define('HANTS_EMAIL','countryside@hants.gov.uk');
+define('HANTS_EMAIL','nick_whitelegg@yahoo.co.uk');
 
 class RightOfWay
 {
@@ -74,7 +76,7 @@ class RightOfWay
 					"\nROW type: ".$this->the_data["properties"]["row_type"].
 					"\n\nCategory: $category\n\nProblem: $problem\n\n".
 				"Reported By: $name (email $email)";
-			mail("countryside@hants.gov.uk",
+			mail(HANTS_EMAIL, 
 				"Right Of Way problem reported via OpenHants",$msg);
         }
     }
