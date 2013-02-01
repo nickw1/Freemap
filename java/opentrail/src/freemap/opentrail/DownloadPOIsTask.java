@@ -1,16 +1,12 @@
 package freemap.opentrail;
 
 import freemap.data.Point;
-import freemap.data.Walkroute;
 import freemap.datasource.FreemapDataset;
-
 import android.content.Context;
-import android.app.ProgressDialog;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import freemap.datasource.TileDeliverer;
-
-import android.os.AsyncTask;
 import android.util.Log;
-
 import freemap.andromaps.DataCallbackTask;
 
 public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
@@ -19,14 +15,17 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 	
 	
 	TileDeliverer td;
+	boolean forceWebDownload;
 	
-	public DownloadPOIsTask(Context ctx, TileDeliverer td, DataReceiver receiver, boolean showDialog)
+	public DownloadPOIsTask(Context ctx, TileDeliverer td, DataReceiver receiver, boolean showDialog,
+								boolean forceWebDownload)
 	{
 		super(ctx,receiver);
 		setShowProgressDialog(showDialog);
 		setShowDialogOnFinish(showDialog);
 		setDialogDetails("Downloading...","Downloading POIs...");
 		this.td=td;
+		this.forceWebDownload=forceWebDownload;
 	}
 	
 
@@ -36,10 +35,11 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		
 		try
 		{
-			
-			Log.d("OpenTrail","doing task");
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
+			;
 			Point p = new Point(Shared.location.getLongitude(),Shared.location.getLatitude());
-			td.update(p, true);
+			
+			td.update(p, true, forceWebDownload);
 			//td.updateSurroundingTiles(p,true);
 			setData((FreemapDataset)td.getAllData());
 			Log.d("OpenTrail","done");

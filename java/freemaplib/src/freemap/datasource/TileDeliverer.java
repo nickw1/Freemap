@@ -43,6 +43,11 @@ public class TileDeliverer {
 	
 	public TiledData update(Point lonLat, boolean cacheData) throws Exception
 	{
+		return update(lonLat,cacheData,false);
+	}
+	
+	public TiledData update(Point lonLat, boolean cacheData, boolean forceReload) throws Exception
+	{
 		Point newPos = proj.project(lonLat);
 		TiledData curData=null;
 		if(curPos==null || isNewObject(curPos,newPos))
@@ -50,7 +55,7 @@ public class TileDeliverer {
 			curPos = newPos;
 			Point origin = getOrigin(newPos);
 			//System.out.println("update calling doUpdate");
-			curData = doUpdate(origin,cacheData);
+			curData = doUpdate(origin,cacheData,forceReload);
 			//System.out.println("done");
 		}
 		else
@@ -67,6 +72,11 @@ public class TileDeliverer {
 	
 	public TiledData updateSurroundingTiles(Point lonLat, boolean cacheData) throws Exception
 	{
+		return updateSurroundingTiles(lonLat,cacheData,false);
+	}
+	
+	public TiledData updateSurroundingTiles(Point lonLat, boolean cacheData, boolean forceReload) throws Exception
+	{
 		Point newPos = proj.project(lonLat);
 		TiledData curData=null, thisData;
 		Point curOrigin = new Point();
@@ -81,7 +91,7 @@ public class TileDeliverer {
 				{
 					curOrigin.x = origin.x+col*tileWidth;
 					curOrigin.y = origin.y+row*tileHeight;
-					thisData = doUpdate(curOrigin,cacheData);
+					thisData = doUpdate(curOrigin,cacheData,forceReload);
 					if(row==0 && col==0)
 						curData=thisData;
 				}
@@ -117,7 +127,8 @@ public class TileDeliverer {
 		return cachedir+"/"+name+"."+key;
 	}
 	
-	protected TiledData doUpdate(Point origin, boolean cacheData) throws Exception
+	
+	protected TiledData doUpdate(Point origin, boolean cacheData, boolean forceReload) throws Exception
 	{
 		TiledData curData=null;
 		String key = "" + ((int)origin.x)+"."+((int)origin.y);
@@ -126,7 +137,7 @@ public class TileDeliverer {
 		{
 			String cachefile=cachedir+"/"+name+"."+key;
 			//System.out.println("cachefile="+cachefile);
-			if(cachedir!=null && isCache(cachefile))
+			if(cachedir!=null && isCache(cachefile) && !forceReload)
 			{
 				curData = loadFromCache(cachefile,origin);
 			}
@@ -134,18 +145,15 @@ public class TileDeliverer {
 			{
 				System.out.println("Loading from web");
 				curData = dataWrap(origin,dataSource.getData(origin,interpreter));
-		
 				// It is assumed the data is in standard 4326 and we 
 				// reproject on the client side. This is because it's a bit of
 				// a pain to reproject into arbitrary projections server side
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
 				//System.out.println("Reprojecting");
 				curData.reproject(proj);
-		
 				if(cacheData)
-					cache(curData,cachefile);		
+					cache(curData,cachefile);
 			}
-			
 			
 			//System.out.println("Adding to data with the key: " + key);
 			data.put(key,curData);
@@ -157,6 +165,8 @@ public class TileDeliverer {
 		//System.out.println("Returning curData");
 		return curData;
 	}
+	
+	
 	
 	public void cache() throws Exception
 	{
@@ -257,7 +267,7 @@ public class TileDeliverer {
 			curPoint.y = blProjected.y;
 			while((int)curPoint.y <= (int)trProjected.y)
 			{
-				doUpdate(curPoint,true);
+				doUpdate(curPoint,true,false);
 				curPoint.y += tileHeight;
 			}
 			curPoint.x += tileWidth;

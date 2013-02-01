@@ -116,9 +116,10 @@ public class OpenTrail extends MapActivity implements
 	long lastWRUpdateTime = 0;
 	int readZoom = -1;
 	
-	boolean mapSetup=false;
+	boolean mapSetup=false,waitingForNewPOIData=false;
 	
 	WalkrouteCacheManager wrCacheMgr;
+	
 	
 	GeoPoint initPos;
 	
@@ -186,6 +187,7 @@ public class OpenTrail extends MapActivity implements
        			mapFile = savedInstanceState.getString("mapFile");
        			walkrouteIdx = savedInstanceState.getInt("walkrouteIdx");
        			recordingWalkroute = savedInstanceState.getBoolean("recordingWalkroute");
+       			waitingForNewPOIData = savedInstanceState.getBoolean("waitingForNewPOIData");
        			loadAnnotationOverlay();
        			Log.d("OpenTrail","Restoring zoom:" + savedInstanceState.getInt("zoom"));
        			
@@ -197,7 +199,8 @@ public class OpenTrail extends MapActivity implements
         							prefs.getFloat("lon", -0.72f));
         		mapFile = prefs.getString("mapFile",null);
         		readZoom = prefs.getInt("zoom", -1);
-        		recordingWalkroute = prefs.getBoolean("recordingWalkroute", false);        		
+        		recordingWalkroute = prefs.getBoolean("recordingWalkroute", false);    
+        		waitingForNewPOIData = prefs.getBoolean("waitingForNewPOIData", false);
         		Log.d("OpenTrail","Restoring zoom:" + readZoom);
         		if(readZoom>=0)
         			mapView.getController().setZoom(readZoom);		
@@ -314,7 +317,10 @@ public class OpenTrail extends MapActivity implements
      	mapView.invalidate();
     	dataDisplayer.requestRedraw();
     	
-
+    	/* service
+    	 Intent startServiceIntent = new Intent(this,GPSService.class);
+    	 startService(startServiceIntent);
+    	 */
     
     	
     }
@@ -325,6 +331,11 @@ public class OpenTrail extends MapActivity implements
     	Log.d("OpenTrail","***onStop()***");
     	
     	//Shared.location=null;
+    	
+    	/* service
+    	Intent stopIfNotLoggingBroadcast = new Intent("freemap.opentrail.stopifnotlogging");
+    	sendBroadcast(stopIfNotLoggingBroadcast);
+    	*/
     }
     
     public void onDestroy()
@@ -360,6 +371,7 @@ public class OpenTrail extends MapActivity implements
     	editor.putFloat("lon",(float)mapView.getMapPosition().getMapCenter().getLongitude());
     	editor.putInt("zoom", mapView.getMapPosition().getZoomLevel());
     	editor.putBoolean("recordingWalkroute", recordingWalkroute);
+    	editor.putBoolean("waitingForNewPOIData",waitingForNewPOIData);
     	editor.putString("mapFile",mapFile);
     	editor.commit();
     	mapView=null;
@@ -538,6 +550,7 @@ public class OpenTrail extends MapActivity implements
     
     public boolean onOptionsItemSelected(MenuItem item)
     {
+    	
     	boolean retcode=true;
     	if(item.getItemId()==R.id.aboutMenuItem)
     	{
@@ -590,7 +603,9 @@ public class OpenTrail extends MapActivity implements
     				break;
     		
     			case R.id.poisMenuItem:
-    				startPOIDownload(true);
+    				SharedPreferences sprefs = PreferenceManager.getDefaultSharedPreferences
+    					(getApplicationContext());
+    				startPOIDownload(true,sprefs.getBoolean("prefForcePOIDownload",false));
     				break;
     			
     			case R.id.findPoisMenuItem:
@@ -628,6 +643,10 @@ public class OpenTrail extends MapActivity implements
     					dataDisplayer.clearWalkroute();
     					mapView.invalidate();
     					recordedWalkroute.setId(--recordingWalkrouteId);
+    					/* service
+    			    	Intent startLoggingBroadcast = new Intent("freemap.opentrail.startlogging");
+    			    	sendBroadcast(startLoggingBroadcast);
+    			    	*/
     				}
     				else
     				{
@@ -641,6 +660,10 @@ public class OpenTrail extends MapActivity implements
     					{
     						DialogUtils.showDialog(this,"Unable to save walk route: " + e.getMessage());
     					}
+    					/* service
+    			    	Intent stopLoggingBroadcast = new Intent("freemap.opentrail.stoplogging");
+    			    	sendBroadcast(stopLoggingBroadcast);
+    			    	*/
     				}
     				break;
     			
@@ -777,6 +800,8 @@ public class OpenTrail extends MapActivity implements
     					if(!wrCacheMgr.deleteRecordingWalkroute())
     						DialogUtils.showDialog(this, "Unable to delete tmp file");
     					recordedWalkroute.clear();
+    					dataDisplayer.clearWalkroute();
+    					mapView.invalidate();
     				}
     				catch(IOException e)
     				{
@@ -802,13 +827,13 @@ public class OpenTrail extends MapActivity implements
     	}
     }
     
-    private void startPOIDownload(boolean showDialog)
+    private void startPOIDownload(boolean showDialog, boolean forceWebDownload)
     {
     	if(Shared.location!=null)
     	{
     		if(dataTask==null || dataTask.getStatus()!=AsyncTask.Status.RUNNING)
     		{
-            	dataTask = new DownloadPOIsTask(this, poiDeliverer, this, showDialog);
+            	dataTask = new DownloadPOIsTask(this, poiDeliverer, this, showDialog, forceWebDownload);
             	((DownloadPOIsTask)dataTask).execute();
     		}
     		else
@@ -826,7 +851,8 @@ public class OpenTrail extends MapActivity implements
     
     public void loadAnnotationOverlay()
     {
-    	Shared.pois.operateOnAnnotations(dataDisplayer);
+    	if(dataDisplayer!=null)
+    		Shared.pois.operateOnAnnotations(dataDisplayer);
     }
     
     public Object onRetainNonConfigurationInstance()
@@ -883,6 +909,14 @@ public class OpenTrail extends MapActivity implements
 				dataDisplayer.showWalkroute(recordedWalkroute);
 				mapView.invalidate();
 				lastWRUpdateTime = timestamp;
+				try
+		    	{
+		    		wrCacheMgr.addRecordingWalkroute(recordedWalkroute);	
+		    	}
+		    	catch(IOException e)
+		    	{
+		    		DialogUtils.showDialog(this,"Could not backup recording walk route: " + e.getMessage());
+		    	}
 			}
 		}
 			
@@ -917,13 +951,16 @@ public class OpenTrail extends MapActivity implements
     	if(prefAutoDownload && poiDeliverer.needNewData(pt))
     	{
     		if(poiDeliverer.isCache(pt))
-    		{
     			Toast.makeText(this, "Loading data from cache", Toast.LENGTH_SHORT).show();
-    			startPOIDownload(false);
-    		}
-    		else
+    		else 
+    			Toast.makeText(this, "Loading data from web", Toast.LENGTH_SHORT).show();
+    		startPOIDownload(false, false);
+    		/*
+    		else if (!waitingForNewPOIData)
     		{
+    			waitingForNewPOIData = true;
     			new AlertDialog.Builder(this).setMessage("In new area. Download new data?").
+    				setCancelable(true).setNegativeButton("Cancel",null).
     				setPositiveButton("OK", new DialogInterface.OnClickListener()
     					{	
     						public void onClick(DialogInterface i, int which)
@@ -933,6 +970,7 @@ public class OpenTrail extends MapActivity implements
     					}
     				).show();
     		}
+    		*/
     	}
     	
     	alertDisplayMgr.update(pt);
@@ -947,6 +985,7 @@ public class OpenTrail extends MapActivity implements
     public void receivePOIs(FreemapDataset ds)
     {
     	Shared.pois = ds;
+    	waitingForNewPOIData=false;
     	//Log.d("OpenTrail","Received POIs:" + ds);
     	alertDisplayMgr.setPOIs(Shared.pois);
     	loadAnnotationOverlay();
@@ -1060,22 +1099,34 @@ public class OpenTrail extends MapActivity implements
     
     private void doUploadRecordedWalkroute(Walkroute walkroute)
     {
+    	final Walkroute wr=walkroute;
     	if(walkroute!=null)
     	{
-    		String gpx = walkroute.toXML();
-    		ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
-    		postData.add(new BasicNameValuePair("action","add"));
-    		postData.add(new BasicNameValuePair("route", gpx));
-    		postData.add(new BasicNameValuePair("format", "gpx"));
-    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-    		String username = prefs.getString("prefUsername",""), password = prefs.getString("prefPassword", "");
     		
-    		dfTask = new HTTPUploadTask(this,"http://www.free-map.org.uk/0.6/ws/wr.php", postData, 
-    													"Upload walk route?", this, 3);
-    		if(!(username.equals("")) && !(password.equals("")))
-    			((HTTPUploadTask)dfTask).setLoginDetails(username, password);
-    		dfTask.setDialogDetails("Uploading...", "Uploading walk route...");
-    		dfTask.confirmAndExecute();
+    		new AlertDialog.Builder(this).setPositiveButton("OK", 
+    					new DialogInterface.OnClickListener()
+    					{
+    						public void onClick(DialogInterface i, int which)
+    						{
+    							String gpx = wr.toXML();
+    				    		ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
+    				    		postData.add(new BasicNameValuePair("action","add"));
+    				    		postData.add(new BasicNameValuePair("route", gpx));
+    				    		postData.add(new BasicNameValuePair("format", "gpx"));
+    				    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    				    		String username = prefs.getString("prefUsername",""), password = prefs.getString("prefPassword", "");
+    							dfTask = new HTTPUploadTask(OpenTrail.this,"http://www.free-map.org.uk/0.6/ws/wr.php", postData, 
+										"Upload walk route?", OpenTrail.this, 3);
+    							if(!(username.equals("")) && !(password.equals("")))
+    								((HTTPUploadTask)dfTask).setLoginDetails(username, password);
+    							dfTask.setDialogDetails("Uploading...", "Uploading walk route...");
+    							dfTask.confirmAndExecute();
+    						}
+    					} ).setCancelable(true).
+    					setMessage("No simplification on track done yet, "+
+    							"tracks typically 1 kilobyte/minute. Still upload?").
+    					setNegativeButton("Cancel",null).show();
+    		
     	}
     }
     
@@ -1131,6 +1182,7 @@ public class OpenTrail extends MapActivity implements
     	state.putString("mapFile",mapFile);
     	state.putInt("walkrouteIdx", walkrouteIdx);
     	state.putBoolean("recordingWalkroute", recordingWalkroute);
+    	state.putBoolean("waitingForNewPOIData",waitingForNewPOIData);
      	state.putInt("recordingWalkrouteId", recordingWalkrouteId);
      	Log.d("OpenTrail","Saving zoom: " + mapView.getMapPosition().getZoomLevel());
     }
