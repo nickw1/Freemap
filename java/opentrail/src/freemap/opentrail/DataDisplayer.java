@@ -24,9 +24,11 @@ import freemap.data.TrackPoint;
 import freemap.data.Walkroute;
 import freemap.data.Projection;
 
+import freemap.andromaps.MapLocationProcessor;
 
 public class DataDisplayer extends freemap.andromaps.LocationDisplayer implements 
-	freemap.datasource.FreemapDataset.AnnotationVisitor
+	freemap.datasource.FreemapDataset.AnnotationVisitor,
+	MapLocationProcessor.LocationDisplayer
 {
 	
 	

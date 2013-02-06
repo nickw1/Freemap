@@ -34,7 +34,8 @@ public class DownloadWalkrouteTask extends DataCallbackTask<Integer,Void> {
 		setDialogDetails("Downloading...","Downloading walk route...");
 	}
 	
-	public String doInBackground(Integer... idx)
+	// two parameters, one the ID then other the index in the walkroutes arraylist
+	public String doInBackground(Integer... input)
 	{
 		
 		
@@ -42,17 +43,17 @@ public class DownloadWalkrouteTask extends DataCallbackTask<Integer,Void> {
 		{
 			WebXMLSource source = new WebXMLSource(
 					"http://www.free-map.org.uk/0.6/ws/wr.php?action=get&id="
-							+ Shared.walkroutes.get(idx[0]).getId()
+							+ input[0] // Shared.walkroutes.get(idx[0]).getId()
 							+ "&format=gpx", new WalkrouteHandler());
 			Log.d("OpenTrail","URL="+"http://www.free-map.org.uk/0.6/ws/wr.php?action=get&id="
-							+ Shared.walkroutes.get(idx[0]).getId()
+							+ input[0] // Shared.walkroutes.get(idx[0]).getId()
 							+ "&format=gpx");
 			Log.d("OpenTrail","hello1");
 			Walkroute wr = (Walkroute)source.getData();
 			Log.d("OpenTrail","hello2");
 			Log.d("OpenTrail","Sent back: data");
 			setData(wr);
-			returnedIdx = idx[0];
+			returnedIdx = input[1];
 			
 			
 			

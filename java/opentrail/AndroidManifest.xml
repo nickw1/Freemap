@@ -43,6 +43,6 @@
 		<activity android:name=".WalkrouteDetailsActivity"
 				android:label="Enter walk route details">
 		</activity>
-		<service android:name="GPSService" />
+		<service android:name="GPSService"></service>
     </application>
 </manifest>

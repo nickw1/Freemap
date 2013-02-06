@@ -1,17 +1,19 @@
 package freemap.andromaps;
 
 
+
+
 import org.mapsforge.core.GeoPoint;
 
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.location.LocationProvider;
+
+import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.graphics.drawable.Drawable;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
+import android.location.LocationProvider;
+import android.content.Intent;
 
 
 
@@ -19,9 +21,9 @@ import android.widget.Toast;
 // manage "waiting for GPS" dialogs and forward the location on to a LocationReceiver which can do 
 // application-specific processing.
 
-public class MapLocationProcessor implements LocationListener
+public class MapLocationProcessor 
 {
-	LocationManager mgr;
+	
 	LocationDisplayer displayer;
 	Drawable icon;
 	//ProgressDialog gpsWaitingDialog;
@@ -40,28 +42,31 @@ public class MapLocationProcessor implements LocationListener
 	
 	public interface LocationReceiver
 	{
-		public void receiveLocation(Location location);
+		public void receiveLocation(double lon, double lat, boolean refresh);
 		public void noGPS();
 	}
 	
 	LocationReceiver receiver;
 	boolean isUpdating;
 	
-	public MapLocationProcessor(LocationReceiver processor,Context ctx,LocationDisplayer displayer)
+	public MapLocationProcessor(LocationReceiver processor,Context ctx,
+			LocationDisplayer displayer)
 	{
-		mgr = (LocationManager)ctx.getSystemService(Context.LOCATION_SERVICE);
+		
 		this.displayer = displayer;
 		this.receiver = processor;
 		this.ctx=ctx;
 	}
 	
-	public void startUpdates(long time, float distance)
+	
+	
+	public void startUpdates()
 	{
 		if(!isUpdating)
 		{
 			isUpdating=true;
 			Log.d("OpenTrail","MapLocationProcessor.startUpdates()");
-			mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER,time,distance,this);
+			
 			if(displayer.isLocationMarker())
 			{
 				displayer.showLocationMarker();
@@ -72,7 +77,7 @@ public class MapLocationProcessor implements LocationListener
 	public void stopUpdates()
 	{
 		Log.d("OpenTrail","MapLocationProcessor.stopUpdates()");
-		mgr.removeUpdates(this);
+		
 		if(displayer.isLocationMarker())
 		{
 			displayer.hideLocationMarker();
@@ -81,9 +86,15 @@ public class MapLocationProcessor implements LocationListener
 		cancelGPSWaiting();
 	}
 	
-	public void onLocationChanged(Location loc)
+	public void onLocationChanged(double lon, double lat)
 	{
-		GeoPoint p = new GeoPoint(loc.getLatitude(),loc.getLongitude());
+		onLocationChanged(lon,lat,false);
+	}
+	
+	public void onLocationChanged(double lon, double lat, boolean refresh)
+	{
+		Log.d("OpenTrail", "broadcastreceiver: location=" + lon+","+lat);
+		GeoPoint p = new GeoPoint(lat,lon);
 		
 		if(!displayer.isLocationMarker())
 			displayer.addLocationMarker(p);
@@ -91,7 +102,7 @@ public class MapLocationProcessor implements LocationListener
 			displayer.moveLocationMarker(p);
 		
 		cancelGPSWaiting();
-		receiver.receiveLocation(loc);	
+		receiver.receiveLocation(lon,lat,refresh);	
 	}
 	
 	public void onProviderEnabled(String provider)

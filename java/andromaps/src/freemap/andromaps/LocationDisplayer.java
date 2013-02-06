@@ -17,7 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.content.Context;
 
 
-public class LocationDisplayer implements MapLocationProcessor.LocationDisplayer {
+public class LocationDisplayer implements MapLocationProcessorWithListener.LocationDisplayer {
 	protected MapView mapView;
 	protected ArrayItemizedOverlay overlay;
 	protected Context ctx;

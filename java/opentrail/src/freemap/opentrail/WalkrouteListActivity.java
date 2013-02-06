@@ -12,14 +12,17 @@ public class WalkrouteListActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		String[] titles = new String[Shared.walkroutes.size()], descriptions=new String[Shared.walkroutes.size()];
-		for(int i=0; i<Shared.walkroutes.size(); i++)
+		if(Shared.walkroutes!=null)
 		{
-			titles[i]=Shared.walkroutes.get(i).getTitle();
-			descriptions[i]=truncate(Shared.walkroutes.get(i).getDescription());
+			String[] titles = new String[Shared.walkroutes.size()], descriptions=new String[Shared.walkroutes.size()];
+			for(int i=0; i<Shared.walkroutes.size(); i++)
+			{
+				titles[i]=Shared.walkroutes.get(i).getTitle();
+				descriptions[i]=truncate(Shared.walkroutes.get(i).getDescription());
+			}
+			ArrayAdapter<String> adapter = new AnnotatedListAdapter (this,android.R.layout.simple_list_item_1,titles,descriptions);
+			setListAdapter(adapter);
 		}
-		ArrayAdapter<String> adapter = new AnnotatedListAdapter (this,android.R.layout.simple_list_item_1,titles,descriptions);
-		setListAdapter(adapter);
 	}
 	
 	public void onListItemClick(ListView lv, View v, int selectedRoute, long id)
@@ -36,4 +39,6 @@ public class WalkrouteListActivity extends ListActivity {
 	{	
 		return s.length()>=80 ? s.substring(0,79)+"...": s;
 	}
+	
+	
 }

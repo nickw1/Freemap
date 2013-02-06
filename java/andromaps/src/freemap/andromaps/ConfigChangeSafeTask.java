@@ -28,7 +28,8 @@ public abstract class ConfigChangeSafeTask<Params,Progress> extends AsyncTask<Pa
 	
 	public void disconnect()
 	{
-		dlg.dismiss();
+		if(dlg!=null)
+			dlg.dismiss();
 		dlg=null;
 		ctx=null;
 	}

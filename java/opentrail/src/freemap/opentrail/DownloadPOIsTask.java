@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import freemap.datasource.TileDeliverer;
 import android.util.Log;
 import freemap.andromaps.DataCallbackTask;
+import org.mapsforge.core.GeoPoint;
 
 public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 
@@ -16,9 +17,10 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 	
 	TileDeliverer td;
 	boolean forceWebDownload;
+	GeoPoint location;
 	
 	public DownloadPOIsTask(Context ctx, TileDeliverer td, DataReceiver receiver, boolean showDialog,
-								boolean forceWebDownload)
+								boolean forceWebDownload, GeoPoint location)
 	{
 		super(ctx,receiver);
 		setShowProgressDialog(showDialog);
@@ -26,18 +28,18 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		setDialogDetails("Downloading...","Downloading POIs...");
 		this.td=td;
 		this.forceWebDownload=forceWebDownload;
+		this.location=location;
 	}
 	
 
 	public String doInBackground(Void... unused)
 	{
-		if(Shared.location==null) return "Location unknown";
+		
 		
 		try
 		{
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
-			;
-			Point p = new Point(Shared.location.getLongitude(),Shared.location.getLatitude());
+			Point p = new Point(location.getLongitude(),location.getLatitude());
 			
 			td.update(p, true, forceWebDownload);
 			//td.updateSurroundingTiles(p,true);

@@ -21,7 +21,6 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.app.AlertDialog;
-import android.location.Location;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -38,6 +37,7 @@ import org.mapsforge.android.maps.MapView;
 
 import freemap.andromaps.DialogUtils;
 import freemap.andromaps.MapLocationProcessor;
+import freemap.andromaps.MapLocationProcessorWithListener;
 import freemap.andromaps.LocationDisplayer;
 import freemap.andromaps.DownloadFilesTask;
 import freemap.andromaps.DownloadBinaryFilesTask;
@@ -66,14 +66,14 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
 	
 
 	MapView view;
-	MapLocationProcessor locationProcessor;
+	MapLocationProcessorWithListener locationProcessor;
 	DataDisplayer locationDisplayer;
 	HTTPCommunicationTask dfTask;
 	FindROWTask frTask;
 	DownloadProblemsTask dpTask;
 	String sdcard, styleFilename, mapFilename;
 	File mapFile, styleFile;
-	Location location;
+	GeoPoint location;
 	Problem currentProblem;
 	double problemLat, problemLon;
 	FreemapDataset problems;
@@ -288,7 +288,7 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     {
         	locationDisplayer = new DataDisplayer(this,view,getResources().getDrawable(R.drawable.person),
         							getResources().getDrawable(R.drawable.annotation));
-        	locationProcessor = new MapLocationProcessor(this,this,locationDisplayer);
+        	locationProcessor = new MapLocationProcessorWithListener(this,this,locationDisplayer);
         	locationProcessor.startUpdates(5000, 5);
     }
     
@@ -491,10 +491,10 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     	}
     }
     
-    public void receiveLocation(Location loc)
+    public void receiveLocation(double lon, double lat, boolean refresh)
     {
-    	location = loc;
-    	view.setCenter(new GeoPoint(loc.getLatitude(),loc.getLongitude()));
+    	location = new GeoPoint(lat,lon);
+    	view.setCenter(location);
     }
     
     public void receiveROW(HashMap<String,String> row)
