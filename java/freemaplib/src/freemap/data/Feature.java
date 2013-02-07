@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class Feature extends Projectable {
 	protected HashMap<String,String> tags;
-	protected int osmId;
+	protected long osmId;
 	
 	
 	public Feature()
@@ -24,10 +24,10 @@ public class Feature extends Projectable {
 		return tags.get(key);
 	}
 	
-	public int getId()
+	public long getId()
 	{
 		String id=tags.get("osm_id");
-		return (id!=null) ? Integer.parseInt(id) : 0;
+		return (id!=null) ? Long.parseLong(id) : 0;
 	}
 	
 	public String toString()
