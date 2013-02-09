@@ -40,9 +40,7 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		{
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
 			Point p = new Point(location.getLongitude(),location.getLatitude());
-			
-			td.update(p, true, forceWebDownload);
-			//td.updateSurroundingTiles(p,true);
+			td.updateSurroundingTiles(p,true,forceWebDownload);
 			setData((FreemapDataset)td.getAllData());
 			Log.d("OpenTrail","done");
 			return "Successfully downloaded";

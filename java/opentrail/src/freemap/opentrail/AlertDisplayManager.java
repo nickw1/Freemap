@@ -14,6 +14,7 @@ public class AlertDisplayManager {
 	FreemapDataset pois;
 	Walkroute walkroute;
 	Walkroute.Stage prevStage;
+	int alertId;
 	
 
 	
@@ -42,8 +43,9 @@ public class AlertDisplayManager {
 			{
 				if(prevAnnotation==null || newAnnotation.getId() != prevAnnotation.getId())
 				{
-					display.displayAnnotationInfo(newAnnotation.getDescription());
+					display.displayAnnotationInfo(newAnnotation.getDescription(), AlertDisplay.ANNOTATION, ++alertId);
 					prevAnnotation = newAnnotation;
+					alertId++;
 				}
 			}
 		}
@@ -54,7 +56,7 @@ public class AlertDisplayManager {
 			{		
 				if (prevStage==null || newStage.id != prevStage.id)
 				{
-					display.displayAnnotationInfo(newStage.description);
+					display.displayAnnotationInfo(newStage.description, AlertDisplay.WALKROUTE_STAGE, ++alertId);
 					prevStage = newStage;
 				}
 				

@@ -423,10 +423,12 @@ function reproject($x,$y,$inProj,$outProj)
 		case 'OSGB':
 		case '27700':
 		case 'EPSG:27700':
-			//$ll = gr_to_wgs84_ll($x,$y);
+			$ll = gr_to_wgs84_ll($x,$y);
+			/*
 			$ref = new OSRef($x,$y);
 			$latlng = OSRefToLatLng($ref);
 			$ll = array("lon"=>$latlng->lng,"lat"=>$latlng->lat);
+			*/
 			break;
 
 		default:
@@ -451,15 +453,15 @@ function reproject($x,$y,$inProj,$outProj)
 		case 'OSGB':
 		case '27700':
 		case 'EPSG:27700':
-			/*
 			$gr = wgs84_ll_to_gr($ll['lon'],$ll['lat']);
 			$x = $gr['e'];
 			$y = $gr['n'];
-			*/
+			/*
 			$ll = new LatLng($ll['lat'],$ll['lon']);
 			$gr = LatLngToOSRef($ll);
 			$x = $gr->easting;
 			$y = $gr->northing;
+			*/
 			break;
 
 		default:

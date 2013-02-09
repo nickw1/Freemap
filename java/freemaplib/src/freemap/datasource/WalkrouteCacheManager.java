@@ -1,10 +1,8 @@
-package freemap.opentrail;
+package freemap.datasource;
 
 import freemap.data.Walkroute;
 import java.io.IOException;
 import java.io.FileInputStream;
-import freemap.datasource.XMLDataInterpreter;
-import freemap.datasource.WalkrouteHandler;
 import org.xml.sax.SAXException;
 import java.io.FileOutputStream;
 import java.io.DataOutputStream;

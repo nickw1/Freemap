@@ -244,7 +244,8 @@ class Walkroute
     public static function getRoutesByBbox($w,$s,$e,$n)
     {
         return Walkroute::getRoutesFromQuery
-            ("SELECT *,astext(the_geom) FROM walkroutes WHERE startlat ".
+            ("SELECT *,astext(the_geom) FROM walkroutes WHERE ".
+							"authorised=1 AND startlat ".
                             "BETWEEN $s AND $n AND startlon ".
                             "BETWEEN $w AND $e");
     }
@@ -255,7 +256,8 @@ class Walkroute
     {
         
         $routes=array();
-        $result=pg_query("SELECT *,astext(the_geom) FROM walkroutes");
+        $result=pg_query("SELECT *,astext(the_geom) FROM walkroutes ".
+							"WHERE authorised=1");
         while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
         {
             if(haversine_dist($row["startlon"],$row["startlat"],$lon,$lat)

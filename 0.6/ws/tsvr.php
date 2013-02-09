@@ -18,7 +18,7 @@ $cleaned = clean_input($_REQUEST);
 
 // DBDetails: poi way poly contour coast ann
 
-define('CONTOUR_CACHE','/var/www/images/contours');
+define('CONTOUR_CACHE','/home/www-data/contourcache');
 define('CACHE','/home/www-data/fmapcache');
 
 $x = $cleaned["x"];

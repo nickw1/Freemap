@@ -26,6 +26,7 @@ import freemap.data.Projection;
 
 import freemap.andromaps.MapLocationProcessor;
 
+
 public class DataDisplayer extends freemap.andromaps.LocationDisplayer implements 
 	freemap.datasource.FreemapDataset.AnnotationVisitor,
 	MapLocationProcessor.LocationDisplayer
@@ -77,7 +78,7 @@ public class DataDisplayer extends freemap.andromaps.LocationDisplayer implement
 	{
 		
 		GeoPoint gp = new GeoPoint(walkroute.getStart().y,walkroute.getStart().x);
-		Log.d("OpenTrail","showWalkroute(): center=" + gp);
+
 		mapView.setCenter(gp);
 		ArrayList<TrackPoint> points = walkroute.getPoints();
 		GeoPoint p[] = new GeoPoint[points.size()];
@@ -130,9 +131,9 @@ public class DataDisplayer extends freemap.andromaps.LocationDisplayer implement
 	{
 	    if(lastAddedPOI!=null)
 	    	overlay.removeItem(lastAddedPOI);
-	   	Log.d("OpenTrail","Found POI: " + poi.getPoint());
+	  
 	   	Point unproj = proj.unproject(poi.getPoint());
-	   	Log.d("OpenTrail","unprojected: " + unproj);
+;
 	   	GeoPoint gp = new GeoPoint(unproj.y,unproj.x);
 	   	if(mapView==null)
 	   		Log.d("OpenTrail","WARNING  mapview null");

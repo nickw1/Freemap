@@ -75,7 +75,7 @@ class DBDetails
         "SELECT *,ST_AsGeoJSON(".$this->annotationDetails["col"].
         ") AS geojson ".
         " FROM ".$this->annotationDetails["table"].
-        " WHERE ".$this->annotationDetails["col"].
+        " WHERE authorised=1 AND ".$this->annotationDetails["col"].
             "&& $geomtxt" : null;
     }
 

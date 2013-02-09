@@ -4,13 +4,13 @@ function OpenHants(lat,lon,zoom)
 
     var tileUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php'+
         '?x={x}&y={y}&z={z}&way=all&poi=place,natural&kothic=1&contour=1'+
-        '&coastline=1&tbl_prefix=hampshire';
+        '&coastline=1';
 
     var kothic = new L.TileLayer.Kothic(tileUrl,
         {minZoom:11,
         attribution: 'Map data &copy; 2012 OpenStreetMap contributors,'+
-        'CC-by-SA, contours &copy; Crown Copyright and database right ' +
-        'Ordnance Survey 2011, Rendering by Kothic-JS, ROW overlay '+
+        'Open Database Licence, contours &copy; Crown Copyright and database '+
+		'right Ordnance Survey 2011, Rendering by Kothic-JS, ROW overlay '+
         '(c) Hampshire County Council, Open Government licence'});
 
     this.row = new L.GeoJSON();
@@ -84,7 +84,8 @@ function OpenHants(lat,lon,zoom)
     new SearchWidget ('search',
                         { url: 'freemap/ws/search.php',
                           callback: this.setLocation.bind(this),
-                          parameters: 'tbl_prefix=hampshire&poi=all&outProj=4326' });
+                          parameters: 'poi=all&'+
+						  'outProj=4326' });
 }
 
 OpenHants.prototype.loadGeoJSON = function()

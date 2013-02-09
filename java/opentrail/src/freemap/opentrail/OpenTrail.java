@@ -40,12 +40,18 @@ import android.os.Vibrator;
 import android.os.AsyncTask;
 import android.location.LocationManager;
 import android.content.IntentFilter;
+import android.net.Uri;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 
 import org.mapsforge.android.maps.overlay.OverlayItem;
 import org.mapsforge.android.maps.overlay.ItemizedOverlay;
 
 import android.graphics.drawable.Drawable;
 import android.os.IBinder;
+import android.app.NotificationManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 
 import uk.me.jstott.jcoord.OSRef;
 
@@ -53,7 +59,6 @@ import freemap.data.Annotation;
 import freemap.data.POI;
 import freemap.data.Point;
 import freemap.data.Walkroute;
-import freemap.data.TrackPoint;
 import freemap.datasource.FreemapDataHandler;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.FreemapFileFormatter;
@@ -61,6 +66,7 @@ import freemap.datasource.TileDeliverer;
 import freemap.datasource.WebDataSource;
 import freemap.datasource.XMLDataInterpreter;
 import freemap.datasource.AnnotationCacheManager;
+import freemap.datasource.WalkrouteCacheManager;
 
 import freemap.andromaps.MapLocationProcessor;
 import freemap.andromaps.DataCallbackTask;
@@ -169,12 +175,12 @@ public class OpenTrail extends MapActivity implements
 
         	Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
         	String projString="epsg:27700";
-    		this.proj = factory.generate(projString);
+    		this.proj = new OSGBProjection(); // factory.generate(projString);
         	
     		SavedData savedData=(SavedData)getLastNonConfigurationInstance();
         	if(savedData!=null)
         	{
-        		Log.d("OpenTrail","Restarting task");	
+        		
         		if(savedData.dataTask!=null)
         			savedData.dataTask.reconnect(this, this);
         		else if (savedData.dfTask!=null)
@@ -208,22 +214,24 @@ public class OpenTrail extends MapActivity implements
        			walkrouteIdx = savedInstanceState.getInt("walkrouteIdx");
        			recordingWalkroute = savedInstanceState.getBoolean("recordingWalkroute");
        			waitingForNewPOIData = savedInstanceState.getBoolean("waitingForNewPOIData");
-       			loadAnnotationOverlay();
-       			Log.d("OpenTrail","Restoring zoom:" + savedInstanceState.getInt("zoom"));
+       			//loadAnnotationOverlay();
+       			
        			
        		}   	
         	else if ((prefs=getPreferences(Context.MODE_PRIVATE))!=null)
         	{
-        
+        	    
         		initPos = new GeoPoint(prefs.getFloat("lat",51.05f),
         							prefs.getFloat("lon", -0.72f));
         		mapFile = prefs.getString("mapFile",null);
+        		
         		readZoom = prefs.getInt("zoom", -1);
         		recordingWalkroute = prefs.getBoolean("recordingWalkroute", false);    
         		waitingForNewPOIData = prefs.getBoolean("waitingForNewPOIData", false);
-        		Log.d("OpenTrail","Restoring zoom:" + readZoom);
+        		
         		if(readZoom>=0)
-        			mapView.getController().setZoom(readZoom);		
+        			mapView.getController().setZoom(readZoom);
+        		
         	}
         	
         	
@@ -239,7 +247,10 @@ public class OpenTrail extends MapActivity implements
     		
     		
     		if (Shared.pois==null)
+    		{
     			Shared.pois = new FreemapDataset();
+    			Shared.pois.setProjection(proj);
+    		}
         
         	
     		alertDisplayMgr = new AlertDisplayManager(this, 50);
@@ -285,12 +296,9 @@ public class OpenTrail extends MapActivity implements
         	try
         	{
         		ArrayList<Annotation> savedAnnotations = annCacheMgr.getAnnotations();
-        		Log.d("OpenTrail","Loaded annotations: " + savedAnnotations);
+        		
         		for(Annotation a: savedAnnotations)
-        		{
         			Shared.pois.add(a);
-        			dataDisplayer.visit(a);
-        		}
         	}
         	catch(Exception e)
         	{
@@ -440,6 +448,7 @@ public class OpenTrail extends MapActivity implements
 			else if (initPos!=null)
 				mapView.setCenter(initPos);
     		mapView.redrawTiles();
+    		loadAnnotationOverlay();
     	}
     	catch(FileNotFoundException e)
     	{
@@ -736,9 +745,9 @@ public class OpenTrail extends MapActivity implements
     				// so we need to save the old centre if we want the same position (and GPS not present)
     				GeoPoint currentCentre = mapView.getMapPosition().getMapCenter();
     				Bundle extras = i.getExtras();
-    				Log.d("OpenTrail","Returned : " + extras.getString("mapFile"));
+    				
     				mapFile = sdcard+"/opentrail/"+extras.getString("mapFile");
-    				Log.d("OpenTrail","setting map file");
+    				
     				File mf=new File(mapFile);
     				if(mf.exists())
     				{
@@ -758,20 +767,22 @@ public class OpenTrail extends MapActivity implements
     				{
     					String id=extras.getString("ID"),description=extras.getString("description");
     					GeoPoint gp = new GeoPoint(extras.getDouble("lat"),extras.getDouble("lon"));
-    					Point p = this.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
+    					//Point p = this.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
+    					Point p = new Point(extras.getDouble("lon"),extras.getDouble("lat"));
     					OverlayItem item = new OverlayItem(gp,(id.equals("0") ? "New annotation":
     							"Annotation #"+id),description);
     					item.setMarker(ItemizedOverlay.boundCenterBottom(getResources().getDrawable(R.drawable.annotation)));
     					dataDisplayer.addIconItem(item);
     					int idInt = id.equals("0")? -(annCacheMgr.size()+1):Integer.parseInt(id);
     					Annotation ann=new Annotation(idInt,p.x,p.y,description);
-    					Shared.pois.add(ann);
+    			
     					mapView.invalidate();
     					if(idInt<0)
     					{
     						try
     						{
-    							annCacheMgr.addAnnotation(ann);
+    							annCacheMgr.addAnnotation(ann); // adding in wgs84 latlon
+    							Shared.pois.add(ann); // this reprojects it
     						}
     						catch(IOException e)
     						{
@@ -783,7 +794,7 @@ public class OpenTrail extends MapActivity implements
     			case 2:
     				extras = i.getExtras();
     				POI poi = Shared.pois.getPOIById(Integer.parseInt(extras.getString("osmId")));
-    				Log.d("OpenTrail","found POI="+poi);
+    				
     				if(poi!=null)
     					dataDisplayer.displayPOI(poi);
     				break;
@@ -929,13 +940,27 @@ public class OpenTrail extends MapActivity implements
     	return cachedir;
     }
     
-    public void displayAnnotationInfo(String msg)
+    public void displayAnnotationInfo(String msg, int type, int alertId)
     {
     	new AlertDialog.Builder(this).setMessage(msg).setCancelable(false).setPositiveButton("OK",null).show();
     	
-    	Vibrator vib = (Vibrator)getSystemService(VIBRATOR_SERVICE);
-    	vib.vibrate(1000);
+    	Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    	if(ringtoneUri!=null)
+    	{
+    	    Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), ringtoneUri);
+    	    r.play();
+    	}
+    	String summary = (type==AlertDisplay.ANNOTATION) ? "New walk note" : "New walk route stage";
+    	NotificationManager mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+    	Notification notification = new Notification(R.drawable.marker,summary,
+    	                                                System.currentTimeMillis());
+
+    	Intent intent = new Intent(this,OpenTrail.class);
+    	intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    	PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    	notification.setLatestEventInfo(this, summary, msg, pIntent);
     	
+        mgr.notify(alertId,notification);
     }
     
     public void receiveLocation(Location loc)
@@ -945,7 +970,7 @@ public class OpenTrail extends MapActivity implements
     
     public void receiveLocation(double lon, double lat, boolean refresh)
     {	
-    	Log.d("OpenTrail","Received location: lon=" + lon + " lat=" + lat);
+    	
     	GeoPoint p = new GeoPoint(lat,lon);
 		Point pt = new Point(lon,lat);
 		
@@ -981,6 +1006,7 @@ public class OpenTrail extends MapActivity implements
 			}
 			else if (mapView!=null)
 			{
+			    mapFile = mf.getAbsolutePath();
 				setupMap(mf);
 				// resetting the map file (e.g. one map file from the preferences, another
 				// from the current location) resets the zoom - so use original zoom from preferences
@@ -1065,7 +1091,7 @@ public class OpenTrail extends MapActivity implements
     			String xml = annCacheMgr.getAllAnnotationsXML();
     			ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
     			postData.add(new BasicNameValuePair("action","createMulti"));
-    			postData.add(new BasicNameValuePair("inProj","27700"));
+    			postData.add(new BasicNameValuePair("inProj","4326"));
     			postData.add(new BasicNameValuePair("data",xml));
     			
     			dfTask = new HTTPUploadTask

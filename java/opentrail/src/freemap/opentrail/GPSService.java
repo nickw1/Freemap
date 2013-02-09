@@ -11,23 +11,24 @@ import freemap.data.Walkroute;
 import freemap.data.TrackPoint;
 import android.content.BroadcastReceiver;
 import android.os.IBinder;
-import android.os.Binder;
 import android.content.IntentFilter;
-import android.util.Log;
+import android.widget.Toast;
 import android.os.AsyncTask;
+import freemap.datasource.WalkrouteCacheManager;
 
 
 public class GPSService extends Service implements LocationListener {
 
 	
 	
-	boolean isLogging, listeningForUpdates;
+	boolean isLogging, listeningForUpdates, firstStart;
 	LocationManager mgr;
 	long lastUpdateTime = 0L;
 	GPSServiceReceiver receiver;
 	static final long LOGGING_INTERVAL = 5000L, NO_LOGGING_INTERVAL = 10000L;
 	WalkrouteCacheManager wrCacheMgr;
 	Walkroute recordingWalkroute;
+	
 	
 	
 	class SaveWalkrouteTask extends AsyncTask<Void,Void,Boolean>
@@ -61,9 +62,8 @@ public class GPSService extends Service implements LocationListener {
 	public void onCreate()
 	{
 		super.onCreate();
-		recordingWalkroute = new Walkroute();
-		
-		binder = new GPSService.Binder();
+		binder = new GPSService.Binder(); 
+        firstStart=true;
 	}
 	
 	// called typically by an Activity's onStart()
@@ -82,11 +82,34 @@ public class GPSService extends Service implements LocationListener {
 		
 		if(wrCacheMgr==null)
 			wrCacheMgr = new WalkrouteCacheManager(intent.getExtras().getString("wrCacheLoc"));
+		
 		// start updates if not already started
 		mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		//Log.d("OpenTrail","trying to start gps updates");
-		if(!listeningForUpdates)
+		
+		if(firstStart)
 		{
+		    // To recover from the service possibly being killed - try to reload a
+		    // recording walkroute if there is one.
+		    // We can't do this in onCreate() as we won't know the walk route cache 
+		    // location yet - this is delivered via an Intent from the main activity -
+		    // I wan't to avoid pseudo-global variables where possible...
+		    firstStart=false;
+		    try
+	        {
+	            recordingWalkroute=wrCacheMgr.getRecordingWalkroute();
+	        }
+	        catch(Exception e)
+	        { 
+	            Toast.makeText(getApplicationContext(), "Previous walk route corrupted, starting new one", Toast.LENGTH_LONG).show();
+	        }
+	    
+	        if(recordingWalkroute==null)
+	            recordingWalkroute = new Walkroute();
+		}
+		
+	    if(!listeningForUpdates)
+	    {
 			//Log.d("OpenTrail","not listening so starting");
 			listeningForUpdates=true;
 			mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, NO_LOGGING_INTERVAL, 10, this);
@@ -101,6 +124,7 @@ public class GPSService extends Service implements LocationListener {
 		super.onDestroy();
 		unregisterReceiver(receiver);
 		receiver=null;
+		isLogging=false;
 	}
 	
 	// called if user starts a recording session
@@ -153,17 +177,17 @@ public class GPSService extends Service implements LocationListener {
 		{
 			recordingWalkroute.addPoint(tp);
 			
-				if(time - lastUpdateTime > 30000 && wrCacheMgr!=null && isLogging)
-				{
-					new SaveWalkrouteTask().execute();
-					lastUpdateTime = time;
-				}
+			if(time - lastUpdateTime > 30000 && wrCacheMgr!=null && isLogging)
+			{
+				new SaveWalkrouteTask().execute();
+				lastUpdateTime = time;
+			}
 			
-				refresh=true;			
+			refresh=true;			
 		}
 		
 	
-		Log.d("OpenTrail","Received GPS: point=" + tp.x+","+tp.y);
+		
 		
 		// send msg to any receivers informing them of location
 		Intent broadcast = new Intent("freemap.opentrail.locationchanged");
@@ -201,7 +225,7 @@ public class GPSService extends Service implements LocationListener {
 	}
 	
 	public IBinder onBind(Intent intent)
-	{
+	{  
 		return binder;
 	}
 	
