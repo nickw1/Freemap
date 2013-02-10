@@ -2,15 +2,14 @@ package freemap.opentrail;
 
 import android.app.ListActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
 import android.content.Intent;
 import freemap.data.POI;
 import java.util.ArrayList;
-import android.content.Context;
-import android.view.ViewGroup;
+
 import android.util.Log;
 import freemap.data.Point;
 import java.text.DecimalFormat;

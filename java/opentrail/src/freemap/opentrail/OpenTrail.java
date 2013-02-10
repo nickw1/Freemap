@@ -123,7 +123,7 @@ public class OpenTrail extends MapActivity implements
 	
 	int walkrouteIdx, localAnnId, recordingWalkrouteId;
 	int xDown = -256, yDown = -256;
-	long lastWRUpdateTime = 0;
+	long lastWRUpdateTime = 0, touchTime = 0;
 	int readZoom = -1;
 	
 	boolean mapSetup=false,waitingForNewPOIData=false;
@@ -176,7 +176,13 @@ public class OpenTrail extends MapActivity implements
         	Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
         	String projString="epsg:27700";
     		this.proj = new OSGBProjection(); // factory.generate(projString);
-        	
+        
+    		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    		SharedPreferences.Editor ed = p.edit();
+    		ed.putString("wrCacheLoc", sdcard+"/opentrail/walkroutes/");
+    		ed.commit();
+    		
+    		
     		SavedData savedData=(SavedData)getLastNonConfigurationInstance();
         	if(savedData!=null)
         	{
@@ -218,7 +224,7 @@ public class OpenTrail extends MapActivity implements
        			
        			
        		}   	
-        	else if ((prefs=getPreferences(Context.MODE_PRIVATE))!=null)
+        	else if ((prefs=PreferenceManager.getDefaultSharedPreferences(getApplicationContext()))!=null)
         	{
         	    
         		initPos = new GeoPoint(prefs.getFloat("lat",51.05f),
@@ -291,8 +297,8 @@ public class OpenTrail extends MapActivity implements
         		}
         	};
         	
-        	Intent startServiceIntent = new Intent(this,GPSService.class);
-       	 	bindService(startServiceIntent, gpsServiceConn, Context.BIND_AUTO_CREATE);
+        	Intent bindServiceIntent = new Intent(this,GPSService.class);
+       	 	bindService(bindServiceIntent, gpsServiceConn, Context.BIND_AUTO_CREATE);
         	try
         	{
         		ArrayList<Annotation> savedAnnotations = annCacheMgr.getAnnotations();
@@ -346,6 +352,8 @@ public class OpenTrail extends MapActivity implements
      	if(Shared.walkroutes!=null && walkrouteIdx > -1 && walkrouteIdx < Shared.walkroutes.size())
 		 	dataDisplayer.showWalkroute(Shared.walkroutes.get(walkrouteIdx));
 		 	
+     	if(dataDisplayer==null)
+     	    Log.d("OpenTrail","WARNING data displayer is null");
      	
      	if(prefAnnotations==false && oldPrefAnnotations==true)
      		dataDisplayer.hideAnnotations();
@@ -397,7 +405,7 @@ public class OpenTrail extends MapActivity implements
     	//alertDisplayMgr=null;
     	dataDisplayer=null;
     	
-    	SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     	SharedPreferences.Editor editor = settings.edit();
     	
     	editor.putFloat("lat",(float)mapView.getMapPosition().getMapCenter().getLatitude());
@@ -1198,11 +1206,16 @@ public class OpenTrail extends MapActivity implements
     		case MotionEvent.ACTION_DOWN:
     			xDown = (int)ev.getX();
     			yDown = (int)ev.getY();
+    			touchTime = System.currentTimeMillis();
+    			Log.d("OpenTrail","ACTION_DOWN: touchTime=" + touchTime);
     			break;
     		case MotionEvent.ACTION_UP:
     			final int x = (int)ev.getX(), y=(int)ev.getY();
-    			if(Math.abs(x-xDown)<5 && Math.abs(y-yDown)<5)
+                Log.d("OpenTrail","ACTION_UP: time=" + System.currentTimeMillis() +
+                        " x=" + x + " y=" + y + " xDown=" + xDown + " yDown=" + yDown);
+    			if(Math.abs(x-xDown)<10 && Math.abs(y-yDown)<10 && System.currentTimeMillis()-touchTime>=100)
     			{
+    			    
     				// get ontouch location
     				new AlertDialog.Builder(this).setMessage("Add an annotation at this location?").
     					setNegativeButton("Cancel",null).
@@ -1217,6 +1230,7 @@ public class OpenTrail extends MapActivity implements
     				
     				retcode=true;
     			}
+    			touchTime = 0;
     			xDown = yDown = -256;
     			break;
     	}
@@ -1228,9 +1242,11 @@ public class OpenTrail extends MapActivity implements
     
     public void about()
     {
-    	DialogUtils.showDialog(this,"OpenTrail 0.1-alpha. Uses OpenStreetMap data, copyright 2012 " +
+    	DialogUtils.showDialog(this,"OpenTrail 0.1-beta. Uses OpenStreetMap data, copyright 2012 " +
     											"OpenStreetMap contributors, Open Database Licence. Uses " +
-    											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright.");
+    											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright." +
+    											"Person icon taken from the osmdroid project. Annotation icon based on " +
+    											"OpenStreetMap viewpoint icon.");
     }
     
     public void onSaveInstanceState(Bundle state)

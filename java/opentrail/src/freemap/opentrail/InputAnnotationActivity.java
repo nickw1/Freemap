@@ -28,7 +28,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import android.preference.PreferenceManager;
-import android.location.Location;
+
 import android.content.Intent;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;

@@ -13,10 +13,6 @@ import freemap.datasource.WebXMLSource;
 
 import android.util.Log;
 import android.content.Context;
-import android.app.ProgressDialog;
-
-import android.location.Location;
-import android.os.AsyncTask;
 
 import freemap.andromaps.DataCallbackTask;
 

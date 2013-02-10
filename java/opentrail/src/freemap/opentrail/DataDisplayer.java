@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.mapsforge.android.maps.MapView;
-import org.mapsforge.android.maps.overlay.ArrayItemizedOverlay;
 import org.mapsforge.android.maps.overlay.ArrayWayOverlay;
 import org.mapsforge.android.maps.overlay.ItemizedOverlay;
 import org.mapsforge.android.maps.overlay.OverlayItem;
@@ -133,13 +132,11 @@ public class DataDisplayer extends freemap.andromaps.LocationDisplayer implement
 	    	overlay.removeItem(lastAddedPOI);
 	  
 	   	Point unproj = proj.unproject(poi.getPoint());
-;
 	   	GeoPoint gp = new GeoPoint(unproj.y,unproj.x);
 	   	if(mapView==null)
 	   		Log.d("OpenTrail","WARNING  mapview null");
     	mapView.setCenter(gp);
-    	if(poi==null)
-    		Log.d("OpenTrail","WARNING poi null");
+    
     	String name=poi.getValue("name");
 	    name=(name==null)? "unnamed":name;
 	    OverlayItem item = new OverlayItem(gp,name,name,ItemizedOverlay.boundCenterBottom(markerIcon));

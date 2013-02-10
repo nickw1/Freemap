@@ -3,8 +3,6 @@ package freemap.opentrail;
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import freemap.datasource.TileDeliverer;
 import android.util.Log;
 import freemap.andromaps.DataCallbackTask;
@@ -38,7 +36,6 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		
 		try
 		{
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
 			Point p = new Point(location.getLongitude(),location.getLatitude());
 			td.updateSurroundingTiles(p,true,forceWebDownload);
 			setData((FreemapDataset)td.getAllData());

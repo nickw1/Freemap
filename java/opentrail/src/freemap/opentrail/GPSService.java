@@ -2,6 +2,7 @@ package freemap.opentrail;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.Location;
@@ -14,6 +15,7 @@ import android.os.IBinder;
 import android.content.IntentFilter;
 import android.widget.Toast;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import freemap.datasource.WalkrouteCacheManager;
 
 
@@ -38,7 +40,8 @@ public class GPSService extends Service implements LocationListener {
 			boolean retcode=true;
 			try
 			{
-				wrCacheMgr.addRecordingWalkroute(recordingWalkroute);
+				if(wrCacheMgr!=null)
+				    wrCacheMgr.addRecordingWalkroute(recordingWalkroute);
 				
 			}
 			catch(java.io.IOException e)
@@ -64,13 +67,17 @@ public class GPSService extends Service implements LocationListener {
 		super.onCreate();
 		binder = new GPSService.Binder(); 
         firstStart=true;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        isLogging = prefs.getBoolean("gpsServiceIsLogging", false);
 	}
 	
 	// called typically by an Activity's onStart()
+	// intent will be null if the service dies and is restarted
 	public int onStartCommand(Intent intent, int startFlags, int id)
 	{
-		
-		if(receiver==null)
+	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	    String wrCacheLoc = prefs.getString("wrCacheLoc",null);
+	    if(receiver==null)
 		{
 			receiver=new GPSServiceReceiver(this);
 			IntentFilter filter = new IntentFilter();
@@ -80,8 +87,8 @@ public class GPSService extends Service implements LocationListener {
 			registerReceiver(receiver, filter);
 		}
 		
-		if(wrCacheMgr==null)
-			wrCacheMgr = new WalkrouteCacheManager(intent.getExtras().getString("wrCacheLoc"));
+		if(wrCacheMgr==null && wrCacheLoc!=null)
+			wrCacheMgr = new WalkrouteCacheManager(wrCacheLoc);
 		
 		// start updates if not already started
 		mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -91,13 +98,12 @@ public class GPSService extends Service implements LocationListener {
 		{
 		    // To recover from the service possibly being killed - try to reload a
 		    // recording walkroute if there is one.
-		    // We can't do this in onCreate() as we won't know the walk route cache 
-		    // location yet - this is delivered via an Intent from the main activity -
-		    // I wan't to avoid pseudo-global variables where possible...
+		  
 		    firstStart=false;
 		    try
 	        {
-	            recordingWalkroute=wrCacheMgr.getRecordingWalkroute();
+		        if(wrCacheMgr!=null)
+		            recordingWalkroute=wrCacheMgr.getRecordingWalkroute();
 	        }
 	        catch(Exception e)
 	        { 
@@ -112,7 +118,8 @@ public class GPSService extends Service implements LocationListener {
 	    {
 			//Log.d("OpenTrail","not listening so starting");
 			listeningForUpdates=true;
-			mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, NO_LOGGING_INTERVAL, 10, this);
+			mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, isLogging? 
+			                LOGGING_INTERVAL : NO_LOGGING_INTERVAL, 10, this);
 			Intent broadcast = new Intent("freemap.opentrail.startupdates");
 			this.sendBroadcast(broadcast);
 		}
@@ -122,9 +129,13 @@ public class GPSService extends Service implements LocationListener {
 	public void onDestroy()
 	{
 		super.onDestroy();
+		mgr.removeUpdates(this);
 		unregisterReceiver(receiver);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putBoolean("gpsServiceIsLogging", isLogging);
+		ed.commit();
 		receiver=null;
-		isLogging=false;
 	}
 	
 	// called if user starts a recording session
@@ -143,7 +154,7 @@ public class GPSService extends Service implements LocationListener {
 	{
 		isLogging=false;
 		
-		// adjust interval to 20 secs as we are not logging
+		// adjust interval to 10 secs as we are not logging
 		LocationManager mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		mgr.removeUpdates(this);
 		mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, NO_LOGGING_INTERVAL, 10, this);
@@ -177,7 +188,7 @@ public class GPSService extends Service implements LocationListener {
 		{
 			recordingWalkroute.addPoint(tp);
 			
-			if(time - lastUpdateTime > 30000 && wrCacheMgr!=null && isLogging)
+			if(time - lastUpdateTime > 30000 &&  isLogging)
 			{
 				new SaveWalkrouteTask().execute();
 				lastUpdateTime = time;
