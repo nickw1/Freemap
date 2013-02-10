@@ -598,9 +598,13 @@ public class OpenTrail extends MapActivity implements
     	{
     		about();
     	}
+    	else if (item.getItemId()==R.id.downloadMapMenuItem)
+    	{
+    	    showMapDialog();
+    	}
     	else if(!mapSetup)
     	{
-    		DialogUtils.showDialog(this,"Cannot perform actions until a map is loaded.");
+    		DialogUtils.showDialog(this,"Cannot perform this action until a map is loaded.");
     		retcode=false;
     	}
     	else
@@ -619,9 +623,6 @@ public class OpenTrail extends MapActivity implements
     				downloadLocalMapFile();
     				break;
     			
-    			case R.id.downloadMapMenuItem:
-    				showMapDialog();
-    				break;
     			
     			case R.id.myLocationMenuItem:
     				gotoMyLocation();
@@ -841,29 +842,51 @@ public class OpenTrail extends MapActivity implements
     						description = extras.getString("freemap.opentrail.wrdescription"),
     						fname = extras.getString("freemap.opentrail.wrfilename");
     				
-    				try
-    				{
+    				
     					Walkroute recordingWalkroute = gpsService.getRecordingWalkroute();
     					if(recordingWalkroute!=null)
     					{
     						recordingWalkroute.setTitle(title);
     						recordingWalkroute.setDescription(description);
-    						wrCacheMgr.addWalkrouteToCache(recordingWalkroute,fname);
-    						if(!wrCacheMgr.deleteRecordingWalkroute())
-    							DialogUtils.showDialog(this, "Unable to delete recorded walkroute file");
-    						recordingWalkroute.clear();
-    						dataDisplayer.clearWalkroute();
-    						mapView.invalidate();
+    						
+    						AsyncTask<String,Void,Boolean> addToCacheTask = new AsyncTask<String,Void,Boolean>()
+    						{
+    						    Walkroute recWR;
+    						    public Boolean doInBackground(String...fname)
+    						    {
+    						        recWR = gpsService.getRecordingWalkroute();
+    						        try
+    						        {
+    						            wrCacheMgr.addWalkrouteToCache(recWR,fname[0]);
+    						            wrCacheMgr.deleteRecordingWalkroute();
+    						            recWR.clear();
+    						        }
+    						        catch(IOException e)
+    						        {
+    						            return false;
+    						        }
+    						        return true;
+    						    }
+    						    
+    						    protected void onPostExecute(Boolean result)
+    						    {
+    						        if(!result)
+    						            DialogUtils.showDialog(OpenTrail.this, "Unable to save walk route");
+    						        else
+    						        {
+    						            dataDisplayer.clearWalkroute();
+    		                            mapView.invalidate();
+    						        }
+    						    }
+    						};
+    						addToCacheTask.execute(fname);
+    						
     					}
     					else
     					{
     						DialogUtils.showDialog(this, "No recorded walk route");
     					}
-    				}
-    				catch(IOException e)
-    				{
-    					DialogUtils.showDialog(this,"Cannot save walk route: " + e.getMessage());
-    				}
+    				
     				break;
     			
     			case 5:
@@ -1050,11 +1073,13 @@ public class OpenTrail extends MapActivity implements
 
     public void receivePOIs(FreemapDataset ds)
     {
-    	Shared.pois = ds;
-    	waitingForNewPOIData=false;
-    	//Log.d("OpenTrail","Received POIs:" + ds);
-    	alertDisplayMgr.setPOIs(Shared.pois);
-    	loadAnnotationOverlay();
+        if(ds!=null)
+        {
+            Shared.pois = ds;
+            waitingForNewPOIData=false;
+            alertDisplayMgr.setPOIs(Shared.pois);
+            loadAnnotationOverlay();
+        }
     }
     
     public void receiveWalkroutes(ArrayList<Walkroute> walkroutes)
