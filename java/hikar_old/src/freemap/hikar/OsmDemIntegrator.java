@@ -9,10 +9,12 @@ import freemap.jdem.HGTTileDeliverer;
 import freemap.datasource.FreemapFileFormatter;
 import freemap.data.Point;
 import freemap.datasource.XMLDataInterpreter;
+import freemap.data.GoogleProjection;
 import freemap.datasource.FreemapDataHandler;
 import freemap.jdem.DEM;
-import freemap.proj.Proj4ProjectionFactory;
-import freemap.datasource.FreemapDataset;
+import java.util.Set;
+import java.util.Map;
+import freemap.datasource.OSMRenderData;
 import android.util.Log;
 import android.os.Environment;
 
@@ -27,15 +29,10 @@ public class OsmDemIntegrator {
 		WebDataSource hgtDataSource=new WebDataSource("http://www.free-map.org.uk/downloads/lfp/", 
 				new LFPFileFormatter());
 		
-		
-		FreemapFileFormatter formatter=new FreemapFileFormatter(projID);
-        formatter.setScript("bsvr.php");
-        formatter.selectPOIs("place,amenity,natural");
-        formatter.selectAnnotations(true);
-        WebDataSource osmDataSource=new WebDataSource("http://www.free-map.org.uk/0.6/ws/",formatter);
-        
+		WebDataSource osmDataSource = new WebDataSource("http://www.free-map.org.uk/freemap/ws/",
+				new FreemapFileFormatter(projID));
+	
 		Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
-		
 		tilingProj = factory.generate(projID);
 		hgt=new HGTTileDeliverer("dem",hgtDataSource, new HGTDataInterpreter(101,101,50,
 											DEMSource.LITTLE_ENDIAN),
@@ -54,7 +51,7 @@ public class OsmDemIntegrator {
 	// ASSUMPTION: the tiling systems for hgt and osm data coincide - which they do here (see constructor)
 	public boolean update(Point point) 
 	{
-		FreemapDataset osmupdated=null;
+		OSMRenderData osmupdated=null;
 		
 		try
 		{
@@ -63,7 +60,7 @@ public class OsmDemIntegrator {
 		
 			//Log.d("OpenTrail", hgtupdated.toString());
 			Log.d("OpenTrail","Getting OSM data...");
-			osmupdated = (FreemapDataset)osm.update(point,false);
+			osmupdated = (OSMRenderData)osm.update(point,false);
 			
 			if (hgtupdated!=null && osmupdated!=null)
 			{
@@ -114,8 +111,8 @@ public class OsmDemIntegrator {
 		return (DEM)hgt.getData();
 	}
 	
-	public FreemapDataset getCurrentOSMData()
+	public OSMRenderData getCurrentOSMData()
 	{
-		return (FreemapDataset)osm.getData();
+		return (OSMRenderData)osm.getData();
 	}
 }

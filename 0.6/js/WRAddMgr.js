@@ -115,20 +115,11 @@ WRAddMgr.prototype.addWaypoint = function(mLL)
     // geojson layer
     wp.on("click",(function(e) 
         { 
-            this.wptDlg.show();
-            this.curWp = e.target.id;
-            var contents = (this.waypoints[this.curWp-1].description) ?
-                this.waypoints[this.curWp-1].description: '';
-            this.wptDlg.setContent('Enter details for stage ' + this.curWp +
-                            ' of the walk: <br /> ' +
-                            '<textarea id="_wrmgr_wptext" ' +
-                             'style="margin: 10px 10px 10px 10px;'+
-                            'width:360px;height:150px">'+contents+
-                            '</textarea>');
+            this.showStageDetailsDialog(e.target);
         } 
     ).bind(this));
-   
 
+    this.showStageDetailsDialog(wp);
     this.walkrouteLayer.addLayer(wp);
 }
 
@@ -236,3 +227,16 @@ WRAddMgr.prototype.clearWalkroute = function()
     Waypoint.prototype.resetMarkerCount();
 }
 
+WRAddMgr.prototype.showStageDetailsDialog = function(wp)
+{
+    this.wptDlg.show();
+    this.curWp = wp.id; 
+    var contents = (this.waypoints[this.curWp-1].description) ?
+                this.waypoints[this.curWp-1].description: '';
+    this.wptDlg.setContent('Enter details for stage ' + this.curWp +
+                            ' of the walk: <br /> ' +
+                            '<textarea id="_wrmgr_wptext" ' +
+                             'style="margin: 10px 10px 10px 10px;'+
+                            'width:360px;height:150px">'+contents+
+                            '</textarea>');
+}

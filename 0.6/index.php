@@ -87,7 +87,9 @@ function write_sidebar($homepage=false)
     Freemap using kothic-js client-side rendering. 
     <a href='about.html'>More...</a> | <a href='/wordpress'>Blog</a></p>
 
-    <p>On Linux, Chrome recommended.</p>
+	<div id='appmsg'>
+	<a href='/common/opentrail.html'>Android app</a>
+	now available!</div>
 
 
     <?php

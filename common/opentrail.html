@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>OpenTrail - Freemap for Android</title>
+<link rel='stylesheet' type='text/css' href='../0.6/css/style.css' />
+</head>
+<body> 
+<div id='content'>
+<h1>OpenTrail - Freemap for Android</h1>
+<hr />
+<p>Freemap now has a full featured Android (2.1+) app - <em>OpenTrail</em> - 
+available from <a href="../downloads/android/opentrail.apk">here</a>
+(but please <a href="../downloads/android/README_BEFORE_DOWNLOADING.txt">
+read this</a> before downloading!) It provides many of the features of a
+typical OSM mobile app, but with a few unique features, in particular the
+ability to report path problems and add points of interest and path directions
+in the field, as well as present these live to you in the field while you are
+out walking.</p>
+<img style="display: block; float: left; margin:20px"
+src="../images/opentrailscreenshot.png" alt="OpenTrail screenshot" />
+<h2> What can you do with OpenTrail?</h2>
+<ul style="margin-left: 10px">
+<li>View OpenStreetMap-derived 
+maps of the majority of England (Wales and Scotland not covered
+just yet) showing public rights of way in the
+<a href='/0.6/about.html#mapkey'>same colour scheme as Freemap itself</a>
+together with Ordnance Survey LandForm PANORAMA contours. The maps are
+rendered using the <a href='http://code.google.com/p/mapsforge'>Mapsforge</a>
+library and 
+initially downloaded to your device, and then stored on the device or 
+SD card.</li>
+<li>Add annotations to the map in-the-field, which can be shared
+with other users. These can be anything you like
+(within reason!) and are added to Freemap's annotations database. So you can
+share points of interest, interesting views, path directions in awkward
+places, and path blockages with other users. Then, when someone else uses
+OpenTrail later on, details of that annotation will be presented to them in
+the field. It's my aim with Freemap and OpenTrail to produced a crowd-sourced
+source of information for walkers throughout the country. Note that you
+have to provide your Freemap login details int he app preferences, otherwise
+the annotations will have to be authorised before going live.</li>
+<li>View annotations and directions in-the-field contributed by other
+users. So, if you find yourself in the middle of a large field with no
+apparent way out, OpenTrail will tell you where to aim for!</li>
+<li>Download and <em>"play"</em>
+walking routes from Freemap. As you may know, you can create
+walking routes on the main Freemap site; these can be downloaded into
+OpenTrail (as GPX files with waypoints for each stage of the route)
+and <em>"played" on your device</em>. So, when you get to the start of the
+next stage of the walk, the instructions will be presented to you live
+in-the-field.</li>
+<li>Record new walking routes and save them as GPX files. These can be 
+uploaded to Freemap and shared with other users. It is not yet possible
+to add text descriptions to each stage of the route; this will probably be
+left to the 0.2 release unless I get enough 
+<a href="mailto:freemapinfo@gmail.com">requests</a>. Theoretically this
+functionality can of course be used to survey new data for OSM, but I have
+not yet tested its robustness over several hours or its effect on the
+battery, so it is not recommended just yet.</li>
+<li>Find nearby points of interest (but that's pretty standard for an
+OSM mobile app). The POIs are obtained from the Freemap server and
+consequently this functionality is only available in areas with Freemap
+coverage.</li>
+<li>Save annotations on the device for later upload, reducing the need
+for network access in-the-field. Also, annotations and POIs are cached
+on the device, meaning that after initial network access, the app can
+be used completely offline if desired.</li>
+</ul>
+</p>
+<h2>Brief instructions</h2>
+<p><em>It is recommended you run OpenTrail for the first time in a wi-fi 
+area as map data needs to be downloaded.</em> Fire up the app. You will be
+prompted to download a style file from the Freemap server; this controls the
+look-and-feel of the maps. Then, when you get a GPS signal, you will be 
+prompted to download a map file for your local area (map files cover the 
+standard OS 100x100km grid squares). This is a binary file containing the map
+data. Once downloaded you will be able to use the app in that 100x100km area
+without needing a network connection for the map.</p>
+<p>Hopefully most of the menu options will be self-explanatory. One thing to
+note is that you can <em>automatically download new point of interest and
+annotation data as you travel</em> avoiding the need to manually download
+data. Point of interest and annotation data is then cached on the device to
+avoid network access next time, though there is an option to force download
+of new data rather than use the cache (for example, if someone else adds a
+new annotation in the meantime).</p>
+<h2>IMPORTANT! This is BETA SOFTWARE!</h2>
+<p>OpenTrail is <em>beta software</em>. While I have endeavoured to keep bugs 
+to a minimum
+I cannot guarantee that it is bug-free. It is possible that the app
+will crash. To help fix bugs, please note that <em>if the app does crash,
+it will send a bug report to a spreadsheet on my (nickw)'s Google Drive</em>
+via
+the <a href="http://www.acra.ch">ACRA</a> bug reporting system. Please ONLY
+install if you are happy with this!</p>
+<h2>Missing features?</h2>
+<p>I'm now considering OpenTrail in feature-freeze for a 0.1 version, and so
+major new features will not be added until a future 0.2 release. Nonetheless
+if there are any small things that you would like to see added, or have ideas
+for larger-scale features that could make it to the next release, please
+<a href="mailto:freemapinfo@gmail.com">email me</a> (Nick Whitelegg, nickw on
+OSM)</p>
+<h2>Source code</h2>
+<p>OpenTrail is an open-source application (GPL; libraries are LGPL): see
+the <a href="https://github.com/nickw1/Freemap">Freemap github page</a>,
+OpenTrail source is in the "java" directory.</p>
+<p><a href="/0.6/index.php">Back to Freemap</a></p>
+</body>
+</html>

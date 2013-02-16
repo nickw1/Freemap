@@ -55,7 +55,7 @@ z-index: 998; }
 	visibility: hidden;
 	position:absolute;
 	top: 30px;
-	width:100px;
+	width:150px;
 	padding: 5px 5px 5px 5px;
 }
 
@@ -200,3 +200,17 @@ table, td
 	left:0px;
 	top:0px;
 }
+#appmsg 
+{ 
+	background-color: #ffffc0;
+	color: #c00000;
+	font-weight:bold;
+	border: 2px solid black; 
+	width: 200px;
+	margin-left:auto;
+	margin-right: auto;
+	text-align: center;
+	font-size: 120%;
+}
+
+#sidebar #appmsg a { color: blue; }

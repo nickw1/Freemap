@@ -155,15 +155,22 @@ function Freemap(lat,lon,zoom)
                         submenu:  [
                             { name: "New", action:this.wrAddMgr.newWR.bind
                                 (this.wrAddMgr) },
-                            { name: 'Draw route', 
-                                action: (function()
-                                    { this.wrAddMgr.mode=0; } ).bind(this) },
                             { name: 'Undo last point',
                                 action: this.wrAddMgr.undo.bind
                                     (this.wrAddMgr) },
-                            { name: 'Add stages', 
-                                action: (function()
-                                    { this.wrAddMgr.mode=1; } ).bind(this) },
+                            { name: 'Add stage descriptions', 
+                                action: (function(e)
+                                    { 
+                                        this.wrAddMgr.mode=
+                                            e.target.firstChild.nodeValue==
+                                            'Add stage descriptions' ? 1:0;
+                                        e.target.firstChild.nodeValue =
+                                            e.target.firstChild.nodeValue ==
+                                            'Add stage descriptions' ?
+                                            'Finish adding stages' :
+                                            'Add stage descriptions';
+                                    } 
+                                    ).bind(this) },
                             { name: "Save", action:this.wrAddMgr.wrDone.bind
                                 (this.wrAddMgr) },
                                 ]
@@ -174,7 +181,7 @@ function Freemap(lat,lon,zoom)
 
     if(document.getElementById('myroutes'))
     {
-        document.getElementById('myroutes').onclick = this.wrViewMgr.sendRequest.
+        document.getElementById('myroutes').onclick=this.wrViewMgr.sendRequest.
             bind(this.wrViewMgr);
     }
 

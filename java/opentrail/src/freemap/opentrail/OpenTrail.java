@@ -76,6 +76,8 @@ import freemap.andromaps.HTTPUploadTask;
 import freemap.andromaps.HTTPCommunicationTask;
 import freemap.andromaps.DialogUtils;
 
+import freemap.proj.OSGBProjection;
+import freemap.proj.Proj4ProjectionFactory;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
