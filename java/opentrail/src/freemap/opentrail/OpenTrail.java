@@ -1192,34 +1192,20 @@ public class OpenTrail extends MapActivity implements
     
     private void doUploadRecordedWalkroute(Walkroute walkroute)
     {
-    	final Walkroute wr=walkroute;
+    	
     	if(walkroute!=null)
     	{
     		
-    		new AlertDialog.Builder(this).setPositiveButton("OK", 
-    					new DialogInterface.OnClickListener()
-    					{
-    						public void onClick(DialogInterface i, int which)
-    						{
-    							String gpx = wr.toXML();
-    				    		ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
-    				    		postData.add(new BasicNameValuePair("action","add"));
-    				    		postData.add(new BasicNameValuePair("route", gpx));
-    				    		postData.add(new BasicNameValuePair("format", "gpx"));
-    				    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-    				    		String username = prefs.getString("prefUsername",""), password = prefs.getString("prefPassword", "");
-    							dfTask = new HTTPUploadTask(OpenTrail.this,"http://www.free-map.org.uk/0.6/ws/wr.php", postData, 
-										"Upload walk route?", OpenTrail.this, 3);
-    							if(!(username.equals("")) && !(password.equals("")))
-    								((HTTPUploadTask)dfTask).setLoginDetails(username, password);
-    							dfTask.setDialogDetails("Uploading...", "Uploading walk route...");
-    							dfTask.confirmAndExecute();
-    						}
-    					} ).setCancelable(true).
-    					setMessage("No simplification on track done yet, "+
-    							"tracks typically 1 kilobyte/minute. Still upload?").
-    					setNegativeButton("Cancel",null).show();
-    		
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    		String username = prefs.getString("prefUsername",""), password = prefs.getString("prefPassword", "");
+    		dfTask = new WRUploadTask(OpenTrail.this,walkroute,
+    		           "http://www.free-map.org.uk/0.6/ws/wr.php",  
+										"Upload walk route? No simplification on track done yet, "+
+                                "tracks typically 1 kilobyte/minute.", OpenTrail.this, 3);
+    		if(!(username.equals("")) && !(password.equals("")))
+    		    ((HTTPUploadTask)dfTask).setLoginDetails(username, password);
+    	    dfTask.setDialogDetails("Uploading...", "Uploading walk route...");
+    		dfTask.confirmAndExecute();
     	}
     }
     

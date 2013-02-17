@@ -45,4 +45,9 @@ public class HTTPUploadTask extends HTTPCommunicationTask {
 		this.username=username;
 		this.password=password;
 	}
+	
+	public void setPostData(ArrayList<NameValuePair> postData)
+	{
+	    this.postData = postData;
+	}
 }

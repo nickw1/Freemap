@@ -51,13 +51,17 @@ public class OsmDemIntegrator {
 					tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
 	}
 	
+	public boolean needNewData(Point point)
+	{
+	    return osm.needNewData(point) || hgt.needNewData(point);
+	}
+	
 	// ASSUMPTION: the tiling systems for hgt and osm data coincide - which they do here (see constructor)
-	public boolean update(Point point) 
+	public boolean update(Point point) throws Exception
 	{
 		FreemapDataset osmupdated=null;
 		
-		try
-		{
+		    // TODO updatesurroundingtiles
 			DEM hgtupdated = (DEM)hgt.update(point,true);
 			Log.d("OpenTrail"," DEM returned ");
 		
@@ -82,11 +86,8 @@ public class OsmDemIntegrator {
 					 Log.d("OpenTrail","is cache");
 				
 			}
-		}
-		catch(Throwable t)
-		{
-			Log.e("OpenTrail"," ERROR: " + t);
-		}
+		
+		
 		boolean b = osmupdated!=null;
 		if(b)System.out.println("Returning true");
 		return b;

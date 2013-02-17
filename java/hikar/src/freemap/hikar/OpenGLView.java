@@ -15,7 +15,7 @@ import freemap.datasource.FreemapDataset;
 
 public class OpenGLView extends GLSurfaceView {
     
-    public DataRenderer renderer;
+   DataRenderer renderer;
     
   
     
@@ -190,5 +190,10 @@ public class OpenGLView extends GLSurfaceView {
         super(ctx);
         renderer=new DataRenderer();
         setRenderer(renderer);
+    }
+    
+    public DataRenderer getRenderer()
+    {
+        return renderer;
     }
 }
