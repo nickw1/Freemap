@@ -918,10 +918,6 @@ public class OpenTrail extends MapActivity implements
             	dataTask = new DownloadPOIsTask(this, poiDeliverer, this, showDialog, forceWebDownload, location);
             	((DownloadPOIsTask)dataTask).execute();
     		}
-    		else
-    		{
-    			DialogUtils.showDialog(this,"You're already downloading!");
-    		}
     	}
     	else
     	{

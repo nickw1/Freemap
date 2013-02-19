@@ -6,6 +6,7 @@ import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.content.Context;
 
 import java.util.ArrayList;
 
@@ -25,18 +26,25 @@ public class OpenGLView extends GLSurfaceView {
         float[] orientMtx;
         ArrayList<RenderedWay> renderedWays;
         boolean calibrate;
-        RenderedWay calibrateRect;
+        GLRect calibrateRect;
         float xDisp, yDisp, zDisp, height;
         
         public DataRenderer()
         {
             hFov = 40.0f;
             renderedWays = new ArrayList<RenderedWay>();
+            
+            zDisp = 2.0f;
+            height = 0.0f;
+                
+            // calibrate with an object 50cm long and 1m away
+            calibrateRect = new GLRect(new float[]{0.25f,0.0f,-1.0f,-0.25f,0.0f,-1.0f,-0.25f,0.05f,-1.0f,0.25f,0.05f,-1.0f}, 
+                                    new float[]{1.0f,1.0f,1.0f,1.0f});
         }
         
         public void onSurfaceCreated(GL10 gl,EGLConfig config)
         {
-            gl.glClearColor(0.0f,0.0f,0.0f,0.0f);
+            gl.glClearColor(0.0f,0.0f,0.5f,0.0f);
             gl.glClearDepthf(1.0f);
             gl.glEnable(GL10.GL_DEPTH_TEST);
             gl.glDepthFunc(GL10.GL_LEQUAL);
@@ -54,6 +62,10 @@ public class OpenGLView extends GLSurfaceView {
             gl.glLoadIdentity();
             gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
             
+            gl.glTranslatef(0.0f,0.0f,-zDisp);
+            calibrateRect.draw(gl);
+            
+            /*
             if(calibrate)
             {
                 calibrateRect.draw(gl);
@@ -85,24 +97,8 @@ public class OpenGLView extends GLSurfaceView {
                         }
                     }
                 }
-                else
-                {
-                 
-                    gl.glTranslatef(0.0f,0.0f,-zDisp);
-                    Way w=new Way();
-                    w.addPoint(0.0f, 0.0f, 0.0f);
-                    w.addPoint(-10.0f, 0.0f, 0.0f);
-                    w.addPoint(-10.0f, 10.0f, 0.0f);
-                    w.addPoint(-20.0f, 10.0f, 0.0f);
-                    w.addPoint(-20.0f, 20.0f, 0.0f);
-                    w.addPoint(-30.0f, 20.0f, 0.0f);
-                    w.addPoint(-30.0f, 30.0f, 0.0f);
-                    
-                    RenderedWay rw=new RenderedWay(w,2.0f);
-                    rw.draw(gl);
-                    
-                }
             }
+            */
         }
         
         public void onSurfaceChanged(GL10 gl, int width, int height)
@@ -185,7 +181,7 @@ public class OpenGLView extends GLSurfaceView {
         
     }
     
-    public OpenGLView(Hikar ctx)
+    public OpenGLView(Context ctx)
     {
         super(ctx);
         renderer=new DataRenderer();
