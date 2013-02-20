@@ -2,6 +2,8 @@ package freemap.hikar;
 
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
+import freemap.proj.OSGBProjection;
+import freemap.data.Projection;
 import android.app.Fragment;
 import android.app.Activity;
 import android.location.Location;
@@ -17,10 +19,11 @@ public class ViewFragment extends Fragment
     OpenGLView glView;
     DownloadDataTask downloadDataTask;
     LocationProcessor locationProcessor;
+    Projection proj;
     
     public ViewFragment()
     {
-    
+        proj = new OSGBProjection();
     }
     
     public void onAttach(Activity activity)
@@ -53,6 +56,9 @@ public class ViewFragment extends Fragment
 
     public void receiveLocation(Location loc) {
         Point p = new Point(loc.getLongitude(), loc.getLatitude());
+        Point projected = proj.project(p);
+        glView.getRenderer().setCameraLocation((float)projected.x, (float)projected.y);
+        glView.getRenderer().setHeight(300.0f);
         if(integrator.needNewData(p))
         {
             downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
@@ -65,6 +71,7 @@ public class ViewFragment extends Fragment
     
     public void receiveData(FreemapDataset data)
     {
-        //glView.getRenderer().setRenderData(data);
+        android.util.Log.d("hikar","received data");
+        glView.getRenderer().setRenderData(data);
     }
 }

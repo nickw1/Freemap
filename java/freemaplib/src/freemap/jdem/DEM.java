@@ -108,7 +108,7 @@ public class DEM implements freemap.datasource.TiledData {
 			
 			double h = hbottom*(1-propY) + htop*propY;
 			
-			System.out.println("*******************************height is: " + h);
+			//System.out.println("*******************************height is: " + h);
 			return h;
 		}
 		

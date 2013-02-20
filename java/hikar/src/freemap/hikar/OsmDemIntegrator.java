@@ -15,6 +15,7 @@ import freemap.proj.Proj4ProjectionFactory;
 import freemap.datasource.FreemapDataset;
 import android.util.Log;
 import android.os.Environment;
+import java.io.File;
 
 
 public class OsmDemIntegrator {
@@ -30,25 +31,27 @@ public class OsmDemIntegrator {
 		
 		FreemapFileFormatter formatter=new FreemapFileFormatter(projID);
         formatter.setScript("bsvr.php");
-        formatter.selectPOIs("place,amenity,natural");
-        formatter.selectAnnotations(true);
+        formatter.selectWays("highway");
+        
         WebDataSource osmDataSource=new WebDataSource("http://www.free-map.org.uk/0.6/ws/",formatter);
         
 		Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
-		
 		tilingProj = factory.generate(projID);
+		File cacheDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
+		        tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
+		if(!cacheDir.exists())
+		    cacheDir.mkdirs();
+		
 		hgt=new HGTTileDeliverer("dem",hgtDataSource, new HGTDataInterpreter(101,101,50,
 											DEMSource.LITTLE_ENDIAN),
-						5000, 5000, tilingProj,101,101,50,
-						Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/cache/"+
-						tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
+						5000, 5000, tilingProj,101,101,50,cacheDir.getAbsolutePath());
+						
 		
 		osm = new TileDeliverer("osm",osmDataSource, 
 					new XMLDataInterpreter(new FreemapDataHandler(factory)),
 					5000,5000,
 					tilingProj,
-					Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/cache/"+
-					tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
+					cacheDir.getAbsolutePath());
 	}
 	
 	public boolean needNewData(Point point)
@@ -61,35 +64,36 @@ public class OsmDemIntegrator {
 	{
 		FreemapDataset osmupdated=null;
 		
+		Log.d("hikar", "Updating: point=" + point);
 		    // TODO updatesurroundingtiles
 			DEM hgtupdated = (DEM)hgt.update(point,true);
-			Log.d("OpenTrail"," DEM returned ");
+			//Log.d("hikar"," DEM returned ");
 		
-			//Log.d("OpenTrail", hgtupdated.toString());
-			Log.d("OpenTrail","Getting OSM data...");
+	
+			//Log.d("hikar","Getting OSM data...");
 			osmupdated = (FreemapDataset)osm.update(point,false);
 			
 			if (hgtupdated!=null && osmupdated!=null)
 			{
-				 Log.d("OpenTrail","hgtupdated and osmupdated not null");
+				 Log.d("hikar","hgtupdated and osmupdated not null");
 				 if(!osm.isCache())
 				 {
-					Log.d("OpenTrail","Applying DEM as not cached");
-					System.out.println("Applying DEM as not cached");
+					Log.d("hikar","Applying DEM as not cached");
+			
 					//System.out.println("Before updating: osmupdated="+osmupdated);
 				 	osmupdated.applyDEM(hgtupdated);
 				 	//System.out.println("After updating: osmupdated="+osmupdated);
 				 	osm.cache(osmupdated);
-				 	Log.d("OpenTrail","Done");
+				 	Log.d("hikar","Done");
 				 }
 				 else
-					 Log.d("OpenTrail","is cache");
+					 Log.d("hikar","osm: is cache, has dem already");
 				
 			}
 		
 		
 		boolean b = osmupdated!=null;
-		if(b)System.out.println("Returning true");
+		
 		return b;
 	}
 	

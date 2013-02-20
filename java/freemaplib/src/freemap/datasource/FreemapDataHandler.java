@@ -73,7 +73,7 @@ public class FreemapDataHandler extends XMLDataHandler
 	{
 		
 		curTag = (localName.equals("")) ? qName:localName;
-		System.out.println("curTag="+curTag);
+		
 		
 		if(curTag.equals("way"))
 		{

@@ -44,7 +44,7 @@ public class DEMSource {
 	
 		DEM dem = new DEM (bottomLeftSelected,(indexE-indexW)+1,(indexS-indexN)+1,spacing);
 		dem.setHeights(metres);
-		System.out.println("Done");
+		//System.out.println("Done");
 		return dem;
 	}
 	
@@ -56,10 +56,10 @@ public class DEMSource {
 		int ptHeight = (indexS-indexN)+1;
 		int mostSignificant = (endianness==LITTLE_ENDIAN) ? 1: 0,
 				leastSignificant = (endianness==LITTLE_ENDIAN) ? 0:1; 
-		System.out.println("Size of metres array: " + ptWidth*ptHeight);
+		//System.out.println("Size of metres array: " + ptWidth*ptHeight);
 		int[] metres = new int[ptWidth*ptHeight];
 		
-		System.out.println("width=" + width+ " ptWIdth=" + ptWidth+  " ptHeight=" + ptHeight+ " spacing=" + spacing);
+		//System.out.println("width=" + width+ " ptWIdth=" + ptWidth+  " ptHeight=" + ptHeight+ " spacing=" + spacing);
 		byte[] d2= new byte[1024];
 		
 		int total=0, bytesRead,metreCount=0,colIdx,metresTotal;
@@ -95,22 +95,22 @@ public class DEMSource {
 				// Force another byte out of the stream...
 				if(bytesRead%2==1)
 				{
-					System.out.println("Read in " + bytesRead+" forcing the API to behave and give an even number...");
+					//System.out.println("Read in " + bytesRead+" forcing the API to behave and give an even number...");
 					int first = d2[(i-metresTotal)*2];
-					System.out.println("Trying to read in byte");
+					//System.out.println("Trying to read in byte");
 					int z = fis.read(d2,0,1);
-					System.out.println("Done");
+					//System.out.println("Done");
 					bytesRead+=z;
 					int last = d2[0];
 					ls = (leastSignificant==0) ? first:last;
 					ms = (leastSignificant==0) ? last:first;
 					metres[metreCount++]=ls+ms*256;
-					System.out.println("Read in additional byte");
+					//System.out.println("Read in additional byte");
 				}	
 				total+=bytesRead;
 			}
 			
-			System.out.println("Read in:  " + bytesRead+", total=" + total);
+			//System.out.println("Read in:  " + bytesRead+", total=" + total);
 		}
 		
 		return metres;

@@ -14,6 +14,8 @@ import freemap.data.Way;
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 
+import android.util.Log;
+
 public class OpenGLView extends GLSurfaceView {
     
    DataRenderer renderer;
@@ -44,7 +46,7 @@ public class OpenGLView extends GLSurfaceView {
         
         public void onSurfaceCreated(GL10 gl,EGLConfig config)
         {
-            gl.glClearColor(0.0f,0.0f,0.5f,0.0f);
+            gl.glClearColor(0.0f,0.0f,0.3f,0.0f);
             gl.glClearDepthf(1.0f);
             gl.glEnable(GL10.GL_DEPTH_TEST);
             gl.glDepthFunc(GL10.GL_LEQUAL);
@@ -63,9 +65,9 @@ public class OpenGLView extends GLSurfaceView {
             gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
             
             gl.glTranslatef(0.0f,0.0f,-zDisp);
-            calibrateRect.draw(gl);
             
-            /*
+            
+           
             if(calibrate)
             {
                 calibrateRect.draw(gl);
@@ -82,23 +84,21 @@ public class OpenGLView extends GLSurfaceView {
             
                 if(renderedWays.size()>0)
                 {
-                    //Log.d("OpenTrail","Have some rendered ways");
+                    
                     gl.glTranslatef(-xDisp,-yDisp,-height-zDisp);
                     synchronized(renderedWays)
                     {
                         for(RenderedWay rWay: renderedWays)
                         {
-                            //Log.d("OpenTrail","p=" + p.x+" "+p.y+" "+p.z+" average P="+a.x+" "+a.y+" " +a.z+" distance=" + rWay.distanceTo(p));
+                            
                             if(rWay.distanceTo(p) <= 1000.0f)
                             {
-                                //Log.d("OpenTrail","Drawing a rendered way");
                                 rWay.draw(gl);
                             }       
                         }
                     }
                 }
             }
-            */
         }
         
         public void onSurfaceChanged(GL10 gl, int width, int height)
@@ -141,7 +141,7 @@ public class OpenGLView extends GLSurfaceView {
             {
                 renderedWays.add(new RenderedWay(w,2.0f));
             }
-            //Log.d("OpenTrail","Adding rendered way for way with ID: " + w.getValue("osm_id"));
+            Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
         }
         
         public void setRotation(float azimuth,float pitch,float roll)
