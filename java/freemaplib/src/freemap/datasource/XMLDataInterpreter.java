@@ -21,6 +21,7 @@ public class XMLDataInterpreter implements DataInterpreter {
 	}
 
 	public Object getData(InputStream in) throws IOException, SAXException{
+	    handler.reset();
 		XMLReader reader = getReader();
 		if(reader!=null)
 		{
@@ -32,6 +33,7 @@ public class XMLDataInterpreter implements DataInterpreter {
 	
 	public Object getData(String xml) throws IOException, SAXException
 	{
+	    handler.reset();
 		XMLReader reader = getReader();
 		if(reader!=null)
 		{
