@@ -78,6 +78,7 @@ public class FreemapDataset implements TiledData
 	
 	public void applyDEM(DEM dem)
 	{
+	    
 		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		Set<Map.Entry<Long, POI> > poiSet = pois.entrySet();
 		
@@ -85,7 +86,7 @@ public class FreemapDataset implements TiledData
 		
 		for(Map.Entry<Long,Way> w: waySet)
 		{
-			System.out.println("way: " + w.getValue().getValue("osm_id"));
+			//System.out.println("way: " + w.getValue().getValue("osm_id"));
 			w.getValue().applyDEM(dem);
 		}
 		

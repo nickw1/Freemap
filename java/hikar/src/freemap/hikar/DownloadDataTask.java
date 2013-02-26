@@ -26,17 +26,27 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
     public String doInBackground(Point... p)
     {
         boolean status=false;
+        String msg="";
         try
         {
            status = integrator.update(p[0]);
             if(status)
                 setData(integrator.getCurrentOSMData());
         }
+        catch(java.io.IOException e)
+        {
+            msg=e.getMessage();
+            
+        }
+        catch(org.xml.sax.SAXException e)
+        {
+            msg= e.getMessage();
+        }
         catch(Exception e)
         {
-            return e.getMessage();
+            android.util.Log.e("hikar", "Internal error: " + e.getStackTrace());
         }
-        return (status) ? "Successfully downloaded" : "Error downloading";
+        return (status) ? "Successfully downloaded" : "Error downloading: " + msg;
     }
    
     

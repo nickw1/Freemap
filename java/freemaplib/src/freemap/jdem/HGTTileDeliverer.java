@@ -28,8 +28,11 @@ public class HGTTileDeliverer extends freemap.datasource.TileDeliverer {
 	{
 		if(rawData!=null)
 		{
+		   
 			DEM dem = new DEM(origin,demWidth,demHeight,demRes,proj);
+		
 			dem.setHeights((int[])rawData);
+			
 			return dem;
 		}
 		return null;

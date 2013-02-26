@@ -28,6 +28,7 @@ public class TileDeliverer {
 	String name, cachedir;
 	
 	
+
 	public TileDeliverer(String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
 							Projection proj,String cachedir)
 	{
@@ -72,14 +73,35 @@ public class TileDeliverer {
 	
 	public TiledData updateSurroundingTiles(Point lonLat, boolean cacheData) throws Exception
 	{
-		return updateSurroundingTiles(lonLat,cacheData,false);
+	
+	    return updateSurroundingTiles(lonLat, cacheData, false);
+	   
 	}
 	
 	public TiledData updateSurroundingTiles(Point lonLat, boolean cacheData, boolean forceReload) throws Exception
+    {
+	    
+	        
+	        HashMap<String,Tile> updatedData = doUpdateSurroundingTiles(lonLat,cacheData,forceReload);
+	        
+	        Point curOrigin = getOrigin(curPos);
+	        return (updatedData.get(""+(int)curOrigin.x+"." + (int)curOrigin.y)!=null)?
+	                updatedData.get(""+(int)curOrigin.x+"." + (int)curOrigin.y).data : null;
+	        
+	    
+           
+    }
+	
+	// 24/02/13 now returns an array of Tiles.
+	// This is to allow external manipulation of data e.g. applying a DEM then saving the data, where the
+	// DEM-applied data is cached (such as in hikar)
+	public HashMap<String,Tile> doUpdateSurroundingTiles(Point lonLat, boolean cacheData, boolean forceReload) throws Exception
 	{
-		Point newPos = proj.project(lonLat);
-		TiledData curData=null, thisData;
-		Point curOrigin = new Point();
+		HashMap<String,Tile> updatedData = new HashMap<String,Tile>();
+	    Point newPos = proj.project(lonLat);
+		TiledData thisData;
+		Point curOrigin = null;
+		int i=0;
 		if(curPos==null || isNewObject(curPos,newPos))
 		{	
 			curPos = newPos;
@@ -89,12 +111,14 @@ public class TileDeliverer {
 			{
 				for(int col=-1; col<=1; col++)
 				{
-					curOrigin.x = origin.x+col*tileWidth;
-					curOrigin.y = origin.y+row*tileHeight;
+				    curOrigin = new Point(origin.x+col*tileWidth,
+				                    origin.y+row*tileHeight);
+					
 					thisData = doUpdate(curOrigin,cacheData,forceReload);
-					if(row==0 && col==0)
-						curData=thisData;
-				}
+					String key = ""+(int)curOrigin.x+"." + (int)curOrigin.y;
+					
+					updatedData.put(key,new Tile(curOrigin,thisData,isCache(cachedir+"/"+name+"."+key)));
+				} 
 			}
 			//System.out.println("done");
 		}
@@ -103,9 +127,8 @@ public class TileDeliverer {
 			//System.out.println("No change in tile");
 			curPos = newPos;	
 		}
-		return curData;
+		return updatedData;
 	}
-
 	
 	// sets position without downloading data
 	// e.g. after a forceDownload()
@@ -132,9 +155,10 @@ public class TileDeliverer {
 	{
 		TiledData curData=null;
 		String key = "" + ((int)origin.x)+"."+((int)origin.y);
-		//System.out.println("key="+key);
+		
 		if(!data.containsKey(key))
 		{
+		   
 			String cachefile=cachedir+"/"+name+"."+key;
 			//System.out.println("cachefile="+cachefile);
 			if(cachedir!=null && isCache(cachefile) && !forceReload)
@@ -143,13 +167,13 @@ public class TileDeliverer {
 			}
 			else
 			{
-				System.out.println("Loading from web");
+				//System.out.println("Loading from web");
 				curData = dataWrap(origin,dataSource.getData(origin,interpreter));
 				// It is assumed the data is in standard 4326 and we 
 				// reproject on the client side. This is because it's a bit of
 				// a pain to reproject into arbitrary projections server side
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
-				//System.out.println("Reprojecting");
+				//System.out.println("Reprojecting to " + proj);
 				curData.reproject(proj);
 				if(cacheData)
 					cache(curData,cachefile);
@@ -193,6 +217,11 @@ public class TileDeliverer {
 		}
 	}
 	
+	public void cacheByKey(TiledData data, String key) throws Exception
+	{
+	    cache(data,cachedir+"/"+name+"."+key);
+	}
+	
 	protected TiledData loadFromCache(String cachefile,Point origin) throws Exception
 	{
 		TiledData curData = null;
@@ -219,7 +248,7 @@ public class TileDeliverer {
 		Point origin = getOrigin(curPos);
 		return (origin==null) ? false: new File(cachefile).exists();
 	}
-	
+
 	public boolean needNewData(Point p)
 	{
 		return curPos==null || isNewObject(curPos,proj.project(p));

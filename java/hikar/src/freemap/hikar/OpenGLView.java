@@ -5,8 +5,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
-import android.opengl.Matrix;
 import android.content.Context;
+import android.os.AsyncTask;
 
 import java.util.ArrayList;
 
@@ -17,7 +17,7 @@ import freemap.datasource.FreemapDataset;
 import android.util.Log;
 
 public class OpenGLView extends GLSurfaceView {
-    
+   
    DataRenderer renderer;
     
   
@@ -37,7 +37,7 @@ public class OpenGLView extends GLSurfaceView {
             renderedWays = new ArrayList<RenderedWay>();
             
             zDisp = 2.0f;
-            height = 0.0f;
+            
                 
             // calibrate with an object 50cm long and 1m away
             calibrateRect = new GLRect(new float[]{0.25f,0.0f,-1.0f,-0.25f,0.0f,-1.0f,-0.25f,0.05f,-1.0f,0.25f,0.05f,-1.0f}, 
@@ -120,8 +120,16 @@ public class OpenGLView extends GLSurfaceView {
         
         public void setRenderData(FreemapDataset d)
         {
-            renderedWays = new ArrayList<RenderedWay> ();
-            d.operateOnWays(this);    
+            AsyncTask<FreemapDataset,Void,Boolean> setRenderDataTask = new AsyncTask<FreemapDataset,Void,Boolean> ()
+            {
+                protected Boolean doInBackground(FreemapDataset... d)
+                {
+                    renderedWays = new ArrayList<RenderedWay> ();
+                    d[0].operateOnWays(DataRenderer.this); 
+                    return true;
+                }
+            };
+            setRenderDataTask.execute(d);  
         }
         
         public void setCameraLocation(float x,float y)
@@ -141,18 +149,10 @@ public class OpenGLView extends GLSurfaceView {
             {
                 renderedWays.add(new RenderedWay(w,2.0f));
             }
-            Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
+            //Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
         }
         
-        public void setRotation(float azimuth,float pitch,float roll)
-        {
-            // The azimuth, pitch, roll from the sensors are based on positive
-            // =clockwise (despite what the API docs say!!!), so we rotate by +pitch and +roll.
-            Matrix.setIdentityM(orientMtx,0);
-            Matrix.rotateM(orientMtx,0,azimuth-90.0f,0.0f,0.0f,1.0f);
-            Matrix.rotateM(orientMtx,0,pitch,1.0f,0.0f,0.0f);
-            Matrix.rotateM(orientMtx,0,roll,0.0f,1.0f,0.0f);
-        }
+        // setRotation() removed as duplicates setOrientMtx()
         
         public void setHFOV(float hFov)
         {

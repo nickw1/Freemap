@@ -405,7 +405,7 @@ public class OpenTrail extends MapActivity implements
     	dataDisplayer.cleanup();
     	//mapLocationProcessor=null;
     	//alertDisplayMgr=null;
-    	dataDisplayer=null;
+    	// 230213 no need for this and causes crashes dataDisplayer=null;
     	
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     	SharedPreferences.Editor editor = settings.edit();
@@ -417,7 +417,7 @@ public class OpenTrail extends MapActivity implements
     	editor.putBoolean("waitingForNewPOIData",waitingForNewPOIData);
     	editor.putString("mapFile",mapFile);
     	editor.commit();
-    	mapView=null;
+    	// 230213 no need for this and causes crashes mapView=null;
     	
     }
     
@@ -1074,6 +1074,7 @@ public class OpenTrail extends MapActivity implements
         if(ds!=null)
         {
             Shared.pois = ds;
+            Log.d("OpenTrail","POIS received: " + ds);
             waitingForNewPOIData=false;
             alertDisplayMgr.setPOIs(Shared.pois);
             loadAnnotationOverlay();

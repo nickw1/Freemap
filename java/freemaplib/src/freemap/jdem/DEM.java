@@ -10,7 +10,7 @@ import java.io.IOException;
 import freemap.datasource.TiledData;
 
 public class DEM implements freemap.datasource.TiledData {
-	Point bottomLeft, topRight;
+	private Point bottomLeft, topRight;
 	int ptWidth, ptHeight;
 	double spacing;
 	int[] heights;
@@ -29,6 +29,7 @@ public class DEM implements freemap.datasource.TiledData {
 	private void initialise(Point bottomLeft, int ptWidth, int ptHeight, double spacing, Projection proj)
 	{
 		this.bottomLeft=bottomLeft;
+		
 		topRight = new Point();
 		this.ptWidth=ptWidth;
 		this.ptHeight=ptHeight;
@@ -175,5 +176,21 @@ public class DEM implements freemap.datasource.TiledData {
 	{
 		
 	}
+	
+	public Point getBottomLeft()
+	{
+	    return bottomLeft;
+	}
+	
+	public Point getTopRight()
+	{
+	    return topRight;
+	}
+	
+	public Projection getProjection()
+	{
+	    return proj;
+	}
+	
 }
 

@@ -37,7 +37,8 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		try
 		{
 			Point p = new Point(location.getLongitude(),location.getLatitude());
-			td.updateSurroundingTiles(p,true,forceWebDownload);
+			Log.d("OpenTrail","Updating data with point: " + p);
+			Log.d("OpenTrail","getSurroiundingties()retuend:" +td.updateSurroundingTiles(p,true,forceWebDownload));
 			setData((FreemapDataset)td.getAllData());
 			Log.d("OpenTrail","done");
 			return "Successfully downloaded";

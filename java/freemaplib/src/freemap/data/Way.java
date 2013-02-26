@@ -40,10 +40,8 @@ public class Way extends Feature {
 	
 	public void applyDEM(DEM dem)
 	{
-		//System.out.println("Way.applyDEM:");
 		for(Point p: points)
 		{
-			//System.out.println("Point " + p + " getting height");
 			p.z = dem.getHeight(p.x,p.y,proj);
 		}
 	}

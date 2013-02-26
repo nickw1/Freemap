@@ -36,7 +36,7 @@ public class Hikar extends Activity {
 	CameraView cview;
 	CameraOverlay overlay;
 	OsmDemIntegrator integrator;
-	String projID;
+	String projID;ge
 	freemap.data.Projection proj;
 	Timer timer;
 	DataUpdater dataUpdater;
