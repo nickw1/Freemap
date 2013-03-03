@@ -6,20 +6,13 @@ import java.nio.FloatBuffer;
 import java.nio.ByteOrder;
 
 
-import javax.microedition.khronos.opengles.GL10;
-
 public class GLRect {
 	
 		FloatBuffer vertexBuffer;
-		ShortBuffer indexBuffer;
-	
+		ShortBuffer indexBuffer;	
 	
 		short[] indices;
 		float[] colour;
-	
-		
-		
-		
 		
 		public GLRect(float[] vertices, float[] colour)
 		{	
@@ -41,8 +34,10 @@ public class GLRect {
 			this.colour=colour;
 		}
 		
-		public void draw(GL10 gl)
+		public void draw(GPUInterface gpu)
 		{
+		    gpu.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex");
+		    /* old opengl es 1.0 code
 				gl.glColor4f(colour[0],colour[1],colour[2],colour[3]);
 				
 				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
@@ -51,6 +46,8 @@ public class GLRect {
 				
 				gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 				gl.glDisable(GL10.GL_CULL_FACE);
+		    */
+		    
 		}
 
 }

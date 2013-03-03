@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.util.Log;
 
 public class ViewFragment extends Fragment 
     implements LocationProcessor.Receiver,DownloadDataTask.Receiver,

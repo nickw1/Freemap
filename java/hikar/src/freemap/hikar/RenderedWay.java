@@ -9,8 +9,6 @@ import java.nio.FloatBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 
-import javax.microedition.khronos.opengles.GL10;
-
 public class RenderedWay {
 
 	FloatBuffer vertexBuffer;
@@ -114,16 +112,21 @@ public class RenderedWay {
 		}
 	}
 	
-	public void draw(GL10 gl)
+	public void draw(GPUInterface gpuInterface)
 	{
+	    
 		if(colour!=null)
 		{
-			gl.glColor4f(colour[0],colour[1],colour[2],colour[3]);
-			/*
+		    gpuInterface.setColour("uColour", colour);
+			gpuInterface.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex");
+			
+			/* commented out already in gles 1.0 version
 			gl.glFrontFace(GL10.GL_CCW);
 			gl.glEnable(GL10.GL_CULL_FACE);
 			gl.glCullFace(GL10.GL_BACK);
 			*/
+			
+			/* old gles 1.0 stuff
 			
 			gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 			gl.glVertexPointer(3,GL10.GL_FLOAT,0,vertexBuffer);
@@ -131,25 +134,10 @@ public class RenderedWay {
 			
 			gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 			gl.glDisable(GL10.GL_CULL_FACE);
+			*/
 		}
 	}
-	
-	public void draw(GL10 gl,float xDisp,float yDisp,float zDisp)
-	{
-		for(int i=0; i<vertexBuffer.limit(); i+=3)
-		{
-			vertexBuffer.put(i,vertexBuffer.get(i)+xDisp);
-			vertexBuffer.put(i+1,vertexBuffer.get(i+1)+yDisp);
-			vertexBuffer.put(i+2,vertexBuffer.get(i+2)+zDisp);
-			
-		}
-	}
-		
-	public void translateCoords(float xDisp, float yDisp, float zDisp)
-	{
-		
-	}
-	
+
 	Point getAveragePosition()
 	{
 		Point p=new Point();

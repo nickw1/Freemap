@@ -4,17 +4,16 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
+import android.opengl.Matrix;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.opengl.GLES20;
 
 import java.util.ArrayList;
 
 import freemap.data.Way;
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
-
-import android.util.Log;
 
 public class OpenGLView extends GLSurfaceView {
    
@@ -25,11 +24,12 @@ public class OpenGLView extends GLSurfaceView {
     class DataRenderer implements GLSurfaceView.Renderer, FreemapDataset.WayVisitor {
         
         float hFov;
-        float[] orientMtx;
+        float[] modelviewMtx, perspectiveMtx;
         ArrayList<RenderedWay> renderedWays;
         boolean calibrate;
         GLRect calibrateRect;
         float xDisp, yDisp, zDisp, height;
+        GPUInterface gpuInterface;
         
         public DataRenderer()
         {
@@ -40,60 +40,89 @@ public class OpenGLView extends GLSurfaceView {
             
                 
             // calibrate with an object 50cm long and 1m away
+            
             calibrateRect = new GLRect(new float[]{0.25f,0.0f,-1.0f,-0.25f,0.0f,-1.0f,-0.25f,0.05f,-1.0f,0.25f,0.05f,-1.0f}, 
                                     new float[]{1.0f,1.0f,1.0f,1.0f});
+            
+            
+            
+            modelviewMtx = new float[16];
+            perspectiveMtx = new float[16];
+            Matrix.setIdentityM(modelviewMtx, 0);
+            Matrix.setIdentityM(perspectiveMtx, 0);
         }
         
-        public void onSurfaceCreated(GL10 gl,EGLConfig config)
+        public void onSurfaceCreated(GL10 unused,EGLConfig config)
         {
-            gl.glClearColor(0.0f,0.0f,0.3f,0.0f);
-            gl.glClearDepthf(1.0f);
-            gl.glEnable(GL10.GL_DEPTH_TEST);
-            gl.glDepthFunc(GL10.GL_LEQUAL);
+            GLES20.glClearColor(0.0f,0.0f,0.3f,0.0f);
+            GLES20.glClearDepthf(1.0f);
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+            GLES20.glDepthFunc(GLES20.GL_LEQUAL);
+            final String vertexShader = 
+                    "attribute vec4 aVertex;\n" +
+                    "uniform mat4 uPerspMtx, uMvMtx;\n"+
+                    "void main(void)\n" +
+                    "{\n"+
+                    "gl_Position = uPerspMtx * uMvMtx * aVertex;\n" +
+                    "}\n",
+                    fragmentShader = 
+                    "precision mediump float;\n" +
+                    "uniform vec4 uColour;\n" + 
+                    "void main(void)\n"+
+                    "{\n"+
+                   // "gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n" +
+                    "gl_FragColor = uColour;\n" +
+                    "}\n";
+            gpuInterface = new GPUInterface(vertexShader, fragmentShader);
         }
         
-        public void onDrawFrame(GL10 gl)
+        public void onDrawFrame(GL10 unused)
         {
-            gl.glMatrixMode(GL10.GL_PROJECTION);
-            gl.glLoadIdentity();
+            
+            Matrix.setIdentityM(perspectiveMtx, 0);
             float aspectRatio = (float)getWidth()/(float)getHeight();
-            GLU.gluPerspective(gl, hFov/aspectRatio, aspectRatio, 0.1f, 1000.0f);
-        
-        
-            gl.glMatrixMode(GL10.GL_MODELVIEW);
-            gl.glLoadIdentity();
-            gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-            
-            gl.glTranslatef(0.0f,0.0f,-zDisp);
+           Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 1000.0f);
+       
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);     
             
             
-           
+         
+            
+            //calibrate = true;
+            
             if(calibrate)
             {
-                calibrateRect.draw(gl);
+                Matrix.setIdentityM(modelviewMtx, 0);
+                gpuInterface.sendMatrix(modelviewMtx, "uMvMtx");
+                gpuInterface.sendMatrix(perspectiveMtx, "uPerspMtx");
+                calibrateRect.draw(gpuInterface); 
             }
             else
             {
-            
-        
-            
-                Point p = new Point((double)xDisp,(double)yDisp,(double)height);
-                if(this.orientMtx!=null)
-                    gl.glMultMatrixf(orientMtx,0);
-                
-            
                 if(renderedWays.size()>0)
-                {
+                { 
+                    //Matrix.translateM(modelviewMtx, 0, 0, 0, -zDisp); // needed????
+                    Point p = new Point((double)xDisp,(double)yDisp,(double)height);
                     
-                    gl.glTranslatef(-xDisp,-yDisp,-height-zDisp);
+                    // NOTE! The result matrix must not refer to the same array in memory as either
+                    // input matrix! Otherwise you get strange results.
+                    /* we now start with the orientation matrix from the sensors so no need for this anyway
+                    if(this.modelviewMtx!=null) 
+                        Matrix.multiplyMM(modelviewMtx, 0, modelviewMtx, 0, modelviewMtx, 0);
+                    */
+                    
+                    Matrix.translateM(modelviewMtx, 0, -xDisp, -yDisp, -height-zDisp);
+                   
+                    gpuInterface.sendMatrix(modelviewMtx, "uMvMtx");
+                    gpuInterface.sendMatrix(perspectiveMtx, "uPerspMtx");
+                    
                     synchronized(renderedWays)
                     {
                         for(RenderedWay rWay: renderedWays)
-                        {
-                            
+                        {                 
                             if(rWay.distanceTo(p) <= 1000.0f)
                             {
-                                rWay.draw(gl);
+                                rWay.draw(gpuInterface); 
                             }       
                         }
                     }
@@ -101,21 +130,20 @@ public class OpenGLView extends GLSurfaceView {
             }
         }
         
-        public void onSurfaceChanged(GL10 gl, int width, int height)
+        public void onSurfaceChanged(GL10 unused, int width, int height)
         {
             // need to get the camera parameters
-            gl.glViewport(0, 0, width, height);
-            gl.glMatrixMode(GL10.GL_PROJECTION);
-            gl.glLoadIdentity();
+            GLES20.glViewport(0, 0, width, height);
             float aspectRatio = (float)width/(float)height;
-            GLU.gluPerspective(gl, hFov/aspectRatio, aspectRatio, 0.1f, 1000.0f);
-            gl.glMatrixMode(GL10.GL_MODELVIEW);
-            gl.glLoadIdentity();
+            Matrix.setIdentityM(perspectiveMtx, 0);
+            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 1000.0f);
         }
+        
+       
         
         public void setOrientMtx(float[] orientMtx)
         {
-            this.orientMtx = orientMtx;
+            this.modelviewMtx = orientMtx.clone();
         }
         
         public void setRenderData(FreemapDataset d)
@@ -179,11 +207,26 @@ public class OpenGLView extends GLSurfaceView {
             calibrate = !calibrate;
         }
         
+        public float[] getModelviewMtx()
+        {
+            return modelviewMtx;
+        }
+        
+        public float[] getPerspectiveMtx()
+        {
+            return perspectiveMtx;
+        }
+        
+        public GPUInterface getGPUInterface()
+        {
+            return gpuInterface;
+        }
     }
     
     public OpenGLView(Context ctx)
     {
         super(ctx);
+        setEGLContextClientVersion(2);
         renderer=new DataRenderer();
         setRenderer(renderer);
     }
@@ -191,5 +234,5 @@ public class OpenGLView extends GLSurfaceView {
     public DataRenderer getRenderer()
     {
         return renderer;
-    }
+    }    
 }
