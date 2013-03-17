@@ -40,8 +40,8 @@ public class OsmDemIntegrator {
         
 		Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
 		tilingProj = factory.generate(projID);
-		File cacheDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
-		//  File cacheDir = new File("/storage/extSdCard/hikar/cache/" +
+		//  File cacheDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
+		File cacheDir = new File("/storage/extSdCard/hikar/cache/" +
 		        tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
 		if(!cacheDir.exists())
 		    cacheDir.mkdirs();
@@ -68,7 +68,7 @@ public class OsmDemIntegrator {
 	{
 		
 		
-		Log.d("hikar", "Updating: point=" + point);
+		
 		    
 	    HashMap<String,Tile>hgtupdated = hgt.doUpdateSurroundingTiles(point,true,false);
 	   //Log.d("hikar"," DEM returned ");
@@ -82,21 +82,23 @@ public class OsmDemIntegrator {
 	    for(HashMap.Entry<String,Tile> e: osmupdated.entrySet())
 		{
 	        
-	        Log.d("hikar", "DEM projection: " +((DEM)(hgtupdated.get(e.getKey()).data)).getProjection());
+	        //Log.d("hikar", "DEM projection: " +((DEM)(hgtupdated.get(e.getKey()).data)).getProjection());
 			if(hgtupdated.get(e.getKey()) !=null && osmupdated.get(e.getKey()) != null && 
 			    !e.getValue().isCache)
 			
 			{
-			   Log.d("hikar","Applying DEM as not cached: key=" + e.getKey());
+			   //Log.d("hikar","Applying DEM as not cached: key=" + e.getKey());
 			   
 			   FreemapDataset d = (FreemapDataset)e.getValue().data;
 			   DEM dem = (DEM)(hgtupdated.get(e.getKey()).data);
 			   d.applyDEM(dem);
 			   osm.cacheByKey(d, e.getKey());
-			   Log.d("hikar","Done");
+			   //Log.d("hikar","Done");
 			}
 			else
-			   Log.d("hikar","osm: is cache, has dem already");
+			{
+			   //Log.d("hikar","osm: is cache, has dem already");
+			}
 	    }
 			
 			

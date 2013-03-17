@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 
 public class ViewFragment extends Fragment 
     implements LocationProcessor.Receiver,DownloadDataTask.Receiver,
-    SensorInput.SensorInputReceiver {
+    SensorInput.SensorInputReceiver, PinchListener.Handler {
 
     OsmDemIntegrator integrator;
     OpenGLView glView;
@@ -22,8 +22,7 @@ public class ViewFragment extends Fragment
     LocationProcessor locationProcessor;
     SensorInput sensorInput;
     Projection proj;
-
-    
+    float hfov;
     
     public ViewFragment()
     {
@@ -31,6 +30,7 @@ public class ViewFragment extends Fragment
         setRetainInstance(true);
         sensorInput = new SensorInput(this);
         integrator = new OsmDemIntegrator(proj.getID()); 
+        hfov = 60.0f;
     }
     
     public void onAttach(Activity activity)
@@ -39,7 +39,9 @@ public class ViewFragment extends Fragment
         glView = new OpenGLView(activity);  
         sensorInput.attach(activity);
         locationProcessor = new LocationProcessor(activity,this,5000,10);
+        glView.setOnTouchListener(new PinchListener(this));
         FreemapDataset data = integrator.getCurrentOSMData();
+        setHFOV();
         if(data!=null)
             glView.getRenderer().setRenderData(data);
     }
@@ -55,16 +57,17 @@ public class ViewFragment extends Fragment
         return glView;
     }
     
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
         locationProcessor.startUpdates();
         sensorInput.start();
     }
 
-    public void onStop() {
-        super.onStop();
+    public void onPause() {
+        super.onPause();
         locationProcessor.stopUpdates();
         sensorInput.stop();
+        glView.getRenderer().onPause();
     }
 
     public void onDetach() {
@@ -78,7 +81,7 @@ public class ViewFragment extends Fragment
         glView.getRenderer().setCameraLocation((float)projected.x, (float)projected.y);
         double height = integrator.getHeight(projected);
         glView.getRenderer().setHeight((float)height);
-        ((Hikar)getActivity()).getHUD().setHeight(height);
+        ((Hikar)getActivity()).getHUD().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().invalidate();
         if(integrator.needNewData(p))
         {
@@ -100,5 +103,31 @@ public class ViewFragment extends Fragment
         glView.getRenderer().setOrientMtx(matrix);
         ((Hikar)getActivity()).getHUD().setOrientation(orientation);
         ((Hikar)getActivity()).getHUD().invalidate();
+    }
+    
+    public void onPinchIn()
+    {
+        android.util.Log.d("hikar","onPinchIn(): hfov now: " + hfov);
+        hfov -= 5.0f;
+        setHFOV();
+    }
+     
+    public void onPinchOut()
+    {
+        android.util.Log.d("hikar","onPinchOut(): hfov now: " + hfov);
+        hfov += 5.0f;
+        setHFOV();
+    }
+    
+    private void setHFOV()
+    {
+        glView.getRenderer().setHFOV(hfov);
+        ((Hikar)getActivity()).getHUD().setHFOV(hfov);
+        ((Hikar)getActivity()).getHUD().invalidate();
+    }
+    
+    public void toggleCalibrate()
+    {
+        glView.getRenderer().toggleCalibrate();
     }
 }

@@ -96,15 +96,37 @@ public class GPUInterface {
         }
     }
     
-    public void setColour(String shaderVar, float[] colour)
+    // could be used e.g. for sending colours
+    public void setUniform4fv(String shaderVar, float[] val)
     {
         if(isValid())
         {
             int refShaderVar = GLES20.glGetUniformLocation(shaderProgram, shaderVar);
-            GLES20.glUniform4fv (refShaderVar, 1, colour, 0); // 1 = one uniform variable http://www.khronos.org/opengles/sdk/docs/man/xhtml/glUniform.xml
+            GLES20.glUniform4fv (refShaderVar, 1, val, 0); // 1 = one uniform variable http://www.khronos.org/opengles/sdk/docs/man/xhtml/glUniform.xml
         }
     }
 
+    // could be used e.g. for sending texture id
+    public void setUniform1i(String shaderVar, int i)
+    {
+        if(isValid())
+        {
+            int refShaderVar = GLES20.glGetUniformLocation(shaderProgram, shaderVar);
+            GLES20.glUniform1i (refShaderVar, i);
+        }
+    }
+    
+    public static void setupTexture(int textureId)
+    {
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+    }
+    
+    public void select()
+    {
+        GLES20.glUseProgram(shaderProgram);
+    }
+    
     public boolean isValid()
     {
         return shaderProgram >= 0;

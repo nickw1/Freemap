@@ -117,7 +117,7 @@ public class RenderedWay {
 	    
 		if(colour!=null)
 		{
-		    gpuInterface.setColour("uColour", colour);
+		    gpuInterface.setUniform4fv("uColour", colour);
 			gpuInterface.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex");
 			
 			/* commented out already in gles 1.0 version
