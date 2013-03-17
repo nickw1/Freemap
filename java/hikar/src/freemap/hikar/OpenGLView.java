@@ -47,7 +47,7 @@ public class OpenGLView extends GLSurfaceView  {
             hFov = 40.0f;
             renderedWays = new ArrayList<RenderedWay>();
             
-            zDisp = 2.0f;
+            zDisp = 1.5f;
             
                 
             // calibrate with an object 50cm long and 1m away
@@ -149,8 +149,11 @@ public class OpenGLView extends GLSurfaceView  {
             
             
          
+            cameraFeed.updateTexImage();
+            textureInterface.select();
+            cameraRect.draw(textureInterface);
+            gpuInterface.select();
             
-            //calibrate = true;
             
             if(calibrate)
             {
@@ -161,12 +164,10 @@ public class OpenGLView extends GLSurfaceView  {
             }
             else
             {
-                cameraFeed.updateTexImage();
-                textureInterface.select();
-                cameraRect.draw(textureInterface);
+           
                 if(renderedWays.size()>0)
                 { 
-                    gpuInterface.select();
+                   
                     
                     //Matrix.translateM(modelviewMtx, 0, 0, 0, -zDisp); // needed????
                     Point p = new Point((double)xDisp,(double)yDisp,(double)height);

@@ -30,7 +30,7 @@ public class ViewFragment extends Fragment
         setRetainInstance(true);
         sensorInput = new SensorInput(this);
         integrator = new OsmDemIntegrator(proj.getID()); 
-        hfov = 60.0f;
+        hfov = 40.0f;
     }
     
     public void onAttach(Activity activity)
@@ -107,15 +107,15 @@ public class ViewFragment extends Fragment
     
     public void onPinchIn()
     {
+        hfov += 5.0f;
         android.util.Log.d("hikar","onPinchIn(): hfov now: " + hfov);
-        hfov -= 5.0f;
         setHFOV();
     }
      
     public void onPinchOut()
     {
+        hfov -= 5.0f;
         android.util.Log.d("hikar","onPinchOut(): hfov now: " + hfov);
-        hfov += 5.0f;
         setHFOV();
     }
     
