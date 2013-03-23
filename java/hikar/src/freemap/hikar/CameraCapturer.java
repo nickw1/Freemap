@@ -50,6 +50,24 @@ public class CameraCapturer implements SurfaceTexture.OnFrameAvailableListener {
     
     public void onFrameAvailable(SurfaceTexture st)
     {
-        glRenderer.setCameraFrame(st);
+        // This appears not to be necessary; SurfaceTexture.updateTexImage() on its own will suffice
+        // the converse is not true: this without SurfaceTexture.updateTexImage() will not work
+        // glRenderer.setCameraFrame(st);
+    }
+    
+    public float getHFOV()
+    {
+        if(camera!=null)
+        {
+            Camera.Parameters params = camera.getParameters();
+            if(params!=null)
+                return params.getHorizontalViewAngle();
+        }
+        return -1.0f;
+    }
+    
+    public boolean isActive()
+    {
+        return camera!=null;
     }
 }

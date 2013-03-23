@@ -9,12 +9,11 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.opengl.GLES20;
 import android.graphics.SurfaceTexture;
-import android.view.View;
-import android.view.MotionEvent;
+
 
 import java.io.IOException;
 import android.util.Log;
-import android.util.FloatMath;
+
 
 import java.util.ArrayList;
 
@@ -47,12 +46,14 @@ public class OpenGLView extends GLSurfaceView  {
             hFov = 40.0f;
             renderedWays = new ArrayList<RenderedWay>();
             
-            zDisp = 1.5f;
+            zDisp = 1.4f; 
             
                 
-            // calibrate with an object 50cm long and 1m away
+            // calibrate with an object 50cm long and 50cm away
+            float zDist = 0.5f, xLength = 0.5f;
             
-            calibrateRect = new GLRect(new float[]{0.5f,0.0f,-1.0f,-0.5f,0.0f,-1.0f,-0.5f,0.05f,-1.0f,0.5f,0.05f,-1.0f}, 
+            calibrateRect = new GLRect(new float[]{xLength/2, 0.0f, -zDist, -xLength/2, 0.0f, -zDist,
+                                                    -xLength/2, 0.05f, -zDist, xLength/2, 0.05f, -zDist}, 
                                     new float[]{1.0f,1.0f,1.0f,1.0f});
             
             
@@ -99,7 +100,7 @@ public class OpenGLView extends GLSurfaceView  {
             {
                 GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureId[0]);
                 GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-                GLES20.glTexParameteri(/*GLES20.GL_TEXTURE_2D*/GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+                GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
             
                 // Must negate y when calculating texcoords from vertex coords as bitmap image data assumes
                 // y increases downwards
@@ -122,19 +123,10 @@ public class OpenGLView extends GLSurfaceView  {
                    "}\n";
                 textureInterface = new GPUInterface(texVertexShader, texFragmentShader);
                 GPUInterface.setupTexture(textureId[0]);
-                textureInterface.setUniform1i("uTexture", 0);
+                textureInterface.setUniform1i("uTexture", 0); // this is the on-gpu texture register not the texture id
                 cameraFeed = new SurfaceTexture(textureId[0]);
                 cameraCapturer = new CameraCapturer(this);
-                cameraCapturer.openCamera();
-                try
-                {
-                    cameraCapturer.startPreview(cameraFeed);
-                }
-                catch(IOException e)
-                {
-                    Log.e("hikar","Error getting camera preview: " + e);
-                    cameraCapturer.releaseCamera();
-                }
+                onResume();
             }
         }
         
@@ -143,15 +135,21 @@ public class OpenGLView extends GLSurfaceView  {
             
             Matrix.setIdentityM(perspectiveMtx, 0);
             float aspectRatio = (float)getWidth()/(float)getHeight();
-            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 1000.0f);
+            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 3000.0f);
        
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);     
             
             
-         
-            cameraFeed.updateTexImage();
-            textureInterface.select();
-            cameraRect.draw(textureInterface);
+            if(cameraCapturer.isActive())
+            {
+                cameraFeed.updateTexImage();
+                float[] tm = new float[16];
+                cameraFeed.getTransformMatrix(tm);
+            
+                textureInterface.select();
+                cameraRect.draw(textureInterface);
+            }
+            
             gpuInterface.select();
             
             
@@ -164,7 +162,7 @@ public class OpenGLView extends GLSurfaceView  {
             }
             else
             {
-           
+               
                 if(renderedWays.size()>0)
                 { 
                    
@@ -188,14 +186,13 @@ public class OpenGLView extends GLSurfaceView  {
                     {
                         for(RenderedWay rWay: renderedWays)
                         {                 
-                            if(rWay.distanceTo(p) <= 1000.0f)
+                            if(rWay.distanceTo(p) <= 3000.0f)
                             {
                                 rWay.draw(gpuInterface); 
                             }       
                         }
                     }
                 }
-                
             }
         }
         
@@ -205,12 +202,32 @@ public class OpenGLView extends GLSurfaceView  {
             GLES20.glViewport(0, 0, width, height);
             float aspectRatio = (float)width/(float)height;
             Matrix.setIdentityM(perspectiveMtx, 0);
-            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 1000.0f);
+            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 3000.0f);
         }
         
         public void onPause()
         {
             cameraCapturer.releaseCamera();
+        }
+        
+        public void onResume()
+        {
+            if(cameraCapturer!=null)
+            {
+                cameraCapturer.openCamera();
+                float camHfov = cameraCapturer.getHFOV();
+                if(camHfov>0.0f)
+                    hFov = camHfov;
+                try
+                {
+                    cameraCapturer.startPreview(cameraFeed);
+                }
+                catch(IOException e)
+                {
+                    Log.e("hikar","Error getting camera preview: " + e);
+                    cameraCapturer.releaseCamera();
+                }
+            }
         }
         
         public void setOrientMtx(float[] orientMtx)
@@ -264,6 +281,11 @@ public class OpenGLView extends GLSurfaceView  {
             this.hFov += amount;
         }
         
+        public float getHFOV()
+        {
+            return hFov;
+        }
+        
         public void setCalibrate(boolean cal)
         {
             calibrate=cal;
@@ -298,6 +320,11 @@ public class OpenGLView extends GLSurfaceView  {
         {
             cameraFeed = st;
         }
+        
+        public void setCameraHeight(float cameraHeight)
+        {
+            zDisp = cameraHeight;
+        }
     }
     
     public OpenGLView(Context ctx)
@@ -313,7 +340,4 @@ public class OpenGLView extends GLSurfaceView  {
     {
         return renderer;
     }    
-    
-    
-   
 }

@@ -36,6 +36,8 @@ public class GLRect {
 		
 		public void draw(GPUInterface gpu)
 		{
+		    if(colour!=null)
+		        gpu.setUniform4fv("uColour", colour);
 		    gpu.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex");
 		    /* old opengl es 1.0 code
 				gl.glColor4f(colour[0],colour[1],colour[2],colour[3]);

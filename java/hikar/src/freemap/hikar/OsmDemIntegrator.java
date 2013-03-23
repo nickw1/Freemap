@@ -3,7 +3,6 @@ package freemap.hikar;
 import freemap.data.Projection;
 import freemap.datasource.TileDeliverer;
 import freemap.datasource.WebDataSource;
-import freemap.datasource.TiledData;
 import freemap.jdem.DEMSource;
 import freemap.jdem.HGTDataInterpreter;
 import freemap.jdem.HGTTileDeliverer;
@@ -15,8 +14,6 @@ import freemap.jdem.DEM;
 import freemap.proj.Proj4ProjectionFactory;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.Tile;
-import android.util.Log;
-import android.os.Environment;
 import java.io.File;
 import java.util.HashMap;
 

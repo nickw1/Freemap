@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+
 public class ViewFragment extends Fragment 
     implements LocationProcessor.Receiver,DownloadDataTask.Receiver,
     SensorInput.SensorInputReceiver, PinchListener.Handler {
@@ -22,7 +23,7 @@ public class ViewFragment extends Fragment
     LocationProcessor locationProcessor;
     SensorInput sensorInput;
     Projection proj;
-    float hfov;
+    
     
     public ViewFragment()
     {
@@ -30,7 +31,7 @@ public class ViewFragment extends Fragment
         setRetainInstance(true);
         sensorInput = new SensorInput(this);
         integrator = new OsmDemIntegrator(proj.getID()); 
-        hfov = 40.0f;
+    
     }
     
     public void onAttach(Activity activity)
@@ -60,6 +61,7 @@ public class ViewFragment extends Fragment
     public void onResume() {
         super.onResume();
         locationProcessor.startUpdates();
+        glView.getRenderer().onResume();
         sensorInput.start();
     }
 
@@ -86,7 +88,7 @@ public class ViewFragment extends Fragment
         if(integrator.needNewData(p))
         {
             downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
-            downloadDataTask.setDialogDetails("Downloading...", "Downloading new data...");
+            downloadDataTask.setDialogDetails("Loading...", "Loading data...");
             downloadDataTask.execute(p);
         }
     }
@@ -107,27 +109,30 @@ public class ViewFragment extends Fragment
     
     public void onPinchIn()
     {
-        hfov += 5.0f;
-        android.util.Log.d("hikar","onPinchIn(): hfov now: " + hfov);
+        glView.getRenderer().changeHFOV(5.0f);
         setHFOV();
     }
      
     public void onPinchOut()
     {
-        hfov -= 5.0f;
-        android.util.Log.d("hikar","onPinchOut(): hfov now: " + hfov);
+        glView.getRenderer().changeHFOV(-5.0f);
         setHFOV();
     }
     
     private void setHFOV()
     {
-        glView.getRenderer().setHFOV(hfov);
-        ((Hikar)getActivity()).getHUD().setHFOV(hfov);
+        ((Hikar)getActivity()).getHUD().setHFOV(glView.getRenderer().getHFOV());
         ((Hikar)getActivity()).getHUD().invalidate();
     }
     
     public void toggleCalibrate()
     {
         glView.getRenderer().toggleCalibrate();
+    }
+    
+    public void setCameraHeight(float cameraHeight)
+    {
+        android.util.Log.d("hikar","camera height=" + cameraHeight);
+        glView.getRenderer().setCameraHeight(cameraHeight);
     }
 }

@@ -1,10 +1,13 @@
 package freemap.hikar;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.ViewGroup.LayoutParams;
 import android.view.MenuItem;
+import android.content.Intent;
+import android.content.SharedPreferences;
 
 
 public class Hikar extends Activity 
@@ -30,12 +33,6 @@ public class Hikar extends Activity
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
-   
-    public boolean onPrepareOptionsMenu(Menu menu)
-    {
-        MenuItem item = menu.findItem(R.id.menu_calibrate);
-        return true;
-    }
     
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -48,6 +45,10 @@ public class Hikar extends Activity
                 item.setTitle(item.getTitle().equals("Calibrate") ? "Stop calibrating": "Calibrate");
                 retcode=true;
                 break;
+                
+            case R.id.menu_settings:
+                Intent i = new Intent(this,Preferences.class);
+                startActivity(i);
         }
         return retcode;
     }
@@ -55,6 +56,14 @@ public class Hikar extends Activity
     public void onPause()
     {
         super.onPause();
+    }
+    
+    public void onStart()
+    {
+        super.onStart();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        float cameraHeight = Float.parseFloat(prefs.getString("prefCameraHeight","1.4"));
+        viewFragment.setCameraHeight(cameraHeight);
     }
     
     public HUD getHUD()

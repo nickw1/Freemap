@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+<EditTextPreference android:key="prefCameraHeight"
+    android:defaultValue="1.4" 
+    android:title="Camera height"
+    android:summary="Height in metres of the camera above ground."
+    android:inputType="numberDecimal" />
+
+</PreferenceScreen>
