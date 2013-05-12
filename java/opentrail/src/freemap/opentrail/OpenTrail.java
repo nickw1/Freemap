@@ -169,7 +169,8 @@ public class OpenTrail extends MapActivity implements
         	if(!opentrailDir.exists())
         		opentrailDir.mkdir();
         
-        	mapFile = null; 
+        	mapFile = null;
+        	
         	mapView = new MapView(this); 
         	mapView.setClickable(true);
         	mapView.setBuiltInZoomControls(true);
@@ -217,6 +218,7 @@ public class OpenTrail extends MapActivity implements
         		initPos = new GeoPoint(savedInstanceState.getDouble("lat"),
         								savedInstanceState.getDouble("lon"));
         		readZoom = savedInstanceState.getInt("zoom");
+        		
        			mapView.getController().setZoom(readZoom);
        			mapFile = savedInstanceState.getString("mapFile");
        			walkrouteIdx = savedInstanceState.getInt("walkrouteIdx");
@@ -233,13 +235,17 @@ public class OpenTrail extends MapActivity implements
         							prefs.getFloat("lon", -0.72f));
         		mapFile = prefs.getString("mapFile",null);
         		
+        		mapFile = "/storage/sdcard0/opentrail/su.map";
         		readZoom = prefs.getInt("zoom", -1);
         		recordingWalkroute = prefs.getBoolean("recordingWalkroute", false);    
         		waitingForNewPOIData = prefs.getBoolean("waitingForNewPOIData", false);
         		
         		if(readZoom>=0)
-        			mapView.getController().setZoom(readZoom);
+        		{
+        		   
         		
+        			mapView.getController().setZoom(readZoom);
+        		}
         	}
         	
         	
@@ -365,9 +371,13 @@ public class OpenTrail extends MapActivity implements
      	else if (prefAnnotations==true && oldPrefAnnotations==false)
      		dataDisplayer.showAnnotations();
      	
-     	mapView.invalidate();
-    	dataDisplayer.requestRedraw();
-    	
+     	if(mapSetup)
+     	{
+     	    
+     	    mapView.invalidate();
+     	    dataDisplayer.requestRedraw();
+     	}
+     	
     	//services can be both started and bound
     	//http://developer.android.com/guide/components/bound-services.html
     	//we need this as the activity requires data from the service, but we
@@ -383,7 +393,7 @@ public class OpenTrail extends MapActivity implements
     	
     	
     	
-    	Log.d("OpenTrail","***onStop()***");
+    	
     	
     	//this.location=null;
     	
@@ -400,7 +410,7 @@ public class OpenTrail extends MapActivity implements
     	
     	unregisterReceiver(mapLocationProcessor);
     	unbindService(gpsServiceConn);
-    	Log.d("OpenTrail","***onDestroy()***");
+    	
     	
     	dataDisplayer.cleanup();
     	//mapLocationProcessor=null;
@@ -409,6 +419,7 @@ public class OpenTrail extends MapActivity implements
     	
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     	SharedPreferences.Editor editor = settings.edit();
+    	
     	
     	editor.putFloat("lat",(float)mapView.getMapPosition().getMapCenter().getLatitude());
     	editor.putFloat("lon",(float)mapView.getMapPosition().getMapCenter().getLongitude());
@@ -444,6 +455,7 @@ public class OpenTrail extends MapActivity implements
     {
     	try
     	{
+    	    
     		mapView.setMapFile(mf);
     		if(!mapSetup)
 			{
@@ -459,6 +471,7 @@ public class OpenTrail extends MapActivity implements
 				mapView.setCenter(initPos);
     		mapView.redrawTiles();
     		loadAnnotationOverlay();
+    		
     	}
     	catch(FileNotFoundException e)
     	{
@@ -699,7 +712,12 @@ public class OpenTrail extends MapActivity implements
     				{
     					
     					dataDisplayer.clearWalkroute();
-    					mapView.invalidate();
+    					if(mapSetup)
+    					{
+    					  
+    					
+    					    mapView.invalidate();
+    					}
     				
     					
     			    	Intent startLoggingBroadcast = new Intent("freemap.opentrail.startlogging");
@@ -762,7 +780,7 @@ public class OpenTrail extends MapActivity implements
     				File mf=new File(mapFile);
     				if(mf.exists())
     				{
-    					mapView.setMapFile(mf);
+    					setupMap(mf);
     					mapView.setCenter(currentCentre);
     					gotoMyLocation();
     					mapView.redrawTiles();
@@ -904,7 +922,7 @@ public class OpenTrail extends MapActivity implements
     {
     	if(this.location!=null)
     	{
-    	
+    	   
     		mapView.setCenter(this.location);
     	}
     }
@@ -1012,6 +1030,7 @@ public class OpenTrail extends MapActivity implements
 				Walkroute recordingWalkroute = gpsService.getRecordingWalkroute();
 				if(recordingWalkroute!=null && recordingWalkroute.getPoints().size()!=0)
 					dataDisplayer.showWalkroute(recordingWalkroute);
+				
 				mapView.invalidate();
 			}
 			catch(Exception e)
@@ -1035,6 +1054,7 @@ public class OpenTrail extends MapActivity implements
 			}
 			else if (mapView!=null)
 			{
+			    
 			    mapFile = mf.getAbsolutePath();
 				setupMap(mf);
 				// resetting the map file (e.g. one map file from the preferences, another
@@ -1047,6 +1067,7 @@ public class OpenTrail extends MapActivity implements
     	this.location = new GeoPoint(lat,lon);
     	if(prefGPSTracking==true)
     	{
+    	    
     		if(mapView!=null && mapSetup)
     			mapView.setCenter(p);
     	}
@@ -1074,7 +1095,7 @@ public class OpenTrail extends MapActivity implements
         if(ds!=null)
         {
             Shared.pois = ds;
-            Log.d("OpenTrail","POIS received: " + ds);
+            
             waitingForNewPOIData=false;
             alertDisplayMgr.setPOIs(Shared.pois);
             loadAnnotationOverlay();
@@ -1217,12 +1238,11 @@ public class OpenTrail extends MapActivity implements
     			xDown = (int)ev.getX();
     			yDown = (int)ev.getY();
     			touchTime = System.currentTimeMillis();
-    			Log.d("OpenTrail","ACTION_DOWN: touchTime=" + touchTime);
+    			
     			break;
     		case MotionEvent.ACTION_UP:
     			final int x = (int)ev.getX(), y=(int)ev.getY();
-                Log.d("OpenTrail","ACTION_UP: time=" + System.currentTimeMillis() +
-                        " x=" + x + " y=" + y + " xDown=" + xDown + " yDown=" + yDown);
+              
     			if(Math.abs(x-xDown)<10 && Math.abs(y-yDown)<10 && System.currentTimeMillis()-touchTime>=100)
     			{
     			    
@@ -1261,6 +1281,7 @@ public class OpenTrail extends MapActivity implements
     
     public void onSaveInstanceState(Bundle state)
     {
+        
       	GeoPoint gp = mapView.getMapPosition().getMapCenter();
     	state.putDouble("lat", gp.getLatitude());
     	state.putDouble("lon", gp.getLongitude());
@@ -1270,6 +1291,6 @@ public class OpenTrail extends MapActivity implements
     	state.putBoolean("recordingWalkroute", recordingWalkroute);
     	state.putBoolean("waitingForNewPOIData",waitingForNewPOIData);
      	state.putInt("recordingWalkrouteId", recordingWalkrouteId);
-     	Log.d("OpenTrail","Saving zoom: " + mapView.getMapPosition().getZoomLevel());
+     	
     }
 }

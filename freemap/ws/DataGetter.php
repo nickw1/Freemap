@@ -678,9 +678,11 @@ class BboxGetter extends DataGetter
 
     function getWayQuery($table)
     {
+		// 05/05/13 changed to geomtxt2 to see if that pulled all ways out
+		// WARNING: might screw up other things
         return ($table=="polygon") ?
             $this->dbq->getBboxPolygonQuery($this->geomtxt) :
-            $this->dbq->getBboxWayQuery($this->geomtxt);
+            $this->dbq->getBboxWayQuery($this->geomtxt2); 
     }
 }
 

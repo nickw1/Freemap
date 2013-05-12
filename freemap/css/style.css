@@ -1,0 +1,112 @@
+
+body { font-family: helvetica, arial, sans-serif; }
+#status { width: 800px; height:200px; overflow:auto; display: none }
+
+#main { 
+top:0%; position:absolute; left:200px; height:100%; width:1024px;
+font-size: 80%
+}
+
+a { text-decoration: none; }
+
+#sidebar { 
+ width:200px; height:100%; top:0px; left:0px; position:fixed;
+ font-size: 80%
+}
+#search { width: 150px; margin-left:25px; text-align: center } 
+#search input { width:90%}
+#search h1 { font-size: 100% }
+#search h2 { font-size: 90% }
+
+#modebar { position:absolute; top:100px; left:50px; z-index: 998; }
+
+#modebar a
+{
+	color:white;
+	text-decoration:none;
+}
+#modebar > a 
+{
+	background-color: #8080ff;
+	color: white;
+	border-radius: 15px;
+	padding: 10px;
+	margin-left: 5px;
+	margin-right: 5px;
+	float: left;
+	opacity: 0.8; 
+	text-decoration: none;
+}
+
+#modebar >  a.selected
+{
+	background-color: blue;
+	opacity: 1.0;
+}
+
+#modebar > a div
+{
+	border-radius: 15px;
+	background-color: #0000ff;
+	color: white;
+	opacity: 0.5;
+	visibility: hidden;
+	position:absolute;
+	top: 30px;
+	width:150px;
+	padding: 5px 5px 5px 5px;
+}
+
+#modebar > a.selected:active div, #modebar > a.selected:hover div
+{
+	visibility: visible;
+}
+
+#myroutesdiv a
+{
+	color: white;
+}
+
+#units
+{
+	background-color: white;
+	color: black;
+}
+
+#tenths
+{
+	background-color: white;
+	color: red;
+}
+
+#distdiv
+{
+	text-align: center;
+}
+
+#distdiv h1
+{
+	font-size: 90%;
+}
+
+#distUnits
+{
+	margin-left: 5px;
+}
+
+#dist
+{
+	font-family: monospace;
+	text-align: center; 
+	padding-top:5px;
+	padding-bottom:5px;
+	width: 150px;
+	margin-left: 25px;
+	text-align: center;
+	font-size: 120%;
+}
+
+#logindiv #username, #logindiv #password
+{
+	width: 90%;
+}

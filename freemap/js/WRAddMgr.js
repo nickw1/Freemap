@@ -3,8 +3,8 @@ function Waypoint(mLL)
     if( typeof Waypoint.prototype.count == "undefined")
         Waypoint.prototype.count = 0;
     this.id=++Waypoint.prototype.count;
-    var WpIcon = L.Icon.extend (
-        { iconUrl:'http://www.free-map.org.uk/0.6/flag.php?'
+    var WpIcon = L.icon (
+        { iconUrl:'http://www.free-map.org.uk/freemap/flag.php?'
         +'n='+this.id,
         shadowUrl:null,
         iconSize: new L.Point(32,32),
@@ -13,7 +13,7 @@ function Waypoint(mLL)
         popupAnchor: new L.Point (2,-2)
         } );
     L.Marker.call(this,mLL,
-        {icon: new WpIcon(), clickable:true,draggable:true});
+        {icon: WpIcon, clickable:true,draggable:true});
 }
 
 Waypoint.prototype = Object.create(L.Marker.prototype); 
@@ -78,6 +78,7 @@ function WRAddMgr(wrLayer,divId)
 
     this.sendDlg.setPosition(200,200);
     this.wptDlg.setPosition(200,200);
+    this.points=new Array();
 }
 
 WRAddMgr.prototype.handleClick = function(point)
@@ -86,16 +87,24 @@ WRAddMgr.prototype.handleClick = function(point)
     switch(this.mode)
     {
         case 0:
-            this.points.push(point);
             if(this.lastPoint!==null)
             {
-                var line = new L.Polyline ( [this.lastPoint,point],
-                                    {clickable: false });
-                this.walkrouteLayer.addLayer(line);
                 this.distanceWidget.addLonLatDistance
                     (this.lastPoint.lng,this.lastPoint.lat,
                     point.lng,point.lat);
+                this.curPolyline.addLatLng(point);
+                this.curPolyline.redraw();
             }
+            else
+            {
+                this.points.push(point);
+                this.curPolyline = new L.Polyline(this.points,
+                                            {clickable:false});
+                this.walkrouteLayer.addLayer(this.curPolyline);
+            }
+            var p = new L.Circle ( point, 10, { clickable: false,
+                fillOpacity: 0.2 } );
+            this.walkrouteLayer.addLayer(p);
             this.lastPoint = point;
             break;
 
@@ -125,6 +134,7 @@ WRAddMgr.prototype.addWaypoint = function(mLL)
 
 WRAddMgr.prototype.undo = function()
 {
+    this.walkrouteLayer.clearLayers();
     if(this.points.length>=2)
     {
         this.distanceWidget.subtractLonLatDistance
@@ -133,12 +143,15 @@ WRAddMgr.prototype.undo = function()
             this.points[this.points.length-1].lng,
             this.points[this.points.length-1].lat);
         this.points.pop();
-        this.walkrouteLayer.clearLayers();
+        this.walkrouteLayer.addLayer
+            (new L.Circle(this.points[0],10,{clickable:false}));
         for(var i=1; i<this.points.length; i++)
         {
-            this.walkrouteLayer.addLayer (new L.Polyline
-                        ([this.points[i-1],this.points[i] ]));
+            this.walkrouteLayer.addLayer
+                (new L.Circle(this.points[i],10,{clickable:false}));
         }
+        this.curPolyline = new L.Polyline(this.points);
+        this.walkrouteLayer.addLayer(this.curPolyline);
 
         for(var i=0; i<this.waypoints.length; i++)
         {
@@ -186,7 +199,7 @@ WRAddMgr.prototype.doSendWR = function()
     }
 
 
-    this.ajax.sendRequest('/0.6/ws/wr.php',
+    this.ajax.sendRequest('/freemap/ws/wr.php',
                             { parameters: 'action=add&route=' +
                                       JSON.stringify(json),
                               method: 'POST',

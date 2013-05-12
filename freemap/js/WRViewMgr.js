@@ -17,7 +17,7 @@ function WRViewMgr(app)
 
 WRViewMgr.prototype.sendRequest = function()
 {
-    this.ajax.sendRequest ( '/0.6/ws/wr.php',
+    this.ajax.sendRequest ( '/freemap/ws/wr.php',
                         { method: 'GET',
                           parameters: 'action=getByUser&format=json',
                           callback: this.receivedRoutes.bind(this),
@@ -30,6 +30,7 @@ WRViewMgr.prototype.receivedRoutes = function(xmlHTTP)
     this.data = JSON.parse(xmlHTTP.responseText); 
     var html =  "";
     var outerDiv=document.createElement("div");
+	outerDiv.id="myroutesdiv";
     var h3 = document.createElement("h3");
     h3.appendChild(document.createTextNode("My routes"));
     outerDiv.appendChild(h3);
@@ -51,7 +52,7 @@ WRViewMgr.prototype.receivedRoutes = function(xmlHTTP)
         a2.id='rte_togpx_' + this.data.features[i].properties.id;
         a2.onclick = (function(e)
             { window.location = 
-                '/0.6/ws/wr.php?id='+e.target.id.substr(10)+
+                '/freemap/ws/wr.php?id='+e.target.id.substr(10)+
                 '&action=get&format=gpx'; } ).bind(this);
         var t2 = document.createTextNode("Download GPX");
         a2.appendChild(t2);
@@ -74,7 +75,7 @@ WRViewMgr.prototype.displayRoute  = function(e)
 
 WRViewMgr.prototype.loadRoute = function(i)
 {
-    this.ajax.sendRequest('/0.6/ws/wr.php',
+    this.ajax.sendRequest('/freemap/ws/wr.php',
                     { method : 'GET',
                      parameters: 'id=' + i +
                      '&action=get&format=json',
@@ -86,13 +87,13 @@ WRViewMgr.prototype.doDisplayRoute = function(xmlHTTP)
 {
     this.app.walkrouteLayer.clearLayers();
     var data = JSON.parse(xmlHTTP.responseText);
-    //this.walkrouteLayer.addGeoJSON(data);
+    //this.walkrouteLayer.addData(data);
     for(var i=0; i<data.features.length; i++)
     {
         if(data.features[i].geometry.type=='Point')
         {
-            var WpIcon = L.Icon.extend (
-            { iconUrl:'http://www.free-map.org.uk/0.6/flag.php?'
+            var WpIcon = L.icon (
+            { iconUrl:'http://www.free-map.org.uk/freemap/flag.php?'
             +'n='+data.features[i].properties.id,
             shadowUrl:null,
             iconSize: new L.Point(32,32),
@@ -103,7 +104,7 @@ WRViewMgr.prototype.doDisplayRoute = function(xmlHTTP)
             var marker = new L.Marker
                 (new L.LatLng(data.features[i].geometry.coordinates[1],
                               data.features[i].geometry.coordinates[0]),
-                    { icon: new WpIcon() }
+                    { icon: WpIcon }
                 );
             var f = data.features[i];
             marker.bindPopup(f.properties.description);
@@ -111,7 +112,7 @@ WRViewMgr.prototype.doDisplayRoute = function(xmlHTTP)
         }
         else
         {
-            this.app.walkrouteLayer.addGeoJSON(data.features[i]);
+            this.app.walkrouteLayer.addData(data.features[i]);
         }
     }
 }

@@ -1,6 +1,10 @@
 <?php
-//define('HANTS_EMAIL','countryside@hants.gov.uk');
-define('HANTS_EMAIL','nick_whitelegg@yahoo.co.uk');
+define('HANTS_EMAIL','countryside@hants.gov.uk');
+//define('HANTS_EMAIL','nick_whitelegg@yahoo.co.uk');
+
+require_once('Problem.php');
+require_once('../lib/conversions.class.php');
+require_once('../lib/conversionslatlong.class.php');
 
 class RightOfWay
 {
@@ -65,19 +69,25 @@ class RightOfWay
     {
         if($this->isValid())
         {
-            $q="INSERT INTO hampshire_problems(row_gid,problem,category,x,y)".
-				" VALUES (".  
-				$this->the_data["properties"]["gid"].
-				",'$problem','$category',$x,$y) ";
+            $xy = reproject($x,$y,"4326","3857");
+            $q="INSERT INTO hampshire_problems(row_gid,problem,category,x,y,".
+                "subdate) VALUES (".  
+                $this->the_data["properties"]["gid"].
+                ",'$problem','$category',".$xy[0].",".$xy[1].",NOW()) ";
             pg_query($q);
 
-			$msg = "Parish: ".$this->the_data["properties"]["parish"]."\n".
-					"ROW number: ".$this->the_data["properties"]["routeno"].
-					"\nROW type: ".$this->the_data["properties"]["row_type"].
-					"\n\nCategory: $category\n\nProblem: $problem\n\n".
-				"Reported By: $name (email $email)";
-			mail(HANTS_EMAIL, 
-				"Right Of Way problem reported via OpenHants",$msg);
+            $msg = "Parish: ".$this->the_data["properties"]["parish"]."\n".
+                    "ROW number: ".$this->the_data["properties"]["routeno"].
+                    "\nROW type: ".$this->the_data["properties"]["row_type"].
+                    "\n\nCategory: $category\n\nProblem: $problem\n\n";
+            $c = new ConversionsLatLong();
+            $osgb = $c->wgs84_to_osgb36($y,$x);
+            //$gr = $c->osgb36_to_gridref($osgb[0],$osgb[1]);
+            $msg .= "Grid ref: easting ".round($osgb[0])." northing ".
+                round($osgb[1])."\n\n"; 
+            $msg .= "Reported By: $name (email $email)";
+            mail(HANTS_EMAIL, 
+                "Right Of Way problem reported via FixMyPaths",$msg);
         }
     }
 
@@ -90,32 +100,28 @@ class RightOfWay
                 ("SELECT * FROM hampshire_problems WHERE row_gid=".
                     $this->the_data["properties"]["gid"]);
             while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
-			{
-				if(!isset($json["row_gid"]))
-					$json["row_gid"] = $row["row_gid"];
-				$problem=array();
+            {
+                if(!isset($json["row_gid"]))
+                    $json["row_gid"] = $row["row_gid"];
+                $problem=array();
                 $problem["text"] = $row["problem"];
                 $problem["x"] = $row["x"];
                 $problem["y"] = $row["y"];
-				$json["problems"][]=$problem;
-			}
+                $json["problems"][]=$problem;
+            }
             return $json;
         }
     }
 
-    public static function getAllProblems($bbox=null)
+
+    public static function getParishes($county)
     {
-        $prob=array();
-        $q="SELECT hp.id,hp.problem,hp.x,hp.y,row.parish_row ".
-        "FROM hampshire_problems hp, hampshire row WHERE hp.row_gid=row.gid ";
-        if(is_array($bbox) && count($bbox)==4)
-            $q .= " AND x BETWEEN ".  $bbox[0]. " AND  ". $bbox[2].
-                "AND y BETWEEN ". $bbox[1] . " AND ". $bbox[3];
-        $q .=" ORDER BY hp.id DESC";
+        $parishes=array();
+        $q = "SELECT DISTINCT parish FROM hampshire ORDER BY parish";
         $result=pg_query($q);
         while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
-            $prob[] = $row;
-        return $prob;
+            $parishes[] = $row["parish"];
+        return $parishes;
     }
 
     public static function findClosest($x,$y,$dist)

@@ -5,6 +5,8 @@ require_once('DBDetails.php');
 require_once('../../lib/functionsnew.php');
 require_once('xml.php');
 
+header("Access-Control-Allow-Origin: http://www.fixmypaths.org");
+
 $cleaned = clean_input($_GET);
 
 $tbl_prefix = isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"] : "planet_osm";

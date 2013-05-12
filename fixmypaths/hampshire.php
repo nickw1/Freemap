@@ -1,8 +1,8 @@
 <?php
 
 require_once('../lib/functionsnew.php');
-require_once('../0.6/ws/DataGetter.php');
-require_once('../0.6/ws/DBDetails.php');
+require_once('../freemap/ws/DataGetter.php');
+require_once('../freemap/ws/DBDetails.php');
 
 $cleaned = clean_input($_REQUEST);
 
@@ -18,6 +18,7 @@ adjustProj($outProj);
 $conn=pg_connect("dbname=gis user=gis");
 
 header("Content-type: application/json");
+header("Access-Control-Allow-Origin: http://www.free-map.org.uk");
 $dbd = new DBDetails(null, array("table"=>"hampshire",
                                 "col"=>"the_geom"), null,null,null,null);
 $dbd->setIntersection(false);

@@ -1,9 +1,12 @@
 <?php
 
+require_once('../freemap/User.php');
+
+session_start();
 
 $lat = (isset($_GET['lat'])) ? $_GET['lat']: 51.055;
 $lon = (isset($_GET['lon'])) ? $_GET['lon']: -1.32; 
-$zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: 14; 
+$probid = isset($_GET['probid']) ? $_GET['probid']: 0;
     
 ?>
 
@@ -11,84 +14,114 @@ $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: 14;
 <html>
 <head>
 <title>FixMyPaths</title>
-<style type='text/css'>
-body { font-family: DejaVu Sans, verdana, helvetica, arial, sans-serif; }
-a{ text-decoration: none; }
-#sidebar { float: left; width: 256px; background-color: #c0c0ff; color: white;
-position: fixed; height:100%; text-align: center }
-#sidebar a { color: yellow; }
-.sidebarheading { font-family: Liberation Serif, Bookman Old Style } 
-#sidebar h1,h2,h3 { font-weight: normal; }
-#main { margin-left: 288px; width: 768px; max-width: 1024px }
-#search  { font-size: 75%; width:75%; margin-left: auto; margin-right: auto }
-#search h1 { font-size: 100% }
-#searchterm { width: 75%; }
-#blurb { font-size: 75% }
-#appmsg { background-color: white; color: black; border: 2px solid black; }
-#appmsg strong { color: red ; }
-#appmsg a { color: blue; }
-#sidebar a#permalink { font-weight: bold; color: blue; }
-</style>
-<script type='text/javascript' 
-src='http://www.free-map.org.uk/javascript/Leaflet/dist/leaflet.js'></script>
-<script type='text/javascript' 
-src='http://www.free-map.org.uk/javascript/kothic/dist/kothic.js'></script>
-<script type='text/javascript' 
-src='http://www.free-map.org.uk/javascript/kothic/dist/kothic-leaflet.js'>
+<link rel="stylesheet" type="text/css" href="css/fixmypaths.css" />
+
+<script type='text/javascript'
+src='http://www.free-map.org.uk/javascript/leaflet-0.5.1/dist/leaflet.js'>
 </script>
-<script type='text/javascript' src='hampshire.js'></script>
-<link rel='stylesheet' type='text/css' 
-href='http://www.free-map.org.uk/javascript/Leaflet/dist/leaflet.css' />
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/0.6/js/lib/Ajax.js'></script>
+src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
+</script>
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/0.6/js/lib/Util.js'></script>
+src='Proj4Leaflet/src/proj4leaflet.js'></script>
+<link rel='stylesheet' type='text/css'
+href='http://www.free-map.org.uk/javascript/leaflet-0.5.1/dist/leaflet.css' />
+
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/0.6/js/lib/Dialog.js'></script>
+src='http://www.free-map.org.uk/freemap/js/lib/Ajax.js'></script>
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/0.6/js/lib/SearchWidget.js'></script>
+src='http://www.free-map.org.uk/freemap/js/lib/Util.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/freemap/js/lib/SearchWidget.js'></script>
 <script type='text/javascript'>
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;
-var zoom=<?php echo $zoom;?>;
+var probid=<?php echo $probid; ?>;
 </script>
 <script type='text/javascript' 
 src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
 </script>
 
 <script type='text/javascript' src='main.js'> </script>
+<script type='text/javascript' src='reports.js'> </script>
+<script type='text/javascript' src='multipopup.js'> </script>
 
-
-<link rel='alternate' type='application/rss+xml'
-title='The Freemap blog, revisited' 
-href='http://www.free-map.org.uk/wordpress/'
-/>
 
 </head>
 
 <body onload='init()'>
 <div id='sidebar'>
 <h1 class="sidebarheading">FixMyPaths!</h1>
-<div id='search'> </div>
 <div id='blurb'>
-<p>A <a href='http://www.free-map.org.uk'>Freemap</a> project using
-Hampshire County Council open data, allowing users to report problems
-directly to the council.
-Click on a right of way to report a problem (<em>real</em> problems
-only!).</p>
+<p>Report problems to your county council!*
+Click on a right of way to report a problem</p> 
+<p><em>*Hampshire only at the present time</em></p>
 <p><strong>Disclaimer:</strong> An independent project, 
 not officially affiliated with Hampshire County Council.</p>
-<p>Purple=footpath; green=bridleway; brown=byway; blue=restricted byway.</p>
+<p>Purple=footpath; green=bridleway; red=byway; blue=restricted byway.</p>
 </div>
 <div id='appmsg'><strong>WANTED!</strong> Testers for the
 <a href='app.html'>FixMyPaths Android App</a>!</div>
-<p><a href='#' id='permalink'>Permalink</a></p>
+<?php
+write_login();
+?>
+
+<div id='search'></div>
+
+</div>
+<div id='updates'>
+<h1 class='sidebarheading'>Recent reports</h1>
+<div id='reports'>
+</div>
 </div>
 <div id='main'>
 
-<div id="map" style="width:1024px; height:768px">
+<div id="map" style="height:768px">
 </div>
 
 </div>
 </body>
 </html>
+
+<?php
+function write_login()
+{
+    echo "<div id='logindiv'>";
+
+    if(!isset($_SESSION['gatekeeper']))
+    {
+        echo "<p>";
+		echo '<form method="post" '.
+		'action="user.php?action=login&redirect=index.php">';
+		?>
+        <label for="username">Username</label> <br/>
+        <input name="username" id="username" /> <br/>
+        <label for="password">Password</label> <br/>
+        <input name="password" id="password" type="password" /> <br/>
+        <input type='submit' value='go' id='loginbtn'/>
+		</form>
+        </p>
+        <p>
+        <a href=
+		'user.php?action=signup&redirect=http://www.fixmypaths.org/index.php'>
+		Sign up</a>
+        </p>
+		<!--
+		<p><em>Please note that logging in will place a cookie on your
+		machine to identify you to the server. Please only proceed if
+		you are happy with this.</em></p>
+		-->
+        <?php
+    }
+    else
+    {
+        echo "<em>Logged in as $_SESSION[gatekeeper]</em> ";
+		$conn=pg_connect("dbname=gis user=gis");
+		$u = User::getUserFromUsername($_SESSION["gatekeeper"]);
+		if($u->isAdmin())
+			echo "<a href='admin.php'>Admin</a> ";
+		echo "<a href='user.php?action=logout'>Logout</a>";
+		pg_close($conn);
+    }
+    echo "</div>";
+}

@@ -28,7 +28,7 @@ switch($cleaned["action"])
         if(isset($cleaned["username"]) && isset($cleaned["password"]))
         {
             $res=User::processSignup($cleaned['username'],$cleaned['password'],
-                            $cleaned['email']);
+                            $cleaned['email'],$cleaned['redirect']);
             if(is_int($res))
             {
                 head("Sign up");
@@ -39,7 +39,7 @@ switch($cleaned["action"])
         else
         {
             head("Sign up");
-            User::displaySignupForm();
+            User::displaySignupForm(null,$cleaned["redirect"]);
             close_page();
         }
         break;
@@ -47,15 +47,15 @@ switch($cleaned["action"])
     case "delete":
         if(!isset($cleaned['id']))
         {
-            js_msg( "Please specify a user ID.","index.php");
+            js_msg( "Please specify a user ID.","/index.php");
         }
         elseif(!isset($_SESSION['gatekeeper']))
         {
-            js_msg("Please login","index.php");
+            js_msg("Please login","/index.php");
         }
         else if ($_SESSION['level']!=1)
         {
-            js_msg("Only the administrator can delete accounts.","index.php");
+            js_msg("Only the administrator can delete accounts.","/index.php");
         }
         else 
         {
@@ -67,7 +67,7 @@ switch($cleaned["action"])
             }
             else
             {
-                js_msg("Invalid user ID.","index.php");
+                js_msg("Invalid user ID.","/index.php");
             }
         }
         links();
@@ -77,7 +77,7 @@ switch($cleaned["action"])
         head("Activate account");
         if(!isset($cleaned['id']) || !isset($cleaned['key']))
         {
-            js_msg("id/key not supplied.","index.php");
+            js_msg("id/key not supplied.","/index.php");
         }
         else
         {
@@ -85,11 +85,11 @@ switch($cleaned["action"])
             if($u->isValid())
             {
                 if($u->activate($cleaned['key']))
-                    js_msg("User activated.","index.php");
+                    js_msg("User activated.","/index.php");
             }
             else
             {
-                js_msg("Invalid user ID.","index.php");
+                js_msg("Invalid user ID.","/index.php");
             }
         }
         links();
@@ -99,7 +99,7 @@ switch($cleaned["action"])
         session_start();
         session_destroy();
         if(!isset($cleaned['redirect']))
-            $cleaned['redirect'] = 'index.php';
+            $cleaned['redirect'] = '/index.php';
         header("Location: $cleaned[redirect]");
         break;
 
@@ -113,14 +113,14 @@ switch($cleaned["action"])
         }
         else
         {
-            js_msg("Only administrators can view all users.","index.php");
+            js_msg("Only administrators can view all users.","/index.php");
         }
         break;
 
     case "displayDetails":
         if(!isset($_SESSION['gatekeeper']))
         {
-            js_msg("Must be logged in!","index.php");
+            js_msg("Must be logged in!","/index.php");
         }
         else
         {
@@ -151,7 +151,7 @@ function head($title="")
 function links()
 {
     ?>
-    <p><a href='index.php'>Main page</a></p>
+    <p><a href='/index.php'>Main page</a></p>
     <?php
 }
 

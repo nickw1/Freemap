@@ -1,0 +1,35 @@
+
+body { font-family: DejaVu Sans, verdana, helvetica, arial, sans-serif; }
+a{ text-decoration: none; }
+#sidebar { float: left; width: 256px; background-color: #ffffc0; color: black;
+height:800px; text-align: center }
+.sidebarheading { font-family: Liberation Serif, Bookman Old Style } 
+#sidebar h1 { font-weight: normal; }
+#updates h1 { font-weight: normal; font-size: 150% }
+#main { margin-left: 288px;  }
+#updates { margin-left:16px; }
+#search  { font-size: 75%; width:75%; margin-left: auto; margin-right: auto }
+#search h1 { font-size: 100%; font-weight: bold }
+#searchterm { width: 75%; }
+#blurb { font-size: 75% }
+#appmsg { background-color: white; color: black; border: 2px solid black; }
+#appmsg strong { color: red ; }
+#appmsg a { color: blue; }
+#sidebar a#permalink { font-weight: bold; color: blue; }
+#updates { float: right; width:256px; background-color: #ffffc0; 
+			overflow:auto; height: 768px; font-size: 80%  }
+table,th,tr,td { border: 1px solid black; }
+table { border-collapse: collapse }
+#logindiv input { text-align: center; }
+#results
+{
+	height:240px;
+	width:100%;
+	overflow:auto;
+}
+#admincontainer { width: 50%; }
+body>h1 { background-color: #ffffc0; font-size: 120% }
+#problems>h2 { font-size: 110% }
+#admincontainer select { width: 50%; float: left; display:block; }
+#admincontainer label { width: 50%; float: left; display:block }
+#problems { clear: both }

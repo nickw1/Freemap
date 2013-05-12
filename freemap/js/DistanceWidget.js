@@ -29,6 +29,7 @@ DistanceWidget.prototype.displayDistance = function (dist)
 DistanceWidget.prototype.addDistance=function(d)
     {
         this.dist+=d;
+		this.dist=(this.dist>=0) ? this.dist:0.0;
         this.displayDistance(this.dist);
     }
 

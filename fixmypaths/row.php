@@ -5,10 +5,7 @@ require_once('RightOfWay.php');
 
 $cleaned = clean_input($_REQUEST);
 
-$inProj =  isset($cleaned["inProj"]) ? $cleaned["inProj"]: "4326";
 $outProj =  isset($cleaned["outProj"]) ? $cleaned["outProj"]: "3857";
-if(isset($cleaned["x"]) && isset($cleaned["y"]))
-	$xy = reproject($cleaned["x"],$cleaned["y"],$inProj,"3857");
 $format = isset($cleaned["format"]) ? $cleaned["format"] : "geojson";
 $mimetypes = array ("geojson"=>"application/json",
                     "xml"=>"text/xml");
@@ -18,20 +15,23 @@ switch($cleaned["action"])
 {
     case "findNearest":
         //header("Content-type: application/json");
-        $rightofway = RightOfWay::findClosest($xy[0],$xy[1],$cleaned["dist"]);
-        if($rightofway!==null)
-        {
-            if(isset($mimetypes[$format]))
-                header("Content-type: ".$mimetypes[$format]);
-            $rightofway->output($format);
-        }
-        else
-        {
-            header("HTTP/1.1 404 Not Found");
-            echo "No ROW found";
-        }
-        break;
-
+		if(isset($cleaned["x"]) && isset($cleaned["y"]))
+		{
+			$xy = reproject($cleaned["x"],$cleaned["y"],"4326","3857");
+        	$rightofway=RightOfWay::findClosest($xy[0],$xy[1],$cleaned["dist"]);
+        	if($rightofway!==null)
+        	{
+            	if(isset($mimetypes[$format]))
+                	header("Content-type: ".$mimetypes[$format]);
+            	$rightofway->output($format);
+        	}
+        	else
+        	{
+            	header("HTTP/1.1 404 Not Found");
+            	echo "No ROW found";
+        	}
+		}
+		break;
     case "addProblem":
         if(isset($cleaned["problem"]) && $cleaned["problem"]!="" &&
             isset($cleaned["category"]) && $cleaned["category"]!="" &&
@@ -46,7 +46,7 @@ switch($cleaned["action"])
                                 $cleaned["category"],
                                 $cleaned["reporter_name"],
                                 $cleaned["reporter_email"],
-                                $xy[0],$xy[1]);
+                                $cleaned["x"],$cleaned["y"]);
                 echo "Successfully added";
             }
             else
@@ -90,13 +90,10 @@ switch($cleaned["action"])
                         	{
 								// Note attributes need to be cast to float
 								// otherwise this will not work
-								$xy1 = reproject((float)$attrs["x"],
-										(float)$attrs["y"],
-									$inProj,"3857");
                             	$rightofway->addProblem($desc, $type,
                                 	$cleaned["reporter_name"],
                                 	$cleaned["reporter_email"],
-									$xy1[0],$xy1[1]);
+									(float)$attrs["x"],(float)$attrs["y"]);
 							}
                         }
                     }
@@ -146,8 +143,8 @@ switch($cleaned["action"])
             $bb=explode("," , $cleaned["bbox"]);
             if(count($bb)==4)
             {
-                $sw=reproject($bb[0],$bb[1],$cleaned["inProj"],"3857");
-                $ne=reproject($bb[2],$bb[3],$cleaned["inProj"],"3857");
+                $sw=reproject($bb[0],$bb[1],"4326","3857");
+                $ne=reproject($bb[2],$bb[3],"4326","3857");
                 $bbox[0] = $sw[0];
                 $bbox[1] = $sw[1];
                 $bbox[2] = $ne[0];
@@ -155,20 +152,22 @@ switch($cleaned["action"])
             }
         }
 
-        $problems = RightOfWay::getAllProblems($bbox);
+        $problems = Problem::getAllProblems($bbox);
+		prob_output($problems, $format, $outProj);
+        break;
+}
+
+pg_close($conn);
+
+function prob_output($problems, $format, $outProj)
+{
         if($format=="xml")
         {
             header("Content-type: text/xml");
             $xml="";
             $xml .= "<freemap><projection>$outProj</projection>";
             foreach($problems as $prob)
-            {
-                $coords=reproject($prob["x"],$prob["y"],"3857",$outProj);
-                $xml .= "<annotation x='$coords[0]' y='$coords[1]' ".
-                        "id='$prob[id]'>".
-                        "<description>$prob[problem]</description>".
-                        "</annotation>";
-            }
+				$xml .= $prob->output("xml",$outProj);
             $xml .= "</freemap>";
             echo $xml;
         }
@@ -178,24 +177,9 @@ switch($cleaned["action"])
             $json["type"]="FeatureCollection";
             $json["features"]=array();
             foreach($problems as $prob)
-            {
-                $f["type"]="Feature";
-                $f["geometry"]=array();
-                   $f["geometry"]["type"] = "Point";
-                $f["geometry"]["coordinates"] = reproject
-                    ($prob["x"],$prob["y"],"3857",$outProj);
-                $f["properties"]=array();
-                    $f["properties"]["text"]= $prob["problem"];
-                $f["properties"]["gid"] = $prob["id"];
-                $f["properties"]["parish_row"]= $prob["parish_row"];
-                $json["features"][] = $f;
-            }
+				$json["features"][] = $prob->output("json",$outProj);
             header("Content-type: application/json");
             echo json_encode($json);
         }
-        break;
 }
-
-pg_close($conn);
-
 ?>

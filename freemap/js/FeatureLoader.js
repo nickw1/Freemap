@@ -23,7 +23,7 @@ FeatureLoader.prototype.loadFeatures=function(bounds)
 
 FeatureLoader.prototype.processFeatures=function(xmlHTTP)
 {
-    var json = JSON.parse(xmlHTTP.responseText);
+	var json=JSON.parse(xmlHTTP.responseText);
     for(var i=0; i<json.features.length; i++)
     {
         var c = json.features[i].geometry.coordinates;
@@ -31,7 +31,7 @@ FeatureLoader.prototype.processFeatures=function(xmlHTTP)
         {
             this.indexedFeatures[json.features[i].properties.id]=
                     json.features[i];
-            this.layer.addGeoJSON(json.features[i]);
+            this.layer.addData(json.features[i]);
         }
     }
 }

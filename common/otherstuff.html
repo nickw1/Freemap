@@ -28,6 +28,26 @@ A demo 3D OSM viewer using WebGL and NASA SRTM height data. Available
 <p>
 OpenTrail is an in-the-field Android app for walkers, using Freemap maps.
 Please see <a href="/common/opentrail.html">here</a>.</p>
+<h3 id='fixmypaths'>FixMyPaths! Hampshire</h3>
+<p>An Android 2.1+ app to report footpath problems to Hampshire County
+Council, using their open footpath data.
+The app detects what footpath you are on (you may also manually
+add problems at other locations) and sends your problem report to HCC
+via the Freemap server. See <a href='http://www.fixmypaths.org/app.html'>
+here</a> for more details; the app may be downloaded from
+<a href='/downloads/android/fixmypaths.apk'>here</a>.</p>
+<h3 id='hikar'>HikAR</h3>
+<p>HikAR is an augmented reality OSM app aimed at walkers and hikers, 
+which overlays
+OSM data on the camera feed of an Android 4.0+ device. It was (as part of
+OpenTrail at the time; it has now been separated out) presented at
+SOTM-EU 2011 Vienna and SOTM 2011 Denver. At the present time it is
+considered "researchware"; it works (in the areas of the country covered by
+Freemap) but
+is not yet written with usability or stability in mind. Therefore, it is
+currently only available as source code;
+see <a href="https://github.com/nickw1/Freemap/tree/master/java/hikar">
+the Github repository</a>.</p>
 <h3 id='walknotes'>Walknotes</h3>
 <p>Android app for making Freemap annotations in the field. Make notes on
 the walk you're doing, e.g. a nice view or path blockage, and upload to the
@@ -39,19 +59,24 @@ available <a href='/downloads/android/walknotes.tar.bz2'>here</a>.
 <strong>NOTE:</strong>This was an experimental "first Android app" to get
 used to Android development; Walknotes is now incorporated into
 OpenTrail, above</p>
-<h3>FreemapMobile</h3>
+<h3>Other software</h3>
+<p>The software below is likely to be of historical interest only, as it
+either runs on systems seeing little use today (FreemapMobile) or has
+not seen development for a number of years (e.g. Footnav). Nonetheless you
+might wish to use the source code in your own projects.</p>
+<h4>FreemapMobile</h4>
 <p>A JavaME client for Freemap, written mostly in summer 2008. 
 Available <a href='../downloads/FreemapMobile/FreemapMobile_r3fe.zip'>
 here</a>. Shows Freemap, OSM Mapnik, Osmarender, or out-of-copyright OS maps
 on your Java ME-enabled phone with GPS. Tested on the Nokia N95. 
 Superseded by OpenTrail, above</p>
-<h3>Footnav</h3>
+<h4>Footnav</h4>
 <p>A start on an OpenGL and Qt based 3D viewer 
 of OSM and SRTM data. Not taken further
 as my interest shifted to WebGL and Android, but source available
 <a href='/downloads/footnav/'>here</a> should you wish to develop it further.
 </p>
-<h3>ZXLIB</h3>
+<h4>ZXLIB</h4>
 <p>C++ library for developing ZX Spectrum-style 2D games on Linux and
 Windows systems. Comes with tutorial,
 documentation and simple examples. Based on SDL;

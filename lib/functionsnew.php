@@ -4,6 +4,8 @@ require_once('/home/www-data/private/defines.php');
 require_once('/var/www/common/defines.php');
 require_once('latlong.php');
 require_once('/var/www/phpcoord/phpcoord.php');
+require_once('conversions.class.php');
+require_once('conversionslatlong.class.php');
 
 define ('HALF_EARTH', 20037508.34);
 define ('EARTH', 40075016.68);
@@ -423,12 +425,17 @@ function reproject($x,$y,$inProj,$outProj)
 		case 'OSGB':
 		case '27700':
 		case 'EPSG:27700':
-			$ll = gr_to_wgs84_ll($x,$y);
 			/*
+			$ll = gr_to_wgs84_ll($x,$y);
 			$ref = new OSRef($x,$y);
 			$latlng = OSRefToLatLng($ref);
 			$ll = array("lon"=>$latlng->lng,"lat"=>$latlng->lat);
 			*/
+			// 17/4/13 now use Barry Hunter's geograph code, seems to be
+			// most accurate of these
+			$c = new ConversionsLatLong();
+			$ll0 = $c->osgb36_to_wgs84($x,$y);
+			$ll = array("lon"=>$ll0[1],"lat"=>$ll0[0]);
 			break;
 
 		default:
@@ -453,15 +460,21 @@ function reproject($x,$y,$inProj,$outProj)
 		case 'OSGB':
 		case '27700':
 		case 'EPSG:27700':
+			/*
 			$gr = wgs84_ll_to_gr($ll['lon'],$ll['lat']);
 			$x = $gr['e'];
 			$y = $gr['n'];
-			/*
 			$ll = new LatLng($ll['lat'],$ll['lon']);
 			$gr = LatLngToOSRef($ll);
 			$x = $gr->easting;
 			$y = $gr->northing;
 			*/
+			// 17/4/13 now use Barry Hunter's geograph code, seems to be
+			// most accurate of these
+			$c = new ConversionsLatLong();
+			$gr = $c->wgs84_to_osgb36($ll['lat'],$ll['lon']);
+			$x = $gr[0];
+			$y = $gr[1];
 			break;
 
 		default:
