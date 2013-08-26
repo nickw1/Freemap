@@ -19,16 +19,14 @@ import java.io.File;
 
 public class TileDeliverer {
 	
-	int tileWidth, tileHeight;
-	Point curPos, prevPos;
-	DataSource dataSource;
-	HashMap<String,TiledData> data;
-	DataInterpreter interpreter;
+	protected int tileWidth, tileHeight;
+	protected Point curPos, prevPos;
+	protected DataSource dataSource;
+	protected HashMap<String,TiledData> data;
+	protected DataInterpreter interpreter;
 	protected Projection proj;
 	String name, cachedir;
 	
-	
-
 	public TileDeliverer(String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
 							Projection proj,String cachedir)
 	{
@@ -144,12 +142,17 @@ public class TileDeliverer {
 	
 	
 	protected String getCacheFile(Point p)
-	{
-		Point origin=getOrigin(p);
-		String key="" + ((int)origin.x)+"."+((int)origin.y);
+	{	
+		String key=getKey(p);
 		return cachedir+"/"+name+"."+key;
 	}
 	
+	protected String getKey(Point p)
+	{
+	    Point origin=getOrigin(p);
+	    String key="" + ((int)origin.x)+"."+((int)origin.y);
+	    return key;
+	}
 	
 	protected TiledData doUpdate(Point origin, boolean cacheData, boolean forceReload) throws Exception
 	{
@@ -260,7 +263,7 @@ public class TileDeliverer {
 		return !(bottomLeftOld.equals(bottomLeftNew));
 	}
 	
-	protected Point getOrigin(Point p)
+	public Point getOrigin(Point p)
 	{
 		return (p==null) ? null:new Point(Math.floor(p.x/tileWidth)*tileWidth,Math.floor(p.y/tileHeight)*tileHeight);
 	}
@@ -269,12 +272,19 @@ public class TileDeliverer {
 	{
 		if(curPos!=null)
 		{
-			Point bottomLeft = getOrigin(curPos);
-			String key = "" + ((int)bottomLeft.x)+"."+((int)bottomLeft.y);
-			return data.get(key);
+		    return getData(curPos);
 		}
 		return null;
 	}
+	
+	// tested
+	public TiledData getData(Point p)
+	{
+		Point bottomLeft = getOrigin(p);
+		String key = "" + ((int)bottomLeft.x)+"."+((int)bottomLeft.y);
+		return data.get(key);
+	}
+		
 	
 	public Set<Map.Entry<String,TiledData> > getAllTiles()
 	{
@@ -320,17 +330,34 @@ public class TileDeliverer {
 		return allData;
 	}
 	
+	public boolean inSameTile(Point p1, Point p2)
+	{
+	    return getOrigin(p1).equals(getOrigin(p2));
+	}
+	
+	// tested
+	public int[] getTileID(Point p)
+	{
+	    int[] tileID = new int[2];
+	    tileID[0]= (int)p.x / tileWidth;
+	    tileID[1] = -(int)p.y / tileHeight - 1;
+	    return tileID;
+	}
+	
+	// tested
+	public Object tileIDToData(int[] tileID)
+	{
+	    Point origin = new Point();
+	    origin.x = tileID[0] * tileWidth;
+	    origin.y = -(tileID[1]+1) * tileHeight;
+	    return getData(origin);
+	}
+	
 	/*
 	public static void main (String args[])
 	{
 
 		
-		System.out.println("enter lon/lat:");
-		Scanner s=new Scanner(System.in);
-		
-		
-		 double lon=s.nextDouble(), lat=s.nextDouble();
-		 
 		
 		
 		double lon=-0.72;
@@ -341,20 +368,78 @@ public class TileDeliverer {
 			new LFPFileFormatter());
 	
 		
-		TileDeliverer deliverer=new HGTTileDeliverer("dem",dataSource, new HGTDataInterpreter(101,101,50,
+		HGTTileDeliverer deliverer=new HGTTileDeliverer("dem",dataSource, new HGTDataInterpreter(101,101,50,
 										DEMSource.LITTLE_ENDIAN),
-					5000, 5000, new OSGBProjection(),101,101,50,".");
+					5000, 5000, new freemap.proj.OSGBProjection(),101,101,50,".");
 		
 		
 		try
 		{
-			deliverer.update(new Point(lon,lat));
+			deliverer.updateSurroundingTiles(new Point(lon,lat), true);
 			DEM dem = (DEM)(deliverer.getData());
 			if(dem!=null)
 			{
-				System.out.println(dem);
-				System.out.println("Height: " + dem.getHeight(lon,lat,null));
-				System.out.println("*Got data: " + dem);
+				//System.out.println(dem);
+				//System.out.println("Height: " + dem.getHeight(-0.72, 51.05, null));
+				//System.out.println("*Got data: " + dem);
+				Point p1 = new Point(489600,128500), p2 = new Point(494600,128500), p3 = new Point(491600,131500);
+				
+				
+				int[] tileID = deliverer.getTileID(p1),
+				        tileID2, tileID3;
+				System.out.println(tileID[0]+" "+tileID[1]);
+				tileID2 = deliverer.getTileID(p2);
+				System.out.println(tileID2[0]+" "+tileID2[1]);
+		        tileID3 = deliverer.getTileID(p3);
+                System.out.println(tileID3[0]+" "+tileID3[1]);
+                DEM dem1 = (DEM)deliverer.tileIDToData(tileID),
+                        dem2 = (DEM)deliverer.tileIDToData(tileID2),
+                        dem3 = (DEM)deliverer.tileIDToData(tileID3),
+                        dem4 = (DEM)deliverer.tileIDToData(new int[] {11,22});
+                
+                System.out.println(dem1.getBottomLeft());
+                System.out.println(dem2.getBottomLeft());
+                System.out.println(dem3.getBottomLeft());
+                System.out.println(((DEM)deliverer.getData(p1)).getBottomLeft());
+                System.out.println(((DEM)deliverer.getData(p2)).getBottomLeft());
+                System.out.println(((DEM)deliverer.getData(p3)).getBottomLeft());
+                System.out.println(dem4);
+                
+                int[] gp1 = dem1.pointToGridPosition(p1, deliverer.proj);
+                System.out.println(gp1[0] + " "+ gp1[1]);
+                int[] gp2 = dem1.pointToGridPosition(new Point(485000,129000), deliverer.proj);
+                System.out.println(gp2[0] + " "+ gp2[1]);
+                System.out.println(dem1.gridPositionToIndex(new int[] {0, 0} ));
+                System.out.println(dem1.gridPositionToIndex(new int[] {50, 0} ));
+                System.out.println(dem1.gridPositionToIndex(new int[] {0, 1} ));
+                System.out.println(dem1.gridPositionToIndex(new int[] {50, 1} ));
+                
+                int[] z1 = deliverer.getGlobalGridPos(dem1, p1);
+                System.out.println("global grid pos for " + p1 + " is " + z1[0] +" " +z1[1]);
+                int[] z2 = deliverer.getGlobalGridPos(dem2, p2);
+                System.out.println("global grid pos for " + p2 + " is " +z2[0] +" " +z2[1]);
+                int[] z4 = deliverer.getGlobalGridPos(dem2, new Point(494600,128600));
+                System.out.println(z4[0] +" " +z4[1]);
+                int[] z3 = deliverer.getGlobalGridPos(dem3, p3);
+                System.out.println("global grid pos for " + p3 + " is " +z3[0] +" " +z3[1]); 
+                
+                int demw = dem1.getPtWidth()-1, demh = dem1.getPtHeight()-1; // -1 for boundary points
+                
+                int[] tileOrigin = new int[2], localGridPos = new int[2];
+                
+                tileOrigin[0] = (int)Math.floor((double)z1[0] /demw) * demw;
+                tileOrigin[1] = (int)Math.floor((double)z1[1] / demh) * demh;
+                
+                System.out.println("Tile origin in global grid points for : " + p1 + " is " + tileOrigin[0] +
+                            " " + tileOrigin[1]);
+                
+                // Use this to get local grid points
+                localGridPos[0] = z1[0] - tileOrigin[0];
+                localGridPos[1] = z1[1] - tileOrigin[1];
+                
+                System.out.println("Local grid pos: " + localGridPos[0] +" " + localGridPos[1]);
+			    
+				deliverer.lineOfSight(p1, p3);
 			}
 		}
 		catch(Exception e)
@@ -364,24 +449,21 @@ public class TileDeliverer {
 		
 		
 		
-		WebDataSource dataSource2=new WebDataSource("http://www.free-map.org.uk/freemap/ws/", 
-				new FreemapFileFormatter("epsg:3785"));
-		TileDeliverer deliverer2=new TileDeliverer("osm",dataSource2, new XMLDataInterpreter
-				(new FreemapDataHandler()),5000,5000,new GoogleProjection(),".");
+		//WebDataSource dataSource2=new WebDataSource("http://www.free-map.org.uk/freemap/ws/", new FreemapFileFormatter("epsg:3785"));
+		//TileDeliverer deliverer2=new TileDeliverer("osm",dataSource2, new XMLDataInterpreter(new FreemapDataHandler()),5000,5000,new GoogleProjection(),".");
 
 
-		try
-		{
+		//try
+		//{
 			//TiledData data = deliverer2.update(new Point(lon,lat));
 			//System.out.println("*Got data: " + deliverer2.getData());
-			deliverer2.forceDownload(new Point(16.33, 48.19), 
-					new Point(16.4, 48.22));
-		}
-		catch(Exception e)
-		{
-			System.out.println(e);
-		}
+			//deliverer2.forceDownload(new Point(16.33, 48.19),	new Point(16.4, 48.22));
+		//}
+		//catch(Exception e)
+		//{
+		//	System.out.println(e);
+		//}
 	
 	}
-*/
+	*/
 }

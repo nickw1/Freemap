@@ -1,3 +1,4 @@
+
 package freemap.jdem;
 
 import freemap.data.Point;
@@ -51,32 +52,13 @@ public class DEM implements freemap.datasource.TiledData {
 		Point p = new Point(lon,lat);
 	
 		
-		/*
 		
-		System.out.println("getHeight(): lon="+lon+ " lat="+lat+ " coordProj=" + coordProj +
-				" proj=" + proj);
-		*/
+		//System.out.println("getHeight(): lon="+lon+ " lat="+lat+ " coordProj=" + coordProj +	" proj=" + proj);
 		
-		if((!(proj==null && coordProj==null)) && (!(proj!=null && proj.equals(coordProj))))
-		{
-			// unproject the input to lon/lat if it's not lon/lat
 		
-			//System.out.println("p was: " + p);
-			if(coordProj!=null)
-			{
-				p=coordProj.unproject(p);
-			}
+		p=reprojectPoint(p,coordProj);
 		
-			//System.out.println("unprojected p: " + p);
-			// Project lon/lat into the native projection of the DEM
-			if(proj!=null)
-			{
-				p=proj.project(p);
-			}
-			
-		}
-		//System.out.println("Projected point: " + p+" bottomLeft=" + bottomLeft);
-		
+		;
 		int xIdx = (int)((p.x-bottomLeft.x) / spacing),
 			yIdx = ptHeight-((int)Math.ceil((p.y - bottomLeft.y) / spacing));
 		
@@ -116,6 +98,29 @@ public class DEM implements freemap.datasource.TiledData {
 		return -1;
 	}
 	
+	public Point reprojectPoint(Point p, Projection coordProj)
+	{
+		if((!(proj==null && coordProj==null)) && (!(proj!=null && proj.equals(coordProj))))
+		{
+			// unproject the input to lon/lat if it's not lon/lat
+		
+			
+			if(coordProj!=null)
+			{
+				p=coordProj.unproject(p);
+			}
+		
+			
+			// Project lon/lat into the native projection of the DEM
+			if(proj!=null)
+			{
+				p=proj.project(p);
+			}
+		    
+		}
+		return p;
+	}
+	
 	public String toString()
 	{
 		String s= "bottomLeft: " + bottomLeft + " spacing=" + spacing + " heights=" +
@@ -135,25 +140,57 @@ public class DEM implements freemap.datasource.TiledData {
 	
 	public boolean pointWithin(Point lonLat,Projection coordProj)
 	{
-		Point p = lonLat;
+		Point p = new Point(lonLat.x, lonLat.y);
 		
-		if((!(proj==null && coordProj==null)) && (!(proj!=null && proj.equals(coordProj))))
-		{
-			// unproject the input to lon/lat if it's not lon/lat
-		
-			if(coordProj!=null)
-			{
-				p=coordProj.unproject(p);
-			}
-		
-			// Project lon/lat into the native projection of the DEM
-			if(proj!=null)
-			{
-				p=proj.project(p);
-			}
-		}
+		p=reprojectPoint(p,coordProj);
 	
 		return p.x >= bottomLeft.x && p.x <= topRight.x && p.y >= bottomLeft.y && p.y <= topRight.y;
+	}
+	
+	public int[] pointToGridPosition(Point lonLat, Projection coordProj)
+	{
+		// bottomLeft ptWidth ptHeight spacing
+		Point p = new Point(lonLat.x, lonLat.y);
+		reprojectPoint(p,coordProj);
+		int[] gridPos = new int[2];
+		gridPos[0] = (int)((p.x-bottomLeft.x) / spacing);
+		gridPos[1] = ptHeight-1-((int)Math.ceil((p.y - bottomLeft.y) / spacing));
+		return gridPos;
+	}
+	
+	public int gridPositionToIndex(int[] gridPos)
+	{
+		return gridPos[1]*ptWidth + gridPos[0];
+	}
+	
+	public double getHeight(int[] gridPos)
+	{
+	    int idx = gridPositionToIndex(gridPos);
+	    return idx>=0 && idx<heights.length ? heights[idx]:null;
+	}
+	
+	public boolean isInSight(Point p1, Point p2, Projection coordProj)
+	{
+		if (pointWithin(p1,coordProj) && pointWithin(p2,coordProj))
+		{
+			double startHeight = getHeight(p1.x, p1.y, coordProj), endHeight = getHeight(p2.x,p2.y,coordProj);
+			int[] gridPos1 = pointToGridPosition(p1,coordProj), gridPos2 = pointToGridPosition(p2,coordProj);
+			
+			int[][] path = Bresenham.getPath(gridPos1, gridPos2);
+			int curIndex;
+			
+			double htInc = (endHeight - startHeight) / path.length, expHt = startHeight;
+			
+			for(int i=0; i<path.length; i++)
+			{
+				curIndex = gridPositionToIndex(path[i]);
+				if(heights[curIndex] > expHt)
+					return false;
+				expHt += htInc;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	public void save(String filename) throws IOException
@@ -192,5 +229,15 @@ public class DEM implements freemap.datasource.TiledData {
 	    return proj;
 	}
 	
+	public int getPtWidth()
+	{
+	    return ptWidth;
+	}
+	
+	public int getPtHeight()
+	{
+	    return ptHeight;
+	}
 }
+
 

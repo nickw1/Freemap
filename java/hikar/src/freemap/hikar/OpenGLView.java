@@ -25,7 +25,10 @@ public class OpenGLView extends GLSurfaceView  {
    
    DataRenderer renderer;
     
-  
+   public interface RenderedWayVisitor
+   {
+       public void visit(RenderedWay rw);
+   }
     
     class DataRenderer implements GLSurfaceView.Renderer, FreemapDataset.WayVisitor {
         
@@ -40,6 +43,8 @@ public class OpenGLView extends GLSurfaceView  {
         int textureId;
         SurfaceTexture cameraFeed;
         CameraCapturer cameraCapturer;
+        
+      
         
         public DataRenderer()
         {
@@ -186,7 +191,7 @@ public class OpenGLView extends GLSurfaceView  {
                     {
                         for(RenderedWay rWay: renderedWays)
                         {                 
-                            if(rWay.distanceTo(p) <= 3000.0f)
+                            if(rWay.isDisplayed() && rWay.distanceTo(p) <= 3000.0f)
                             {
                                 rWay.draw(gpuInterface); 
                             }       
@@ -324,6 +329,12 @@ public class OpenGLView extends GLSurfaceView  {
         public void setCameraHeight(float cameraHeight)
         {
             zDisp = cameraHeight;
+        }
+        
+        public void operateOnRenderedWays(OpenGLView.RenderedWayVisitor visitor)
+        {
+            for(int i=0; i<renderedWays.size(); i++)
+                visitor.visit(renderedWays.get(i));
         }
     }
     

@@ -4,6 +4,7 @@ import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import freemap.proj.OSGBProjection;
 import freemap.data.Projection;
+import freemap.jdem.HGTTileDeliverer;
 import android.app.Fragment;
 import android.app.Activity;
 import android.location.Location;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 
 public class ViewFragment extends Fragment 
     implements LocationProcessor.Receiver,DownloadDataTask.Receiver,
+    OpenGLView.RenderedWayVisitor,
     SensorInput.SensorInputReceiver, PinchListener.Handler {
 
     OsmDemIntegrator integrator;
@@ -23,6 +25,7 @@ public class ViewFragment extends Fragment
     LocationProcessor locationProcessor;
     SensorInput sensorInput;
     Projection proj;
+    Point loc;
     
     
     public ViewFragment()
@@ -78,18 +81,21 @@ public class ViewFragment extends Fragment
     }
     
     public void receiveLocation(Location loc) {
-        Point p = new Point(loc.getLongitude(), loc.getLatitude());
-        Point projected = proj.project(p);
-        glView.getRenderer().setCameraLocation((float)projected.x, (float)projected.y);
-        double height = integrator.getHeight(projected);
+        this.loc = proj.project(new Point(loc.getLongitude(), loc.getLatitude()));
+        
+        glView.getRenderer().setCameraLocation((float)this.loc.x, (float)this.loc.y);
+        double height = integrator.getHeight(this.loc);
         glView.getRenderer().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().invalidate();
-        if(integrator.needNewData(p))
+        if(integrator!=null && integrator.getDEM()!=null)
+            glView.getRenderer().operateOnRenderedWays(this);
+        
+        if(integrator.needNewData(this.loc))
         {
             downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
             downloadDataTask.setDialogDetails("Loading...", "Loading data...");
-            downloadDataTask.execute(p);
+            downloadDataTask.execute(this.loc);
         }
     }
     
@@ -135,4 +141,25 @@ public class ViewFragment extends Fragment
         android.util.Log.d("hikar","camera height=" + cameraHeight);
         glView.getRenderer().setCameraHeight(cameraHeight);
     }
+    
+    public void visit(RenderedWay rw)
+    {
+        
+        HGTTileDeliverer dem = integrator.getDEM();
+        
+        int nVisibles = 0;
+        float[] wayVertices = rw.getWayVertices();
+        for(int i=0; i<wayVertices.length; i++)
+        {
+          
+            boolean los = dem.lineOfSight(loc, new Point(wayVertices[i*3],wayVertices[i*3+1],wayVertices[i*3+2]));
+            if(los)
+            {
+               nVisibles++; 
+               // rw.setVisible(i, los);
+            }
+        }
+        rw.setDisplayed(nVisibles > 1);
+    }
+
 }

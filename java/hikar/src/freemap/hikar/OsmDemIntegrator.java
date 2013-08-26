@@ -20,7 +20,8 @@ import java.util.HashMap;
 
 public class OsmDemIntegrator {
 
-	TileDeliverer osm, hgt;
+	TileDeliverer osm;
+	HGTTileDeliverer hgt;
 	Projection tilingProj;
 	
 	public OsmDemIntegrator(String projID)
@@ -124,9 +125,15 @@ public class OsmDemIntegrator {
 	{
 		return (DEM)hgt.getData();
 	}
-	
+
 	public FreemapDataset getCurrentOSMData()
 	{
 		return (FreemapDataset)osm.getData();
 	}
+	
+	public HGTTileDeliverer getDEM()
+	{
+	    return hgt;
+	}
+	
 }
