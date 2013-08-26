@@ -4,8 +4,7 @@ package freemap.jdem;
 public class Bresenham {
 
    
-    // Input: array of x,y coords of target. It is assumed that this is relative to start point
-	// i.e. start point is (0,0)
+    // Input: array of x,y coords of source and target points.
 	// This will work for all 8 "octants" because:
 	// - ax1 and ax2 store the longer and shorter axis appropriately; we use ax1 and ax2 to identify
 	//   count1 (the count along the longer axis) and count2 (the count along the shorter axis). 
@@ -14,7 +13,7 @@ public class Bresenham {
 	// - d2 is the slope value to change count2 by. This will be the slope if ax1 is x and 1/slope if
 	//   ax2 is x.
 	// To decouple from a given use case, it returns, as output, an array of the coords along each
-	// axis for the line relative to the start point. It does not give values in an array such as a DEM; this is done
+	// axis for the line. It does not give values in an array such as a DEM; this is done
 	// separately. 
 	
     public static int[][] getPath( int[] origin, int[] target)
