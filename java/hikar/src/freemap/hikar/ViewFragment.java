@@ -4,7 +4,6 @@ import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import freemap.proj.OSGBProjection;
 import freemap.data.Projection;
-import freemap.jdem.HGTTileDeliverer;
 import android.app.Fragment;
 import android.app.Activity;
 import android.location.Location;
@@ -25,7 +24,7 @@ public class ViewFragment extends Fragment
     LocationProcessor locationProcessor;
     SensorInput sensorInput;
     Projection proj;
-    Point loc;
+    Point locOSGB;
     
     
     public ViewFragment()
@@ -81,21 +80,24 @@ public class ViewFragment extends Fragment
     }
     
     public void receiveLocation(Location loc) {
-        this.loc = proj.project(new Point(loc.getLongitude(), loc.getLatitude()));
-        
-        glView.getRenderer().setCameraLocation((float)this.loc.x, (float)this.loc.y);
-        double height = integrator.getHeight(this.loc);
+        Point p = new Point(loc.getLongitude(), loc.getLatitude());
+        locOSGB = proj.project(p);
+        glView.getRenderer().setCameraLocation((float)locOSGB.x, (float)locOSGB.y);
+        double height = integrator.getHeight(locOSGB);
         glView.getRenderer().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().invalidate();
+        
+        /*
         if(integrator!=null && integrator.getDEM()!=null)
             glView.getRenderer().operateOnRenderedWays(this);
+        */
         
-        if(integrator.needNewData(this.loc))
+        if(integrator.needNewData(p))
         {
             downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
             downloadDataTask.setDialogDetails("Loading...", "Loading data...");
-            downloadDataTask.execute(this.loc);
+            downloadDataTask.execute(p);
         }
     }
     
@@ -144,22 +146,25 @@ public class ViewFragment extends Fragment
     
     public void visit(RenderedWay rw)
     {
-        
-        HGTTileDeliverer dem = integrator.getDEM();
-        
-        int nVisibles = 0;
-        float[] wayVertices = rw.getWayVertices();
-        for(int i=0; i<wayVertices.length; i++)
+        /*
+        if(locOSGB!=null)
         {
-          
-            boolean los = dem.lineOfSight(loc, new Point(wayVertices[i*3],wayVertices[i*3+1],wayVertices[i*3+2]));
-            if(los)
+            HGTTileDeliverer dem = integrator.getDEM();
+        
+            int nVisibles = 0;
+            float[] wayVertices = rw.getWayVertices();
+            for(int i=0; i<wayVertices.length; i++)
             {
-               nVisibles++; 
-               // rw.setVisible(i, los);
+          
+                boolean los = dem.lineOfSight(locOSGB, new Point(wayVertices[i*3],wayVertices[i*3+1],wayVertices[i*3+2]));
+                if(los)
+                {
+                   nVisibles++; 
+                   // rw.setVisible(i, los);
+                }
             }
+            rw.setDisplayed(nVisibles > 1);
         }
-        rw.setDisplayed(nVisibles > 1);
+        */
     }
-
 }

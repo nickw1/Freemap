@@ -19,14 +19,16 @@ import java.io.File;
 
 public class TileDeliverer {
 	
-	protected int tileWidth, tileHeight;
-	protected Point curPos, prevPos;
-	protected DataSource dataSource;
-	protected HashMap<String,TiledData> data;
-	protected DataInterpreter interpreter;
+	int tileWidth, tileHeight;
+	Point curPos, prevPos;
+	DataSource dataSource;
+	HashMap<String,TiledData> data;
+	DataInterpreter interpreter;
 	protected Projection proj;
 	String name, cachedir;
 	
+	
+
 	public TileDeliverer(String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
 							Projection proj,String cachedir)
 	{
@@ -142,17 +144,12 @@ public class TileDeliverer {
 	
 	
 	protected String getCacheFile(Point p)
-	{	
-		String key=getKey(p);
+	{
+		Point origin=getOrigin(p);
+		String key="" + ((int)origin.x)+"."+((int)origin.y);
 		return cachedir+"/"+name+"."+key;
 	}
 	
-	protected String getKey(Point p)
-	{
-	    Point origin=getOrigin(p);
-	    String key="" + ((int)origin.x)+"."+((int)origin.y);
-	    return key;
-	}
 	
 	protected TiledData doUpdate(Point origin, boolean cacheData, boolean forceReload) throws Exception
 	{
@@ -263,7 +260,7 @@ public class TileDeliverer {
 		return !(bottomLeftOld.equals(bottomLeftNew));
 	}
 	
-	public Point getOrigin(Point p)
+	protected Point getOrigin(Point p)
 	{
 		return (p==null) ? null:new Point(Math.floor(p.x/tileWidth)*tileWidth,Math.floor(p.y/tileHeight)*tileHeight);
 	}
@@ -272,19 +269,12 @@ public class TileDeliverer {
 	{
 		if(curPos!=null)
 		{
-		    return getData(curPos);
+			Point bottomLeft = getOrigin(curPos);
+			String key = "" + ((int)bottomLeft.x)+"."+((int)bottomLeft.y);
+			return data.get(key);
 		}
 		return null;
 	}
-	
-	// tested
-	public TiledData getData(Point p)
-	{
-		Point bottomLeft = getOrigin(p);
-		String key = "" + ((int)bottomLeft.x)+"."+((int)bottomLeft.y);
-		return data.get(key);
-	}
-		
 	
 	public Set<Map.Entry<String,TiledData> > getAllTiles()
 	{
@@ -330,67 +320,72 @@ public class TileDeliverer {
 		return allData;
 	}
 	
-	public boolean inSameTile(Point p1, Point p2)
-	{
-	    return getOrigin(p1).equals(getOrigin(p2));
-	}
-	
+	// NEW
 	// tested
-	public int[] getTileID(Point p)
-	{
-	    int[] tileID = new int[2];
-	    tileID[0]= (int)p.x / tileWidth;
-	    tileID[1] = -(int)p.y / tileHeight - 1;
-	    return tileID;
-	}
+    public TiledData getData(Point p)
+    {
+        Point bottomLeft = getOrigin(p);
+        String key = "" + ((int)bottomLeft.x)+"."+((int)bottomLeft.y);
+        return data.get(key);
+    }
 	
-	// tested
-	public Object tileIDToData(int[] tileID)
-	{
-	    Point origin = new Point();
-	    origin.x = tileID[0] * tileWidth;
-	    origin.y = -(tileID[1]+1) * tileHeight;
-	    return getData(origin);
-	}
-	
-	/*
-	public static void main (String args[])
-	{
+    // tested
+    public int[] getTileID(Point p)
+    {
+        int[] tileID = new int[2];
+        tileID[0]= (int)p.x / tileWidth;
+        tileID[1] = -(int)p.y / tileHeight - 1;
+        return tileID;
+    }
+    
+    // tested
+    public Object tileIDToData(int[] tileID)
+    {
+        Point origin = new Point();
+        origin.x = tileID[0] * tileWidth;
+        origin.y = -(tileID[1]+1) * tileHeight;
+        return getData(origin);
+    }
+    // END NEW
+    
+    /*
+    public static void main (String args[])
+    {
 
-		
-		
-		
-		double lon=-0.72;
-		double lat=51.05;
-		
-		
-		WebDataSource dataSource=new WebDataSource("http://www.free-map.org.uk/downloads/lfp/", 
-			new LFPFileFormatter());
-	
-		
-		HGTTileDeliverer deliverer=new HGTTileDeliverer("dem",dataSource, new HGTDataInterpreter(101,101,50,
-										DEMSource.LITTLE_ENDIAN),
-					5000, 5000, new freemap.proj.OSGBProjection(),101,101,50,".");
-		
-		
-		try
-		{
-			deliverer.updateSurroundingTiles(new Point(lon,lat), true);
-			DEM dem = (DEM)(deliverer.getData());
-			if(dem!=null)
-			{
-				//System.out.println(dem);
-				//System.out.println("Height: " + dem.getHeight(-0.72, 51.05, null));
-				//System.out.println("*Got data: " + dem);
-				Point p1 = new Point(489600,128500), p2 = new Point(494600,128500), p3 = new Point(491600,131500);
-				
-				
-				int[] tileID = deliverer.getTileID(p1),
-				        tileID2, tileID3;
-				System.out.println(tileID[0]+" "+tileID[1]);
-				tileID2 = deliverer.getTileID(p2);
-				System.out.println(tileID2[0]+" "+tileID2[1]);
-		        tileID3 = deliverer.getTileID(p3);
+        
+        
+        
+        double lon=-0.72;
+        double lat=51.05;
+        
+        
+        WebDataSource dataSource=new WebDataSource("http://www.free-map.org.uk/downloads/lfp/", 
+            new LFPFileFormatter());
+    
+        
+        HGTTileDeliverer deliverer=new HGTTileDeliverer("dem",dataSource, new HGTDataInterpreter(101,101,50,
+                                        DEMSource.LITTLE_ENDIAN),
+                    5000, 5000, new freemap.proj.OSGBProjection(),101,101,50,".");
+        
+        
+        try
+        {
+            deliverer.updateSurroundingTiles(new Point(lon,lat), true);
+            DEM dem = (DEM)(deliverer.getData());
+            if(dem!=null)
+            {
+                //System.out.println(dem);
+                //System.out.println("Height: " + dem.getHeight(-0.72, 51.05, null));
+                //System.out.println("*Got data: " + dem);
+                Point p1 = new Point(489600,128500), p2 = new Point(494600,128500), p3 = new Point(491600,131500);
+                
+                
+                int[] tileID = deliverer.getTileID(p1),
+                        tileID2, tileID3;
+                System.out.println(tileID[0]+" "+tileID[1]);
+                tileID2 = deliverer.getTileID(p2);
+                System.out.println(tileID2[0]+" "+tileID2[1]);
+                tileID3 = deliverer.getTileID(p3);
                 System.out.println(tileID3[0]+" "+tileID3[1]);
                 DEM dem1 = (DEM)deliverer.tileIDToData(tileID),
                         dem2 = (DEM)deliverer.tileIDToData(tileID2),
@@ -438,32 +433,32 @@ public class TileDeliverer {
                 localGridPos[1] = z1[1] - tileOrigin[1];
                 
                 System.out.println("Local grid pos: " + localGridPos[0] +" " + localGridPos[1]);
-			    
-				deliverer.lineOfSight(p1, p3);
-			}
-		}
-		catch(Exception e)
-		{
-			System.out.println(e);
-		}
-		
-		
-		
-		//WebDataSource dataSource2=new WebDataSource("http://www.free-map.org.uk/freemap/ws/", new FreemapFileFormatter("epsg:3785"));
-		//TileDeliverer deliverer2=new TileDeliverer("osm",dataSource2, new XMLDataInterpreter(new FreemapDataHandler()),5000,5000,new GoogleProjection(),".");
+                
+                deliverer.lineOfSight(p1, p3);
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+        
+        
+        
+        //WebDataSource dataSource2=new WebDataSource("http://www.free-map.org.uk/freemap/ws/", new FreemapFileFormatter("epsg:3785"));
+        //TileDeliverer deliverer2=new TileDeliverer("osm",dataSource2, new XMLDataInterpreter(new FreemapDataHandler()),5000,5000,new GoogleProjection(),".");
 
 
-		//try
-		//{
-			//TiledData data = deliverer2.update(new Point(lon,lat));
-			//System.out.println("*Got data: " + deliverer2.getData());
-			//deliverer2.forceDownload(new Point(16.33, 48.19),	new Point(16.4, 48.22));
-		//}
-		//catch(Exception e)
-		//{
-		//	System.out.println(e);
-		//}
-	
-	}
-	*/
+        //try
+        //{
+            //TiledData data = deliverer2.update(new Point(lon,lat));
+            //System.out.println("*Got data: " + deliverer2.getData());
+            //deliverer2.forceDownload(new Point(16.33, 48.19), new Point(16.4, 48.22));
+        //}
+        //catch(Exception e)
+        //{
+        //  System.out.println(e);
+        //}
+    
+    }
+    */
 }

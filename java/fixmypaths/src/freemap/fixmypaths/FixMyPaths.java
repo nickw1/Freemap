@@ -65,12 +65,13 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
 			DownloadProblemsTask.ProblemsReceiver, MapView.OnTouchListener {
 	
 
-	MapView view;
+	MapView mapView;
 	MapLocationProcessorWithListener locationProcessor;
 	DataDisplayer locationDisplayer;
 	HTTPCommunicationTask dfTask;
 	FindROWTask frTask;
 	DownloadProblemsTask dpTask;
+	
 	String sdcard, styleFilename, mapFilename;
 	File mapFile, styleFile;
 	GeoPoint location;
@@ -81,6 +82,8 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
 	int annId;
 	int xDown = -256, yDown = -256;
 	GeoPoint initPos;
+	
+	boolean mapSetup = false;
 	
 	public static class SavedData
 	{
@@ -95,78 +98,94 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        view = new MapView(this);
-     	view.setClickable(true);
-    	view.setBuiltInZoomControls(true);
-    	view.setOnTouchListener(this);
+        mapView = new MapView(this);
+     	mapView.setClickable(true);
+    	mapView.setBuiltInZoomControls(true);
+    	mapView.setOnTouchListener(this);
+    	
+    	mapFile = null;
     	
     	SharedPreferences prefs = null;
-    	SavedData savedData = (SavedData)getLastNonConfigurationInstance();
-    	if(savedData!=null)
-    	{
-    		if(savedData.dcTask!=null)
-    			savedData.dcTask.reconnect(this, this);
-    		else if(savedData.dfTask!=null)
-    			savedData.dfTask.reconnect(this);
-    	}
     	
-    	if ((prefs=getPreferences(Context.MODE_PRIVATE))!=null)
+        // fix for galaxy s3
+        //sdcard = new File("/mnt/extSdCard").exists() ? "/mnt/extSdCard" : Environment.getExternalStorageDirectory().getAbsolutePath();
+        sdcard = Environment.getExternalStorageDirectory().getAbsolutePath();
+        
+    	if (savedInstanceState!=null)
+        {
+    	    
+            initPos = new GeoPoint(savedInstanceState.getDouble("lat", 51.0f),
+                    savedInstanceState.getDouble("lon", -1.0f));
+            int readZoom = savedInstanceState.getInt("zoom", 14);
+            mapView.getController().setZoom(readZoom);
+            mapFilename = savedInstanceState.getString("mapfile");
+            if(mapFilename != null)
+            {
+                mapFilename = sdcard+"/openhants/"+mapFilename;
+                mapFile = new File(mapFilename);
+            }
+        }
+    	else if ((prefs=getPreferences(Context.MODE_PRIVATE))!=null)
     	{
     		initPos = new GeoPoint (prefs.getFloat("latitude", 51.0f),
     									prefs.getFloat("longitude", -1.0f));
-    		view.getController().setZoom(prefs.getInt("zoom", 14));
+    		mapView.getController().setZoom(prefs.getInt("zoom", 14));
+    		mapFilename = prefs.getString("mapfile", null);
+    		if(mapFilename!=null)
+    		{
+    		    mapFilename = sdcard+"/openhants/"+mapFilename;
+    		    mapFile = new File(mapFilename);
+    		}
     	}
+    	
     	else
     	{
     		initPos = new GeoPoint(51.0f, -1.0f);
-    		view.getController().setZoom(14);
+    		mapView.getController().setZoom(14);
     	}
     	
+    	
+    	SavedData savedData = (SavedData)getLastNonConfigurationInstance();
+        if(savedData!=null)
+        {
+            if(savedData.dcTask!=null)
+                savedData.dcTask.reconnect(this, this);
+            else if(savedData.dfTask!=null)
+                savedData.dfTask.reconnect(this);
+        }
+        
     
-       
-    		// fix for galaxy s3
-    		//sdcard = new File("/mnt/extSdCard").exists() ? "/mnt/extSdCard" : Environment.getExternalStorageDirectory().getAbsolutePath();
-    		sdcard = Environment.getExternalStorageDirectory().getAbsolutePath();
-        	File openhantsDir = new File(sdcard+"/openhants");
-        	if(!openhantsDir.exists())
-        		openhantsDir.mkdir();
+        File openhantsDir = new File(sdcard+"/openhants");
+        if(!openhantsDir.exists())
+        	openhantsDir.mkdir();
         	
-        	styleFilename = sdcard + "/openhants/openhants.xml";
-        	styleFile = new File(styleFilename);
-        	mapFilename = sdcard + "/openhants/hampshire_combined.map";
-        	mapFile = new File(mapFilename);
-        	annCacheMgr = new AnnotationCacheManager(sdcard+"/openhants/problemCache/");
-        	try
-        	{
-        		this.problems = annCacheMgr.getAnnotationsAsDataset();
-        	}
-        	catch(Exception e)
-        	{
-        		DialogUtils.showDialog(this, "Unable to read saved annotations: " + e.getMessage());
-        	}
-        	if(!mapFile.exists())
-        	{	
-        		Log.d("OpenHants","File does not exist:" + mapFilename);
-        		dfTask = new DownloadBinaryFilesTask(this, new String[] { "http://www.free-map.org.uk/data/android/"
-        														+"hampshire_combined.map" }, 
-        										new String[] { mapFilename },
-        										"Download map file? Warning: large file (9MB) - you might want to be "+
-        										"in a wifi area to do this", this, 0);
-        		dfTask.setDialogDetails("Downloading...","Downloading map file...");
-        		dfTask.confirmAndExecute();
-        	}
-        	else
-        	{
-        		checkStyleFile();
-        	}
+        styleFilename = sdcard + "/openhants/openhants.xml";
+        styleFile = new File(styleFilename);
+        
+
+        	
+        annCacheMgr = new AnnotationCacheManager(sdcard+"/openhants/problemCache/");
+        try
+        {
+        	this.problems = annCacheMgr.getAnnotationsAsDataset();
+        }
+       	catch(Exception e)
+        {
+        	DialogUtils.showDialog(this, "Unable to read saved annotations: " + e.getMessage());
+        }
+        	
+        checkStyleFile();
     }
     
     public void onStart()
     {
     	super.onStart();
-    	view.invalidate();
-    	if(locationDisplayer!=null)
-    		locationDisplayer.requestRedraw();
+    	if(mapSetup)
+    	{
+    	    mapView.invalidate();
+    	    if(locationDisplayer!=null)
+    	        locationDisplayer.requestRedraw();
+    	}
     }
     
     public void onDestroy()
@@ -179,7 +198,9 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     		editor.putFloat("lat",(float)location.getLatitude());
     		editor.putFloat("lon",(float)location.getLongitude());
     	}
-    	editor.putInt("zoom", view.getMapPosition().getZoomLevel());
+    	if(mapFile!=null)
+    	    editor.putString("mapfile",mapFile.getName());
+    	editor.putInt("zoom", mapView.getMapPosition().getZoomLevel());
     	editor.commit();
     }
     
@@ -188,19 +209,22 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     	switch(taskId)
     	{
     		case 0:
-    			checkStyleFile();
+    		    // mapfile - Do nothing - we download a map file and then select it
     	        break;
     	        
     			
     		case 1:
+    		    // style file - on startup - try to setup a map if there is one from the preferences
     			setupMap();
-    			setupLocation();
     			break;
     			
     		case 2:
     			annCacheMgr.deleteCache();
-    			locationDisplayer.clear();
-    			locationDisplayer.requestRedraw();
+    			if(mapSetup && locationDisplayer!=null)
+    			{
+    			    locationDisplayer.clear();
+    			    locationDisplayer.requestRedraw();
+    			}
     			break;	
     	}
     }
@@ -221,7 +245,7 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     						}
     					}
     					).
-    				setMessage("Cannot run without a map file, please install manually." +
+    				setMessage("Cannot run without a map file." +
     							"Please make an 'openhants' folder inside: " +
     							Environment.getExternalStorageDirectory().getAbsolutePath()+
     							" on the phone and copy the map file to it. See www.fixmypaths.org.").show();	
@@ -259,23 +283,42 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
 		else
 		{
 			setupMap();
-			setupLocation();
+			
 		}
     }
     
     public void setupMap()
        	
     {
+        if(mapFile==null)
+            return;
+        
     	try
     	{
+    	    
+    	    if(!mapSetup)
+    	    {
     			if(styleFile!=null)
-    				view.setRenderTheme(styleFile);
-        		setContentView(view);
-        		if(mapFile!=null)
-        			view.setMapFile(mapFile);
-        		view.setCenter(initPos);
-        		view.redrawTiles();
+    				mapView.setRenderTheme(styleFile);
+        		setContentView(mapView);
+        		
+        		mapSetup = true;
+        		
+        		
+        		mapView.setMapFile(mapFile);
+                mapView.setCenter(initPos);
+                mapView.redrawTiles();
+                
+                setupLocation();
+    	    }
+    	    else
+    	    {
+    	        mapView.setMapFile(mapFile);
+    	        mapView.setCenter(initPos);
+    	        mapView.redrawTiles();
+    	    }
     	}
+    	   
     	catch(FileNotFoundException e)
     	{
     		new AlertDialog.Builder(this).setPositiveButton("OK",null).
@@ -286,7 +329,7 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     
     public void setupLocation()
     {
-        	locationDisplayer = new DataDisplayer(this,view,getResources().getDrawable(R.drawable.person),
+        	locationDisplayer = new DataDisplayer(this,mapView,getResources().getDrawable(R.drawable.person),
         							getResources().getDrawable(R.drawable.annotation));
         	locationProcessor = new MapLocationProcessorWithListener(this,this,locationDisplayer);
         	locationProcessor.startUpdates(5000, 5);
@@ -330,50 +373,70 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     	
     	boolean retcode=false;
     	
-    	switch(item.getItemId())
+    	if(item.getItemId()==R.id.menuItemAbout)
     	{
-    		case R.id.menuItemReportProblem:
-    			SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-    			if(prefs.getString("name", "").equals("") || prefs.getString("email", "").equals(""))
-    			{
-    				new AlertDialog.Builder(this).setMessage("Please specify your name and email in the preferences.").
-    					setPositiveButton("OK",null).setCancelable(false).show();
+    	    retcode=true;
+    	    about();
+    	}
+    	else if(item.getItemId()==R.id.menuItemDownloadCountyMap)
+    	{
+    	    showDownloadCountyMapDialog();
+    	    retcode=true;
+    	    
+    	}
+    	else if (item.getItemId()== R.id.menuItemChooseCountyMap)
+    	{
+    	    showMapChooser();
+    	    retcode=true;
+    	  
+    	}
+    	else if (!mapSetup)
+    	    DialogUtils.showDialog(this, "Cannot perform action until a map is loaded");
+    	else
+    	{
+    	    switch(item.getItemId())
+    	    {  
+    		    case R.id.menuItemReportProblem:
+    		        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    		        if(prefs.getString("name", "").equals("") || prefs.getString("email", "").equals(""))
+    		        {
+    		            new AlertDialog.Builder(this).setMessage("Please specify your name and email in the preferences.").
+    					    setPositiveButton("OK",null).setCancelable(false).show();
     				
-    			}
-    			else if(location==null)
-    			{
-    				new AlertDialog.Builder(this).setMessage("Location not known yet.").
-						setPositiveButton("OK",null).setCancelable(false).show();
-    			}
-    			else
-    			{
-    				findNearbyROW(location.getLongitude(),location.getLatitude());
-    				retcode=true;
-    			}
-    			break;
+    		        }
+    		        else if(location==null)
+    		        {
+    		            new AlertDialog.Builder(this).setMessage("Location not known yet.").
+						    setPositiveButton("OK",null).setCancelable(false).show();
+    		        }
+    		        else
+    		        {
+    		            findNearbyROW(location.getLongitude(),location.getLatitude());
+    		            retcode=true;
+    		        }
+    		        break;
     		
     			
-    		case R.id.menuItemExistingProblems:
-    			downloadExistingProblems();
-    			retcode=true;
-    			break;
+    		    case R.id.menuItemExistingProblems:
+    		        downloadExistingProblems();
+    		        retcode=true;
+    		        break;
     			
     			
-    		case R.id.menuItemPreferences:
-    			Intent intent = new Intent(this,FixMyPathsPreferenceActivity.class);
-    			startActivity(intent);
-    			retcode=true;
-    			break;
+    		    case R.id.menuItemPreferences:
+    		        Intent intent = new Intent(this,FixMyPathsPreferenceActivity.class);
+    		        startActivity(intent);
+    		        retcode=true;
+    		        break;
     			
-    		case R.id.menuItemUploadSavedProblems:
-    			uploadProblems();
-    			retcode=true;
-    			break;
-    			
-    		case R.id.menuItemAbout:
-    			about();
-    			retcode=true;
-    			break;
+    		    case R.id.menuItemUploadSavedProblems:
+    		        uploadProblems();
+    		        retcode=true;
+    		        break;
+    		
+    		   
+    		    
+    	    }
     	}
     	return retcode;
     }
@@ -441,27 +504,30 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     
     public void loadProblemOverlay()
     {
-    	this.problems.operateOnAnnotations(locationDisplayer);
+        if(mapSetup && locationDisplayer!=null)
+            this.problems.operateOnAnnotations(locationDisplayer);
     }
     
     public void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
     	if(resultCode==RESULT_OK)
     	{
+    	    Bundle extras = intent.getExtras();
     		switch(requestCode)
     		{
+    		    
     			case 0:
-    				Bundle extras = intent.getExtras();
-    				if(extras.getBoolean("freemap.openhants.success")==true)
+    				
+    				if(extras.getBoolean("freemap.fixmypaths.success")==true)
     				{
-    					if(extras.getBoolean("freemap.openhants.needtocache")==true)
+    					if(extras.getBoolean("freemap.fixmypaths.needtocache")==true)
     					{
     						try
     						{
     							Annotation annotation = new Annotation(-(annCacheMgr.size()+1),
     										currentProblem.getLongitude(),currentProblem.getLatitude(),
-    										extras.getString("freemap.openhants.description"),
-    										extras.getString("freemap.openhants.type"));
+    										extras.getString("freemap.fixmypaths.description"),
+    										extras.getString("freemap.fixmypaths.type"));
     							annotation.putExtra("row_id", 
     									currentProblem.getROWProperty("gid"));
     							annCacheMgr.addAnnotation(annotation);
@@ -487,6 +553,22 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     					new AlertDialog.Builder(this).setMessage("Error reporting problem.").
 							setPositiveButton("OK",null).setCancelable(false).show();
     				}
+    				break;
+    				
+    			case 1:
+    			    String county = extras.getString("freemap.fixmypaths.county");
+    			    mapFilename = sdcard +"/openhants/"+county+".map";
+    			    try
+    			    {
+    			        mapFile = new File(mapFilename);
+    			        setupMap();
+    			    }
+    			    catch(Exception e)
+    			    {
+    			        DialogUtils.showDialog(this, "Error setting map file: " + e.getMessage()
+    			                                + " attempted map file: " + mapFilename);
+    			    }
+                    break;
     		}
     	}
     }
@@ -494,7 +576,7 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     public void receiveLocation(double lon, double lat, boolean refresh)
     {
     	location = new GeoPoint(lat,lon);
-    	view.setCenter(location);
+    	mapView.setCenter(location);
     }
     
     public void receiveROW(HashMap<String,String> row)
@@ -531,6 +613,9 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     {
     	boolean retcode=false;
     	
+    	if(!mapSetup)
+    	    return false;
+    	
     	switch(ev.getAction())
     	{
     		case MotionEvent.ACTION_DOWN:
@@ -548,7 +633,7 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     					{
     						public void onClick(DialogInterface i, int which)
     						{
-    							GeoPoint p = view.getProjection().fromPixels(x,y);
+    							GeoPoint p = mapView.getProjection().fromPixels(x,y);
     							findNearbyROW(p.getLongitude(),p.getLatitude());
     						}
     					}).show();
@@ -600,13 +685,63 @@ public class FixMyPaths extends MapActivity implements MapLocationProcessor.Loca
     	}
     }
     
+    public void showDownloadCountyMapDialog()
+    {
+        final String[] values = { "hampshire", "wiltshire", "west-sussex", "surrey" };
+        new AlertDialog.Builder(this).
+                setCancelable(true).
+                setNegativeButton("Cancel", null).
+                setTitle("Choose your county").
+                setItems(R.array.counties,
+                        new DialogInterface.OnClickListener()
+                            {
+                                public void onClick(DialogInterface i, int which)
+                                {
+                                    downloadCountyMap(values[which]);
+                                }
+                            }).show();
+    }
+    
+    public void downloadCountyMap(String county)
+    {
+        dfTask = new DownloadBinaryFilesTask(this, new String[] { "http://www.free-map.org.uk/data/android/fixmypaths/"
+            +county+".map" }, 
+                new String[] { sdcard+"/openhants/"+county+".map" },
+                    "Download map file for "+ county + "? Warning: large file (9MB) - you might want to be "+
+                                "in a wifi area to do this", this, 0);
+        dfTask.setAdditionalData(false);
+        dfTask.setDialogDetails("Downloading...","Downloading map file...");
+        dfTask.confirmAndExecute();
+    }
+    
+    public void showMapChooser()
+    {
+        Intent i = new Intent(this,MapChooser.class);
+        startActivityForResult(i, 1);   
+    }
+    
+    public void onSaveInstanceState(Bundle state)
+    {
+        
+        if(mapFile!=null && mapSetup)
+        {
+            Log.d("fixmypaths", "Saving: " + mapFile.getName());
+            GeoPoint gp = mapView.getMapPosition().getMapCenter();
+            state.putDouble("lat", gp.getLatitude());
+            state.putDouble("lon", gp.getLongitude());
+            state.putInt("zoom",mapView.getMapPosition().getZoomLevel());
+            state.putString("mapfile", mapFile.getName());
+        }
+    }
+    
     public void about()
     {
     	DialogUtils.showDialog(this,"FixMyPaths!. Uses OpenStreetMap data, copyright 2012 " +
-    											"OpenStreetMap contributors, CC-by-SA."+
+    											"OpenStreetMap contributors, Open Database Licence."+
     											"Ordnance Survey OpenData LandForm Panorama contours, "+
-    											"Crown Copyright and database right. Uses Hampshire " +
-    											"County Council rights of way data, copyright "+
-    											"Hampshire County Council, Open Government Licence");
+    											"Crown Copyright and database right. Uses  " +
+    											"County Council rights of way data from rowmaps.com,"+
+    											" OS OpenData licence "+
+    											"see http://www.fixmypaths.org/copyrights.html for copyright info" );
     }
 }

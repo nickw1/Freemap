@@ -5,5 +5,7 @@
  <item android:title="Download existing problems" android:id="@+id/menuItemExistingProblems" />
  <item android:title="Preferences" android:id="@+id/menuItemPreferences" />
  <item android:title="Upload saved problems" android:id="@+id/menuItemUploadSavedProblems" />
+ <item android:title="Download county map" android:id="@+id/menuItemDownloadCountyMap" />
+ <item android:title="Choose county map" android:id="@+id/menuItemChooseCountyMap" />
  <item android:title="About" android:id="@+id/menuItemAbout" />
 </menu>

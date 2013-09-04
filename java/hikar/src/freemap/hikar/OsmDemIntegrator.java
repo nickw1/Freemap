@@ -20,8 +20,7 @@ import java.util.HashMap;
 
 public class OsmDemIntegrator {
 
-	TileDeliverer osm;
-	HGTTileDeliverer hgt;
+	TileDeliverer osm, hgt;
 	Projection tilingProj;
 	
 	public OsmDemIntegrator(String projID)
@@ -38,8 +37,8 @@ public class OsmDemIntegrator {
         
 		Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
 		tilingProj = factory.generate(projID);
-		//  File cacheDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
-		File cacheDir = new File("/storage/extSdCard/hikar/cache/" +
+		File cacheDir = new File(android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
+		//File cacheDir = new File("/storage/extSdCard/hikar/cache/" +
 		        tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
 		if(!cacheDir.exists())
 		    cacheDir.mkdirs();
@@ -125,15 +124,9 @@ public class OsmDemIntegrator {
 	{
 		return (DEM)hgt.getData();
 	}
-
+	
 	public FreemapDataset getCurrentOSMData()
 	{
 		return (FreemapDataset)osm.getData();
 	}
-	
-	public HGTTileDeliverer getDEM()
-	{
-	    return hgt;
-	}
-	
 }

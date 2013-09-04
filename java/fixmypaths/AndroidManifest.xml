@@ -26,5 +26,8 @@
         <activity android:name="freemap.fixmypaths.FixMyPathsPreferenceActivity"
         		android:label="Preferences" >
         </activity>
+         <activity android:name="freemap.fixmypaths.MapChooser"
+        		android:label="Choose map" >
+        </activity>
     </application>
 </manifest>

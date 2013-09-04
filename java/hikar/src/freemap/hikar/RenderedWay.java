@@ -2,7 +2,6 @@ package freemap.hikar;
 
 import freemap.data.Point;
 import freemap.data.Way;
-import freemap.jdem.HGTTileDeliverer;
 
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
@@ -12,8 +11,6 @@ import java.util.HashMap;
 
 public class RenderedWay {
 
-    
-    
 	FloatBuffer vertexBuffer;
 	ShortBuffer indexBuffer;
 	float[] colour;
@@ -21,10 +18,11 @@ public class RenderedWay {
 	short[] indices;
 	float[] vertices;
 	static float[] road, path, bridleway, track, cycleway, byway;
-	float[] wayVertices; // for line-of-sight tests, saves unnecessary computation
-	boolean display;
-	boolean[] visibles;
 	
+	boolean display;
+    boolean[] visibles;
+    float[] wayVertices; // for line-of-sight tests, saves unnecessary computation
+    
 	static {
 		colours = new HashMap<String,float[]>();
 		road = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -59,11 +57,11 @@ public class RenderedWay {
 		
 		vertices = new float[nPts*6];
 		indices = new short[(nPts-1)*6];
-		wayVertices =  new float[nPts*3];
+		wayVertices = new float[nPts*3];
 		visibles = new boolean[nPts];
 		
 		display = true;
-
+		
 		for(int i=0; i<nPts-1; i++)
 		{
 		
@@ -79,16 +77,17 @@ public class RenderedWay {
 			vertices[i*6+3] = (float)(w.getPoint(i).x-dxperp);
 			vertices[i*6+4] = (float)(w.getPoint(i).y-dyperp);
 			vertices[i*6+5] = (float)w.getPoint(i).z;
+			
+			
 			wayVertices[i*3] = (float)w.getPoint(i).x;
             wayVertices[i*3+1] = (float)w.getPoint(i).y;
             wayVertices[i*3+2] = (float)w.getPoint(i).z;
-			
+            visibles[i] = true;
 			/*
 			for(int j=0; j<6; j++)
 				System.out.println("Vertex : " + (i*6+j)+ " position:" +vertices[i*6+j]);
 			*/
 			
-            visibles[i] = true;
 		}
 		int k=nPts-1;
 		vertices[k*6] = (float)(w.getPoint(k).x+dxperp);
@@ -97,9 +96,7 @@ public class RenderedWay {
 		vertices[k*6+3] = (float)(w.getPoint(k).x-dxperp);
 		vertices[k*6+4] = (float)(w.getPoint(k).y-dyperp);
 		vertices[k*6+5] = (float)w.getPoint(k).z;
-		
-		visibles[k] = true;
-		
+		visibles[k]= true;
 		for(int i=0; i<nPts-1; i++)
 		{
 			indices[i*6] = (short)(i*2);
@@ -133,8 +130,6 @@ public class RenderedWay {
 		if(colour!=null)
 		{
 		    gpuInterface.setUniform4fv("uColour", colour);
-		    
-		    // Hide certain parts - change index buffer
 			gpuInterface.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex");
 			
 			/* commented out already in gles 1.0 version
@@ -176,52 +171,50 @@ public class RenderedWay {
 		return getAveragePosition().distanceTo(p);
 	}
 	
+	// NEW
+	
 	public boolean isDisplayed()
-	{
-	    return display;
-	}
-	
-	public void setDisplayed(boolean display)
-	{
-	    this.display = display;
-	}
-	
-	public float[] getWayVertices()
-	{
-	    return wayVertices;
-	}
+    {
+        return display;
+    }
+    
+    public void setDisplayed(boolean display)
+    {
+        this.display = display;
+    }
 	
 	public void setVisible(int i,boolean visible)
-	{
-	    visibles[i] = visible;
-	}
-	
-	// attempt at hiding parts of the way not in line-of-sight
-	// not sure if this will slow things up horribly
-	// best call infrequently
-	public void setVisibleVertices()
-	{
-	    // remove indices either side of the given vertex
-	    
-	       
-	     
-	         // vertex n -> indices of subsequent triangles n*6, n*6+1 etc
-	        indexBuffer.clear();
-	        indexBuffer.position(0);
-	        int nVisibles = 0;
-	        for(int i=0; i<visibles.length-1; i++)
-	        {
-	            // only add indices if the current vertex is visible and the next vertex
-	            if(visibles[i] && visibles[i+1])
-	            {  
-	                indexBuffer.put(indices[i*6]);
-	                indexBuffer.put(indices[i*6+1]);
-	                indexBuffer.put(indices[i*6+2]);
-	                indexBuffer.put(indices[i*6+3]);
-	                indexBuffer.put(indices[i*6+4]);
-	                indexBuffer.put(indices[i*6+5]);
-	                nVisibles++;
-	            }
-	        }
-	}
+    {
+        visibles[i] = visible;
+    }
+    
+    // attempt at hiding parts of the way not in line-of-sight
+    // not sure if this will slow things up horribly
+    // best call infrequently
+    public void setVisibleVertices()
+    {
+        // remove indices either side of the given vertex
+        
+           
+         
+             // vertex n -> indices of subsequent triangles n*6, n*6+1 etc
+            indexBuffer.clear();
+            indexBuffer.position(0);
+            int nVisibles = 0;
+            for(int i=0; i<visibles.length-1; i++)
+            {
+                // only add indices if the current vertex is visible and the next vertex
+                if(visibles[i] && visibles[i+1])
+                {  
+                    indexBuffer.put(indices[i*6]);
+                    indexBuffer.put(indices[i*6+1]);
+                    indexBuffer.put(indices[i*6+2]);
+                    indexBuffer.put(indices[i*6+3]);
+                    indexBuffer.put(indices[i*6+4]);
+                    indexBuffer.put(indices[i*6+5]);
+                    nVisibles++;
+                }
+            }
+    }
+    // NEW END
 }

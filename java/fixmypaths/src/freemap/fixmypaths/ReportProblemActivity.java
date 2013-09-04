@@ -161,10 +161,10 @@ public class ReportProblemActivity extends Activity{
 	{
 		Intent intent = new Intent();
 		Bundle data = new Bundle();
-		data.putBoolean("freemap.openhants.success", success);
-		data.putBoolean("freemap.openhants.needtocache", needToCache);
-		data.putString("freemap.openhants.type", (String)((Spinner)findViewById(R.id.spinnerProblemType)).getSelectedItem());
-		data.putString("freemap.openhants.description", ((EditText)findViewById(R.id.editTextReportProblem)).getText().toString());
+		data.putBoolean("freemap.fixmypaths.success", success);
+		data.putBoolean("freemap.fixmypaths.needtocache", needToCache);
+		data.putString("freemap.fixmypaths.type", (String)((Spinner)findViewById(R.id.spinnerProblemType)).getSelectedItem());
+		data.putString("freemap.fixmypaths.description", ((EditText)findViewById(R.id.editTextReportProblem)).getText().toString());
 		intent.putExtras(data);
 		setResult(RESULT_OK, intent);
 		finish();

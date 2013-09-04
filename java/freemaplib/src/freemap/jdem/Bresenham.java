@@ -4,7 +4,7 @@ package freemap.jdem;
 public class Bresenham {
 
    
-    // Input: array of x,y coords of source and target points.
+    // Input: array of x,y coords of source and target points.ex
 	// This will work for all 8 "octants" because:
 	// - ax1 and ax2 store the longer and shorter axis appropriately; we use ax1 and ax2 to identify
 	//   count1 (the count along the longer axis) and count2 (the count along the shorter axis). 

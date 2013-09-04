@@ -44,8 +44,6 @@ public class OpenGLView extends GLSurfaceView  {
         SurfaceTexture cameraFeed;
         CameraCapturer cameraCapturer;
         
-      
-        
         public DataRenderer()
         {
             hFov = 40.0f;
@@ -191,7 +189,7 @@ public class OpenGLView extends GLSurfaceView  {
                     {
                         for(RenderedWay rWay: renderedWays)
                         {                 
-                            if(rWay.isDisplayed() && rWay.distanceTo(p) <= 3000.0f)
+                            if(rWay.distanceTo(p) <= 3000.0f)
                             {
                                 rWay.draw(gpuInterface); 
                             }       
