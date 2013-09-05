@@ -1,6 +1,6 @@
 <?php
-define('HANTS_EMAIL','countryside@hants.gov.uk');
-//define('HANTS_EMAIL','nick_whitelegg@yahoo.co.uk');
+//define('HANTS_EMAIL','countryside@hants.gov.uk');
+define('HANTS_EMAIL','nick_whitelegg@yahoo.co.uk'); // due to other counties
 
 require_once('Problem.php');
 require_once('../lib/conversions.class.php');

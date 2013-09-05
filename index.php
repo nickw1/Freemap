@@ -40,7 +40,9 @@ href='javascript/leaflet-0.5.1/dist/leaflet.css' />
 
 <div id='main'>
 <h1>freemap-vmd</h1>
-	<div id="modebar"></div>
+<p>OS VectorMap District maps plus LandForm PANORAMA contours.
+Sorry, currently restricted to certain counties due to resource limitations.</p>
+<div id="modebar"></div>
 
 	<div id="map" style="width: 800px; height:600px; "></div>
 

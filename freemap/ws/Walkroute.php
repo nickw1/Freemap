@@ -345,19 +345,7 @@ class Walkroute
 
     private static function mkgeom(&$coords,$lonidx=0,$latidx=1)
     {
-        $first=true;
-        $txt = "LINESTRING(";
-        foreach($coords as $c)
-        {    
-            if(! $first)
-                $txt .= ",";
-            else
-                $first=false;
-            $sphmerc = ll_to_sphmerc($c[$lonidx],$c[$latidx]);
-            $txt.="$sphmerc[e] $sphmerc[n]";
-        }
-        $txt .= ")";
-        return $txt;
+		return mkgeom($coords,$lonidx,$latidx,"LINESTRING");
     }
 
     static function outputRoutes($routes,$format)

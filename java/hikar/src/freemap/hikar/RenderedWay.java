@@ -19,8 +19,8 @@ public class RenderedWay {
 	float[] vertices;
 	static float[] road, path, bridleway, track, cycleway, byway;
 	
-	boolean display;
-    boolean[] visibles;
+	boolean displayed;
+    boolean[] vtxDisplayStatus;
     float[] wayVertices; // for line-of-sight tests, saves unnecessary computation
     
 	static {
@@ -58,9 +58,9 @@ public class RenderedWay {
 		vertices = new float[nPts*6];
 		indices = new short[(nPts-1)*6];
 		wayVertices = new float[nPts*3];
-		visibles = new boolean[nPts];
+		vtxDisplayStatus = new boolean[nPts];
 		
-		display = true;
+		displayed = true;
 		
 		for(int i=0; i<nPts-1; i++)
 		{
@@ -82,7 +82,7 @@ public class RenderedWay {
 			wayVertices[i*3] = (float)w.getPoint(i).x;
             wayVertices[i*3+1] = (float)w.getPoint(i).y;
             wayVertices[i*3+2] = (float)w.getPoint(i).z;
-            visibles[i] = true;
+            vtxDisplayStatus[i] = true;
 			/*
 			for(int j=0; j<6; j++)
 				System.out.println("Vertex : " + (i*6+j)+ " position:" +vertices[i*6+j]);
@@ -96,7 +96,10 @@ public class RenderedWay {
 		vertices[k*6+3] = (float)(w.getPoint(k).x-dxperp);
 		vertices[k*6+4] = (float)(w.getPoint(k).y-dyperp);
 		vertices[k*6+5] = (float)w.getPoint(k).z;
-		visibles[k]= true;
+		wayVertices[k*3] = (float)w.getPoint(k).x;
+        wayVertices[k*3+1] = (float)w.getPoint(k).y;
+        wayVertices[k*3+2] = (float)w.getPoint(k).z;
+		vtxDisplayStatus[k]= true;
 		for(int i=0; i<nPts-1; i++)
 		{
 			indices[i*6] = (short)(i*2);
@@ -175,23 +178,23 @@ public class RenderedWay {
 	
 	public boolean isDisplayed()
     {
-        return display;
+        return displayed;
     }
     
     public void setDisplayed(boolean display)
     {
-        this.display = display;
+        this.displayed = display;
     }
 	
-	public void setVisible(int i,boolean visible)
+	public void setVtxDisplayStatus(int i,boolean visible)
     {
-        visibles[i] = visible;
+        vtxDisplayStatus[i] = visible;
     }
     
     // attempt at hiding parts of the way not in line-of-sight
     // not sure if this will slow things up horribly
     // best call infrequently
-    public void setVisibleVertices()
+    public void regenerateDisplayedVertexIndices()
     {
         // remove indices either side of the given vertex
         
@@ -201,10 +204,10 @@ public class RenderedWay {
             indexBuffer.clear();
             indexBuffer.position(0);
             int nVisibles = 0;
-            for(int i=0; i<visibles.length-1; i++)
+            for(int i=0; i<vtxDisplayStatus.length-1; i++)
             {
                 // only add indices if the current vertex is visible and the next vertex
-                if(visibles[i] && visibles[i+1])
+                if(vtxDisplayStatus[i] && vtxDisplayStatus[i+1])
                 {  
                     indexBuffer.put(indices[i*6]);
                     indexBuffer.put(indices[i*6+1]);
@@ -215,6 +218,11 @@ public class RenderedWay {
                     nVisibles++;
                 }
             }
+    }
+    
+    public float[] getWayVertices()
+    {
+        return wayVertices;
     }
     // NEW END
 }

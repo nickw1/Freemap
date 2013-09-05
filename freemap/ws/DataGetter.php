@@ -40,7 +40,7 @@ class DataGetter
 
     function setCopyright($copyright)
     {
-        $this->data["properties"]["copyright"] = $copyright;
+        $this->data["properties"]["copyright"] =  $copyright;
     }
 
     function getData($options,$outProj=null)
@@ -684,6 +684,24 @@ class BboxGetter extends DataGetter
             $this->dbq->getBboxPolygonQuery($this->geomtxt) :
             $this->dbq->getBboxWayQuery($this->geomtxt2); 
     }
+
+	function getUniqueList($property)
+	{
+		$values = array();
+		foreach($this->data["features"] as $f)
+		{
+			if(!in_array($f["properties"][$property],$values))
+			{
+				$values[] = $f["properties"][$property];
+			}
+		}
+		return $values;
+	}
+
+	function simpleGetData()
+	{
+		return $this->data;
+	}
 }
 
 ?>

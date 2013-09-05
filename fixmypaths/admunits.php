@@ -31,7 +31,8 @@ foreach($cleaned as $k=>$v)
 $q .=	" ORDER BY $cleaned[cat]";
 $result=pg_query($q);
 while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
-	$json[] = $row["name"]; 
+	if($row["name"]!="unknown")
+		$json[] = $row["name"]; 
 
 echo json_encode($json);
 

@@ -45,10 +45,45 @@ function Footpaths()
                         dash: [3,3],
                         width: 4} ,
                     {  rules: [
-                                {designation:null,foot:'permissive'},
-                                {designation: 'permissive_footpath' }
+                                {designation:null,foot:'permissive',
+									bicycle: null },
+                                {designation: 'permissive_footpath',
+									bicycle: null},
+                                {designation:null,foot:'permissive',
+									bicycle: 'no' },
+                                {designation: 'permissive_footpath',
+									bicycle: 'no'}
                               ],
-                        dash: [2,2], colour: 'magenta', width: 2 } 
+                        dash: [2,2], colour: 'magenta', width: 2 } ,
+                    { rules: 
+                            [
+                                { designation: null, highway: 'cycleway' },
+                                { designation: null, highway: 'track',
+									bicycle: 'yes' },
+                                { designation: null, highway: 'path',
+									bicycle: 'yes' },
+                                { designation: null, highway: 'footway',
+									bicycle: 'yes' },
+                                { designation: null, highway: 'track',
+									bicycle: 'permissive' },
+                                { designation: null, highway: 'path',
+									bicycle: 'permissive' },
+                                { designation: null, highway: 'footway',
+									bicycle: 'permissive' }
+                            ],
+                        dash: [2,2], colour: 'blue', width: 2 } ,
+
+                    { rules: 
+                            [
+                                { designation:null, highway:'path' },
+                                {designation:null, highway:'footway' }
+                            ],    
+                            dash: [2,2], colour: 'black', width:1 },
+                    { rules: 
+                            [
+                                {designation:null, highway:'track' }
+                            ],    
+                            dash: [6,2], colour: 'black', width:1 },
                 ]);
     
     this.lyr=0;
@@ -199,14 +234,14 @@ function Footpaths()
         document.getElementById('loginbtn').onclick =
             this.doLogin.bind(this);
     }
-	var func = function() { this.walkrouteStartsLoader.loadFeatures
-		(this.map.getBounds()); };
+    var func = function() { this.walkrouteStartsLoader.loadFeatures
+        (this.map.getBounds()); };
 
-	this.map.on("dragend", (function()
-		{
-			this.walkrouteStartsLoader.loadFeatures
-				(this.map.getBounds());
-		}).bind(this));
+    this.map.on("dragend", (function()
+        {
+            this.walkrouteStartsLoader.loadFeatures
+                (this.map.getBounds());
+        }).bind(this));
 }
 
 Footpaths.prototype.setLocation = function(lon,lat)

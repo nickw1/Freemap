@@ -3,6 +3,7 @@
 require_once('../lib/functionsnew.php');
 require_once('../freemap/ws/DataGetter.php');
 require_once('../freemap/ws/DBDetails.php');
+require_once('copyrights.php');
 
 $cleaned = clean_input($_REQUEST);
 
@@ -24,9 +25,14 @@ $dbd = new DBDetails(null, array("table"=>"hampshire",
 $dbd->setIntersection(false);
 $bg=new BboxGetter($bbox,null,$dbd,3857);
 $bg->includePolygons(false);
-$bg->setCopyright("Hampshire County Council 2012, Ordnance Survey ".
-            "OpenData Licence");
 $data=$bg->getData(array("way"=>"all"),null,null,$outProj);
+$counties = $bg->getUniqueList("county");
+$arr = array();
+foreach ($counties as $county)
+	$arr[$county] = getCopyright($county);
+$bg->setCopyright($arr);
+$data=$bg->simpleGetData();
+
 echo json_encode($data);
 
 pg_close($conn);

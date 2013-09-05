@@ -38,21 +38,15 @@ FootpathRenderer.prototype.drawPath = function(f)
         		this.ctx.setLineDash(style.dash);
     		//status(p.x+" "+ p.y);
     		this.ctx.lineWidth = style.width? style.width: 1;
+    		this.ctx.moveTo(p.x,p.y);
+    		for(var j=1; j<geom[i].length; j++)
+    		{
+        		p = this.tile.getPoint(geom[i][j]);
+        		//status(p.x+" "+ p.y);
+        		this.ctx.lineTo(p.x,p.y);
+    		}
+    		this.ctx.stroke();
 		}
-		else
-		{
-			this.ctx.strokeStyle = 'black';
-			this.ctx.setLineDash([2,2]);
-			this.ctx.lineWidth = 1;
-		}
-    	this.ctx.moveTo(p.x,p.y);
-    	for(var j=1; j<geom[i].length; j++)
-    	{
-        	p = this.tile.getPoint(geom[i][j]);
-        	//status(p.x+" "+ p.y);
-        	this.ctx.lineTo(p.x,p.y);
-    	}
-    	this.ctx.stroke();
 	}	
 }
 

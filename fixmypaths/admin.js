@@ -169,6 +169,8 @@ Admin.prototype.populateWithSelectedProblems  = function(cat)
 {
     var subcats = { 'county' : 'district',
                     'district': 'parish' };
+	
+	var supercats = { 'district' : 'county' };
 
     if(true)
     {
@@ -183,9 +185,16 @@ Admin.prototype.populateWithSelectedProblems  = function(cat)
         var obj = {};
         obj["cat"] = subcats[cat];
         obj[cat] = this.cbx[cat].value; 
+
+		if(supercats[cat])
+			obj[supercats[cat]] = this.cbx[supercats[cat]].value;
+
         if(this.cbx[cat].selectedIndex>0)
             this.populateCbx (obj); 
+
+
     }
+
 }
 
 Admin.prototype.getLog = function(id)

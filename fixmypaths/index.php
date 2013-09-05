@@ -55,7 +55,9 @@ src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
 <div id='blurb'>
 <p>Report problems to your county council!*
 Click on a right of way to report a problem</p> 
-<p><em>*Hampshire only at the present time</em></p>
+<p><em>*Hampshire only at the present time. West Sussex, Wiltshire
+and Surrey problems can also be reported, but are 
+not forwarded to the council.</em></p>
 <p><strong>Disclaimer:</strong> An independent project, 
 not officially affiliated with Hampshire County Council.</p>
 <p>Purple=footpath; green=bridleway; red=byway; blue=restricted byway.</p>
@@ -106,6 +108,12 @@ function write_login()
 		'user.php?action=signup&redirect=http://www.fixmypaths.org/index.php'>
 		Sign up</a>
         </p>
+		<p>
+		<em>
+		<a href='copyrights.html'>Important Copyright Notice for
+		rights-of-way data</a>
+		</em>
+		</p>
 		<!--
 		<p><em>Please note that logging in will place a cookie on your
 		machine to identify you to the server. Please only proceed if

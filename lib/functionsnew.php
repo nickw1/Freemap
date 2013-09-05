@@ -528,4 +528,23 @@ function get_high_level ($tags)
     }
     return "unknown"; 
 }
+
+function mkgeom(&$coords, $lonidx, $latidx, $geomtype)
+{
+    $first=true;
+    $txt = $geomtype=="MULTILINESTRING" ? "MULTILINESTRING(("
+		: "LINESTRING(";
+
+    foreach($coords as $c)
+    {    
+        if(! $first)
+            $txt .= ",";
+        else
+            $first=false;
+        $sphmerc = ll_to_sphmerc($c[$lonidx],$c[$latidx]);
+        $txt.="$sphmerc[e] $sphmerc[n]";
+    }
+    $txt .= $geomtype=="MULTILINESTRING" ? "))" : ")";
+    return $txt;
+}
 ?>

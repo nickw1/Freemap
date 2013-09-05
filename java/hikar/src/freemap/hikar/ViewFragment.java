@@ -4,6 +4,7 @@ import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import freemap.proj.OSGBProjection;
 import freemap.data.Projection;
+import freemap.jdem.HGTTileDeliverer;
 import android.app.Fragment;
 import android.app.Activity;
 import android.location.Location;
@@ -88,10 +89,10 @@ public class ViewFragment extends Fragment
         ((Hikar)getActivity()).getHUD().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().invalidate();
         
-        /*
+        
         if(integrator!=null && integrator.getDEM()!=null)
             glView.getRenderer().operateOnRenderedWays(this);
-        */
+        
         
         if(integrator.needNewData(p))
         {
@@ -146,10 +147,10 @@ public class ViewFragment extends Fragment
     
     public void visit(RenderedWay rw)
     {
-        /*
-        if(locOSGB!=null)
+        HGTTileDeliverer dem = integrator.getDEM();
+        if(locOSGB!=null && dem!=null)
         {
-            HGTTileDeliverer dem = integrator.getDEM();
+            
         
             int nVisibles = 0;
             float[] wayVertices = rw.getWayVertices();
@@ -159,12 +160,12 @@ public class ViewFragment extends Fragment
                 boolean los = dem.lineOfSight(locOSGB, new Point(wayVertices[i*3],wayVertices[i*3+1],wayVertices[i*3+2]));
                 if(los)
                 {
-                   nVisibles++; 
-                   // rw.setVisible(i, los);
+                  nVisibles++; 
+                   // rw.setVtxDisplayStatus(i, los);
                 }
             }
             rw.setDisplayed(nVisibles > 1);
         }
-        */
+       
     }
 }

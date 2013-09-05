@@ -14,8 +14,7 @@ import android.graphics.SurfaceTexture;
 import java.io.IOException;
 import android.util.Log;
 
-
-import java.util.ArrayList;
+import java.util.HashMap;
 
 import freemap.data.Way;
 import freemap.data.Point;
@@ -34,7 +33,7 @@ public class OpenGLView extends GLSurfaceView  {
         
         float hFov;
         float[] modelviewMtx, perspectiveMtx;
-        ArrayList<RenderedWay> renderedWays;
+        HashMap<Long,RenderedWay> renderedWays;
         boolean calibrate;
         GLRect calibrateRect, cameraRect;
         float xDisp, yDisp, zDisp, height;
@@ -47,7 +46,7 @@ public class OpenGLView extends GLSurfaceView  {
         public DataRenderer()
         {
             hFov = 40.0f;
-            renderedWays = new ArrayList<RenderedWay>();
+            renderedWays = new HashMap<Long,RenderedWay>();
             
             zDisp = 1.4f; 
             
@@ -187,9 +186,11 @@ public class OpenGLView extends GLSurfaceView  {
                     
                     synchronized(renderedWays)
                     {
-                        for(RenderedWay rWay: renderedWays)
-                        {                 
-                            if(rWay.distanceTo(p) <= 3000.0f)
+                        RenderedWay rWay = null;
+                        for(HashMap.Entry<Long, RenderedWay> entry: renderedWays.entrySet())
+                        {          
+                            rWay = entry.getValue();
+                            if(rWay.isDisplayed() && rWay.distanceTo(p) <= 3000.0f)
                             {
                                 rWay.draw(gpuInterface); 
                             }       
@@ -244,7 +245,8 @@ public class OpenGLView extends GLSurfaceView  {
             {
                 protected Boolean doInBackground(FreemapDataset... d)
                 {
-                    renderedWays = new ArrayList<RenderedWay> ();
+                    if(renderedWays==null) // do not clear out when we enter a new tile!
+                        renderedWays = new HashMap<Long,RenderedWay> ();
                     d[0].operateOnWays(DataRenderer.this); 
                     return true;
                 }
@@ -267,7 +269,7 @@ public class OpenGLView extends GLSurfaceView  {
         {
             synchronized(renderedWays)
             {
-                renderedWays.add(new RenderedWay(w,2.0f));
+                renderedWays.put(w.getId(), new RenderedWay(w,2.0f));
             }
             //Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
         }
@@ -330,9 +332,9 @@ public class OpenGLView extends GLSurfaceView  {
         }
         
         public void operateOnRenderedWays(OpenGLView.RenderedWayVisitor visitor)
-        {
-            for(int i=0; i<renderedWays.size(); i++)
-                visitor.visit(renderedWays.get(i));
+        { 
+            for(HashMap.Entry<Long,RenderedWay> entry : renderedWays.entrySet())
+                visitor.visit(entry.getValue());
         }
     }
     
