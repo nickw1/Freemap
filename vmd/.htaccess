@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule tiles/vmdlfp200/(\d+)/(\d+)/(\d+).png http://www.free-map.org.uk/cgi-bin/mapnik2?e=$2&n=$3&z=$1

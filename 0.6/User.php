@@ -17,7 +17,7 @@ class User
         return $this->valid;
     }
 
-    static function displayLogin($redirect="/index.php")
+    static function displayLogin($redirect="index.php")
     {
         ?>
         <h1>Login</h1>
@@ -81,10 +81,9 @@ class User
         return (pg_numrows($result)==1) ? $result:null;
     }
    
-    static function processSignup($username,$password,$email,$redirect)
+    static function processSignup($username,$password,$email)
     {
         $result=pg_query("SELECT * FROM users WHERE username='$username'"); 
-		$redirect = $redirect ? $redirect:"/index.php";
         if(pg_numrows($result)>0)
         {
             return 1;    
@@ -113,13 +112,13 @@ class User
                     "New Freemap account created for $username ".
                     "(email $email). ".
                     "<a href=".
-                    "\"http://www.free-map.org.uk/freemap/user.php?action=".
+                    "\"http://www.free-map.org.uk/0.6/user.php?action=".
                         "delete&id=$lastid\">Delete</a>");
             mail($email, 'New Freemap account created', 
                     "New Freemap account created for $username.".
                     "Please activate by visiting this address: ".
                     "http://www.free-map.org.uk".
-                    "/freemap/user.php?action=activate&id=$lastid".
+                    "/0.6/user.php?action=activate&id=$lastid".
                 "&key=$random");
             head("Signed up");
             ?>
@@ -128,7 +127,7 @@ class User
                 signed up. You will get an email to confirm
             your registration. Follow the link in this email to
             activate your account.</p>
-            <a href='<?php echo $redirect;?>'>Back to main page</a></p>
+            <a href='index.php'>Back to main page</a></p>
             <?php
             close_page();
             return new User($lastid);
@@ -136,8 +135,9 @@ class User
     }
 
 
-    static function displaySignupForm($error=null,$redirect=null)
+    static function displaySignupForm($error=null)
     {
+        head("Sign up");
         ?>
         <h1>Sign up</h1>
         <?php
@@ -155,11 +155,9 @@ class User
             echo "<p class='error'>You've got to <em>actually provide</em> ".
             "a username and password!!!!!</p>";
         }
-		$redirect = $redirect ? $redirect:"/index.php";
-		echo "<div>";
-		echo "<form method='post' action='?action=signup&redirect=$redirect'>";
         ?>
         <div>
+        <form method="post" action="?action=signup">
         <label for="username">Enter a username</label><br/>
         <input name="username" id="username" /> <br/>
         <label for="password">Enter a password</label> <br/>
@@ -179,7 +177,7 @@ class User
         if($row=pg_fetch_array($result,null,PGSQL_ASSOC))
         {
             pg_query("DELETE FROM users WHERE id=".$this->id);
-            js_msg("User deleted","/index.php");    
+            js_msg("User deleted","index.php");    
         }
         else
         {
@@ -223,7 +221,7 @@ class User
 
     function displayAll()
     {
-        $result=pg_query("SELECT * FROM user");
+        $result=pg_query("SELECT * FROM users");
         while($row=pg_fetch_array($result,null,PGSQL_ASSOC))
         {
             echo "$row[username] ".
@@ -252,12 +250,9 @@ class User
 
 	function isAdmin()
 	{
-		if($this->valid)
-		{
-			$result=pg_query("SELECT isadmin FROM users WHERE id=".$this->id);
-			$row=pg_fetch_array($result,null,PGSQL_ASSOC);
-			return $row["isadmin"]==1;
-		}
+		$result=pg_query("SELECT isadmin FROM users WHERE id=".$this->id);
+		$row=pg_fetch_array($result,null,PGSQL_ASSOC);
+		return $row["isadmin"]==1;
 	}
 } 
 ?>

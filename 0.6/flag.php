@@ -1,6 +1,6 @@
 <?php
 header("Content-type: image/png");
-$im = ImageCreateFromPNG("/var/www/freemap/images/flag.png");
+$im = ImageCreateFromPNG("/var/www/0.6/images/flag.png");
 ImageAlphaBlending($im,true);
 ImageSaveAlpha($im,true);
 $white=ImageColorAllocate($im,255,255,255);

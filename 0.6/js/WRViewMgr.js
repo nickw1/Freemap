@@ -17,7 +17,7 @@ function WRViewMgr(app)
 
 WRViewMgr.prototype.sendRequest = function()
 {
-    this.ajax.sendRequest ( '/freemap/ws/wr.php',
+    this.ajax.sendRequest ( '/0.6/ws/wr.php',
                         { method: 'GET',
                           parameters: 'action=getByUser&format=json',
                           callback: this.receivedRoutes.bind(this),
@@ -52,7 +52,7 @@ WRViewMgr.prototype.receivedRoutes = function(xmlHTTP)
         a2.id='rte_togpx_' + this.data.features[i].properties.id;
         a2.onclick = (function(e)
             { window.location = 
-                '/freemap/ws/wr.php?id='+e.target.id.substr(10)+
+                '/0.6/ws/wr.php?id='+e.target.id.substr(10)+
                 '&action=get&format=gpx'; } ).bind(this);
         var t2 = document.createTextNode("Download GPX");
         a2.appendChild(t2);
@@ -75,7 +75,7 @@ WRViewMgr.prototype.displayRoute  = function(e)
 
 WRViewMgr.prototype.loadRoute = function(i)
 {
-    this.ajax.sendRequest('/freemap/ws/wr.php',
+    this.ajax.sendRequest('/0.6/ws/wr.php',
                     { method : 'GET',
                      parameters: 'id=' + i +
                      '&action=get&format=json',
@@ -93,7 +93,7 @@ WRViewMgr.prototype.doDisplayRoute = function(xmlHTTP)
         if(data.features[i].geometry.type=='Point')
         {
             var WpIcon = L.icon (
-            { iconUrl:'http://www.free-map.org.uk/freemap/flag.php?'
+            { iconUrl:'http://www.free-map.org.uk/0.6/flag.php?'
             +'n='+data.features[i].properties.id,
             shadowUrl:null,
             iconSize: new L.Point(32,32),

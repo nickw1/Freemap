@@ -1,7 +1,7 @@
 <?php
 require_once('/home/www-data/private/defines.php');
 require_once('../lib/functionsnew.php');
-require_once('../freemap/User.php');
+require_once('../0.6/User.php');
 
 session_start();
 
@@ -31,26 +31,31 @@ switch($cleaned["action"])
                             $cleaned['email'],$cleaned['redirect']);
             if(is_int($res))
             {
-        		head("Sign up");
+                head("Sign up");
                 User::displaySignupForm($res);
-				?>
-				<p><em>Signing up does not allow you any extra functionality
-    			right now, however this is likely to change.</em></p>
-				<?php
-				links();
+                ?>
+                <p><em>Signing up will also register you for
+                <a href='http://www.free-map.org.uk'>Freemap</a>. 
+                Signing up does not allow you any extra functionality
+                on fixmypaths right now, however this is likely to change.
+                </em></p>
+                <?php
+                links();
                 close_page();
             }
         }
         else
         {
-			head("Sign up");
+            head("Sign up");
             User::displaySignupForm(null,$cleaned["redirect"]);
-			?>
-			<p><em>Signing up does not allow you any extra functionality
-			right now; user accounts are for admin use only.
-			However this is likely to change.</em></p>
-			<?php
-			links();
+            ?>
+            <p><em>Signing up will also register you for
+            <a href='http://www.free-map.org.uk'>Freemap</a>. 
+            Signing up does not allow you any extra functionality
+            on fixmypaths right now, however this is likely to change.
+            </em></p>
+            <?php
+            links();
             close_page();
         }
         break;

@@ -1,8 +1,8 @@
 <?php
 
 require_once('../lib/functionsnew.php');
-require_once('../freemap/ws/DataGetter.php');
-require_once('../freemap/ws/DBDetails.php');
+require_once('../0.6/ws/DataGetter.php');
+require_once('../0.6/ws/DBDetails.php');
 require_once('copyrights.php');
 
 $cleaned = clean_input($_REQUEST);

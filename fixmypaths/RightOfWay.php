@@ -1,6 +1,5 @@
 <?php
-//define('HANTS_EMAIL','countryside@hants.gov.uk');
-define('HANTS_EMAIL','nick_whitelegg@yahoo.co.uk'); // due to other counties
+define('HANTS_EMAIL','countryside@hants.gov.uk');
 
 require_once('Problem.php');
 require_once('../lib/conversions.class.php');
@@ -86,8 +85,11 @@ class RightOfWay
             $msg .= "Grid ref: easting ".round($osgb[0])." northing ".
                 round($osgb[1])."\n\n"; 
             $msg .= "Reported By: $name (email $email)";
-            mail(HANTS_EMAIL, 
-                "Right Of Way problem reported via FixMyPaths",$msg);
+            if(this->the_data["properties"]["county"]=="Hampshire")
+            {
+                mail(HANTS_EMAIL, 
+                    "Right Of Way problem reported via FixMyPaths",$msg);
+            }
         }
     }
 

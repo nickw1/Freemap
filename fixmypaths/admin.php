@@ -13,7 +13,7 @@ else
     <head>
     <script type='text/javascript' src='admin.js'></script>
     <script type='text/javascript' 
-    src='http://www.free-map.org.uk/freemap/js/lib/Ajax.js'></script>
+    src='http://www.free-map.org.uk/0.6/js/lib/Ajax.js'></script>
     <link rel='stylesheet' type='text/css' href='css/fixmypaths.css' />
     <style type='text/css'>
     #newlog 

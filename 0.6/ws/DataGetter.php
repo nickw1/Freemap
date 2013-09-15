@@ -1,5 +1,10 @@
 <?php
 
+//define('MAX_TILE_AGE', 2592000);
+define('MAX_TILE_AGE', 86400);
+
+require_once('TileList.php');
+
 class DataGetter
 {
     protected $data, $kothic_gran, $wayMustMatch, $poiFilter, $wayFilter,
@@ -59,8 +64,10 @@ class DataGetter
         if(isset($options["poi"]))
             $this->getPOIData($plyrs);
 
+
         if(isset($options["way"]))
             $this->getWayData($wlyrs);
+
     }
 
     static function criteria($lyrs)
@@ -206,7 +213,6 @@ class DataGetter
                 $tags = array();
             
                 // Replace ampersands with the word "and".
-                // Note to mappers who do this... use "and". Thanks! ;-)
                 foreach($wrow as $k=>$v)
                     if($k!=$excluded_col && $k!='geojson' && $v!='')
                         $tags[$k] = htmlspecialchars(str_replace("&","and",$v));
@@ -349,7 +355,7 @@ class NameSearch extends DataGetter
 
 class BboxGetter extends DataGetter
 {
-    private $bbox;
+    private $bbox, $forceCache;
 
     function __construct($bbox,$kothic_gran=null,$dbdetails=null,$srid="900913")
     {
@@ -357,9 +363,16 @@ class BboxGetter extends DataGetter
         $this->bbox = $bbox;
         $this->geomtxt = $this->mkgeom();
         $this->geomtxt2 = $this->mkgeom2();
+		$this->forceCache = false;
     }
 
-    function getData($options, $contourCache=null, $cache=null, $outProj=null)
+	function setForceCache($fc)
+	{
+		$this->forceCache = $fc;
+	}
+
+    function getData($options, $contourCache=null, $cache=null, $outProj=null,
+						$x=null, $y=null, $z=null)
     {
 
 		// Only cache if all was requested and we're in kothic mode 
@@ -368,14 +381,26 @@ class BboxGetter extends DataGetter
 			&& isset($options["way"]) && $options["way"]=="all"
 			&& $this->kothic_gran;
 
-		if($cache!==null && $all)
+		
+		if($this->forceCache)
+		{
+			$this->getDataFromDB($options);
+			$this->cacheData($cache);	
+		}
+		elseif($cache!==null && $all)
 		{
 			$result = $this->getCachedData($cache);
-			//$result=false;
 			if($result===false)
 			{
 				$this->getDataFromDB($options);
 				$this->cacheData($cache);	
+			}
+			/* if cached tile over 30 days old, add to tilelist */
+
+			elseif(time() - $result > MAX_TILE_AGE && $z >= 11)
+			{
+				$tileList = new TileList();
+				$tileList->addTile($x, $y, $z);
 			}
 		}
 		else
@@ -394,6 +419,7 @@ class BboxGetter extends DataGetter
 
 	function getDataFromDB($options)
 	{
+		
         parent::doGetData($options);
         
         if(isset($options["coastline"]) && $options["coastline"])
@@ -424,7 +450,7 @@ class BboxGetter extends DataGetter
             {
                 $txt=file_get_contents($cache);
                 $this->data["features"]=json_decode($txt,true);
-				return true;
+				return filemtime($cache); 
             }
         }
 		return false;
@@ -485,6 +511,7 @@ class BboxGetter extends DataGetter
                     $features[] = $feature;
             }
         }
+		pg_free_result($result);
         return $features;
     }
 
@@ -521,7 +548,8 @@ class BboxGetter extends DataGetter
                 if(count($feature["coordinates"])>0)
                     $this->data["features"][] = $feature;
             }
-        }
+        } 
+		pg_free_result($result);
     }
     
     function getAnnotationData()
@@ -678,11 +706,9 @@ class BboxGetter extends DataGetter
 
     function getWayQuery($table)
     {
-		// 05/05/13 changed to geomtxt2 to see if that pulled all ways out
-		// WARNING: might screw up other things
         return ($table=="polygon") ?
             $this->dbq->getBboxPolygonQuery($this->geomtxt) :
-            $this->dbq->getBboxWayQuery($this->geomtxt2); 
+            $this->dbq->getBboxWayQuery($this->geomtxt); 
     }
 
 	function getUniqueList($property)

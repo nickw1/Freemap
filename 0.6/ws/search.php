@@ -13,6 +13,7 @@ $tbl_prefix = isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"] : "planet_o
 
 $conn=pg_connect("dbname=gis user=gis");
 
+
 if (!isset($cleaned["q"]))
 {
     header("HTTP/1.1 400 Bad Request");

@@ -37,7 +37,7 @@ Admin.prototype.pcallback = function(xmlHTTP)
     var table = document.createElement("table");
     var tr = document.createElement("tr");
     var headings = [ "County", "District", "Parish", "Route num", "Problem",
-                        "Status", "Action" ];
+                        "View", "Status", "Change" ];
 
 
     for(var i=0; i<headings.length; i++)
@@ -57,15 +57,16 @@ Admin.prototype.pcallback = function(xmlHTTP)
                     json.features[i].properties.parish,
                     json.features[i].properties.routeno,
                     json.features[i].properties.problem ,
+					null,
                     json.features[i].properties.status ]; 
         for(var j=0; j<headings.length; j++)
         {
             var td=document.createElement("td");
-            if(j<data.length)
+            if(j<data.length && data[j]!=null)
                 td.appendChild(document.createTextNode(data[j]));
             if(headings[j]=="Status")
                 td.id='fix'+json.features[i].properties.id;
-            else if (headings[j]=="Action")
+            else if (headings[j]=="View")
             {
                 var a = document.createElement('a');
                 a.href='index.php?probid='+json.features[i].properties.id;
@@ -80,7 +81,9 @@ Admin.prototype.pcallback = function(xmlHTTP)
                                     return this.getLog.bind(this,id);
                                 }).call(this,json.features[i].properties.id);
                 td.appendChild(a2);
-                td.appendChild(document.createTextNode(" | "));
+			}
+			else if (headings[j]=="Change")
+			{
                 if(json.features[i].properties.status== "Reported")
                 {
                     var a3 = document.createElement("a");
@@ -172,15 +175,12 @@ Admin.prototype.populateWithSelectedProblems  = function(cat)
 	
 	var supercats = { 'district' : 'county' };
 
-    if(true)
-    {
-        this.populateWithProblems
+	this.populateWithProblems
             ( { county: this.cbx.county.value,
                 district: this.cbx.district.value,
                 parish: this.cbx.parish.value } );
-    }
 
-    if(subcats[cat])
+    if(cat && subcats[cat])
     {
         var obj = {};
         obj["cat"] = subcats[cat];
@@ -263,6 +263,12 @@ Admin.prototype.getLog = function(id)
                                         );
                                };
                                this.div.appendChild(btn);
+							   var btnBack=document.createElement("input");
+							   btnBack.type="button";
+							   btnBack.value="Back";
+							   btnBack.onclick = 
+							   	this.populateWithSelectedProblems.bind(this);
+							   this.div.appendChild(btnBack);
                             }
                           ).bind(this)
             }

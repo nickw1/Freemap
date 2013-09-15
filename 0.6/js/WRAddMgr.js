@@ -4,7 +4,7 @@ function Waypoint(mLL)
         Waypoint.prototype.count = 0;
     this.id=++Waypoint.prototype.count;
     var WpIcon = L.icon (
-        { iconUrl:'http://www.free-map.org.uk/freemap/flag.php?'
+        { iconUrl:'http://www.free-map.org.uk/0.6/flag.php?'
         +'n='+this.id,
         shadowUrl:null,
         iconSize: new L.Point(32,32),
@@ -199,7 +199,7 @@ WRAddMgr.prototype.doSendWR = function()
     }
 
 
-    this.ajax.sendRequest('/freemap/ws/wr.php',
+    this.ajax.sendRequest('/0.6/ws/wr.php',
                             { parameters: 'action=add&route=' +
                                       JSON.stringify(json),
                               method: 'POST',

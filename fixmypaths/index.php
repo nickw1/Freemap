@@ -1,6 +1,6 @@
 <?php
 
-require_once('../freemap/User.php');
+require_once('../0.6/User.php');
 
 session_start();
 
@@ -16,30 +16,41 @@ $probid = isset($_GET['probid']) ? $_GET['probid']: 0;
 <title>FixMyPaths</title>
 <link rel="stylesheet" type="text/css" href="css/fixmypaths.css" />
 
-<script type='text/javascript'
-src='http://www.free-map.org.uk/javascript/leaflet-0.5.1/dist/leaflet.js'>
 </script>
 <script type='text/javascript' 
 src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
 </script>
-<script type='text/javascript' 
-src='Proj4Leaflet/src/proj4leaflet.js'></script>
+
+<!-- NON KOTHIC
+<script type='text/javascript' src='Proj4Leaflet/src/proj4leaflet.js'></script>
+-->
+<script type='text/javascript'
+src='http://www.free-map.org.uk/javascript/leaflet-0.5.1/dist/leaflet.js'>
+</script>
+
 <link rel='stylesheet' type='text/css'
 href='http://www.free-map.org.uk/javascript/leaflet-0.5.1/dist/leaflet.css' />
 
+
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/freemap/js/lib/Ajax.js'></script>
+src='http://www.free-map.org.uk/javascript/kothic/dist/kothic.js'></script>
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/freemap/js/lib/Util.js'></script>
+src='http://www.free-map.org.uk/javascript/kothic/dist/kothic-leaflet.js'>
+</script>
+<script type='text/javascript' src='hampshire.js'></script>
+
+
+
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/freemap/js/lib/SearchWidget.js'></script>
+src='http://www.free-map.org.uk/0.6/js/lib/Ajax.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/0.6/js/lib/Util.js'></script>
+<script type='text/javascript' 
+src='http://www.free-map.org.uk/0.6/js/lib/SearchWidget.js'></script>
 <script type='text/javascript'>
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;
 var probid=<?php echo $probid; ?>;
-</script>
-<script type='text/javascript' 
-src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
 </script>
 
 <script type='text/javascript' src='main.js'> </script>
@@ -108,17 +119,6 @@ function write_login()
 		'user.php?action=signup&redirect=http://www.fixmypaths.org/index.php'>
 		Sign up</a>
         </p>
-		<p>
-		<em>
-		<a href='copyrights.html'>Important Copyright Notice for
-		rights-of-way data</a>
-		</em>
-		</p>
-		<!--
-		<p><em>Please note that logging in will place a cookie on your
-		machine to identify you to the server. Please only proceed if
-		you are happy with this.</em></p>
-		-->
         <?php
     }
     else

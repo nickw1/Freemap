@@ -75,7 +75,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     }
 
     $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
-						CACHE."/$kg/$z/$x/$y.json",$outProj);
+						CACHE."/$kg/$z/$x/$y.json",$outProj,$x,$y,$z);
     $data["granularity"] = $kg;
     $data["bbox"] = array($sw['lon'],$sw['lat'],$ne['lon'],$ne['lat']);
     echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";

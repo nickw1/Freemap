@@ -1,5 +1,6 @@
 function FixMyPaths(lon,lat)
 {
+    /*  non kothic
     var crs = 
         L.CRS.proj4js('EPSG:27700',
              "+proj=tmerc +lat_0=49 +lon_0=-2 "+
@@ -10,26 +11,46 @@ function FixMyPaths(lon,lat)
 
     this.map = new L.Map("map", { crs: crs} );
 
-    this.indexedFeatures = new Array();
-    this.indexedProblems = new Array();
 
     var osLayer = new L.TileLayer 
         ("http://www.free-map.org.uk/lfp/{z}/{x}/{y}.png",
         { tms:true, maxZoom:0, minZoom:0, tileSize: 200, continuousWorld:true,
             attribution:"&copy; Ordnance Survey, OS OpenData Licence; "+
-			 "footpath data: &copy; Hampshire County Council, "+
-			 "Open Government Licence" } ); 
+             "footpath data: &copy; various County Councils, "+
+             "OS OpenData Licence, data from rowmaps.com" } ); 
 
     this.map.addLayer(osLayer);
+    */
 
+    // kothic
 
-    this.map.setView(new L.LatLng(lat, lon), 0);
+    this.map = new L.Map("map");
+
+    var tileUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php'+
+        '?x={x}&y={y}&z={z}&way=all&poi=all&kothic=1&contour=1'+
+        '&coastline=1';
+
+    var kothic = new L.TileLayer.Kothic(tileUrl,
+        {minZoom:11,
+        attribution: 'Map data &copy; 2012 OpenStreetMap contributors,'+
+        'Open Database Licence, contours &copy; Crown Copyright and database '+
+        'right Ordnance Survey 2011, Rendering by Kothic-JS, ROW OVERLAY: '+
+        '(in Hampshire) &copy; Hampshire County Council, OS Open Data licence;'
+        +' for other counties see <a href="copyrights.html">'
+        +'this attribution notice</a>'});
+
+    this.map.addLayer(kothic);
+
+    this.indexedFeatures = new Array();
+    this.indexedProblems = new Array();
+
+    this.map.setView(new L.LatLng(lat, lon), 14);
 
     this.rowLayer = new L.GeoJSON ( null,
             {onEachFeature: (function(feature,layer)
                 {
                     var styles = { 'Footpath': '#c000ff',
-                                'Bridleway': '#00ff00',
+                                'Bridleway': '#008000',
                                 'BOAT' : '#ff0000',
                                 'Restricted Byway': '#0000ff' };
 
@@ -49,7 +70,6 @@ function FixMyPaths(lon,lat)
                     }).call(this,feature.properties.gid);
                     // won't work in IE 9 with vanilla Leaflet
                     // see https://github.com/CloudMade/Leaflet/issues/695
-                    mp.reset();
                     layer.on("click", (function(e) 
                         { this.rowClickedPos = e.latlng; }).bind(this) );
                 }).bind(this)
@@ -64,29 +84,29 @@ function FixMyPaths(lon,lat)
                     var p = document.createElement("p");
                     p.appendChild(document.createTextNode
                             (feature.properties.problem));
-					if(feature.properties.status!="Fixed")
-					{
-                    	var a = document.createElement("a");
-                    	a.href='#';
-                    	a.appendChild(document.createTextNode(" Updates"));
-                    	p.appendChild(a);
-                    	var mp = new MultiContentPopup(layer,p);
-                    	a.onclick = (function(id)
+                    if(feature.properties.status!="Fixed")
+                    {
+                        var a = document.createElement("a");
+                        a.href='#';
+                        a.appendChild(document.createTextNode(" Updates"));
+                        p.appendChild(a);
+                        var mp = new MultiContentPopup(layer,p);
+                        var func = 
+                        (function(id)
                              {
                                  return this.getProblemLog.bind
                                      (this,id,mp); 
                              }
                                 ).call(this,feature.properties.id);
-                    	mp.reset();
-					}
-					else
-					{
-						var strong =  document.createElement("strong");
-						strong.appendChild(document.createTextNode(" FIXED!"));
-						p.appendChild(strong);
-                    	var mp = new MultiContentPopup(layer,p);
-                    	mp.reset();
-					}
+                        a.onclick =  func;
+                    }
+                    else
+                    {
+                        var strong =  document.createElement("strong");
+                        strong.appendChild(document.createTextNode(" FIXED!"));
+                        p.appendChild(strong);
+                        var mp = new MultiContentPopup(layer,p);
+                    }
                     this.indexedProblems[feature.properties.id]=layer;
                 }).bind(this)
             } );
@@ -198,7 +218,7 @@ FixMyPaths.prototype.showProblemDialog = function(gid,mp)
     var masterdiv = document.createElement("div");
     masterdiv.appendChild(div);
     masterdiv.appendChild(ok);
-    mp.refill(masterdiv);
+    mp.addContent(masterdiv);
 }
 
 FixMyPaths.prototype.cancelSendProblem = function()
@@ -229,8 +249,7 @@ FixMyPaths.prototype.doSendProblem = function(gid,mp)
                                 '&reporter_email='+
                                 document.getElementById('reporter_email').value,
                         callback: (function(xmlHTTP) 
-                            { alert(xmlHTTP.responseText); 
-                                mp.reset();
+                            { 
                               this.loadFeatures();}).bind(this)
                         }
                     );
@@ -278,6 +297,11 @@ FixMyPaths.prototype.displayProblemMarker = function(lat,lon)
 
 FixMyPaths.prototype.getProblemLog = function(id,mp)
 {
+    mp.addContent(this.doGetProblemLog.bind(this,id,mp));
+}
+
+FixMyPaths.prototype.doGetProblemLog = function(id,mp)
+{
     new Ajax().sendRequest ('problem.php',
                             { method: 'GET',
                               parameters: 'action=getLog&id=' + id,
@@ -315,7 +339,8 @@ FixMyPaths.prototype.getProblemLogCallback = function(xmlHTTP,addData)
         {
             var content="<p>Please enter the update:<br />" +
                 "<textarea id='problemupdate' " +
-                "style='margin:10px 10px 10px 10px; display:block;width:200px;height:200px'>"+
+                "style='margin:10px 10px 10px 10px; "+
+                "display:block;width:200px;height:200px'>"+
                 "</textarea></p>";
             var div = document.createElement("div");
             div.innerHTML = content;
@@ -326,16 +351,17 @@ FixMyPaths.prototype.getProblemLogCallback = function(xmlHTTP,addData)
             btn.value='OK';
             btn.onclick = this.doSendProblemUpdate.bind(this,id,mp);
             masterdiv.appendChild(btn);
-            mp.refill(masterdiv);
+            mp.addContent(masterdiv);
         }.bind(this);
     p.appendChild(a);
-    mp.refill(p);
+
+    // do not add to the content stack, the function is already
+    mp.changeContent(p); 
 }
 
 FixMyPaths.prototype.doSendProblemUpdate = function(id,mp)
 {
     var msg = document.getElementById('problemupdate').value;
-    alert("doSendProblemUpdate: id="+id+" msg="+msg );
     new Ajax().sendRequest('problem.php',
                              { method: 'POST',
                               parameters: 'msg='+ msg
@@ -344,7 +370,6 @@ FixMyPaths.prototype.doSendProblemUpdate = function(id,mp)
                                  (function() 
                                      { 
                                         alert("done");
-                                        mp.reset();
                                     }).bind(this)
                              } );
 }
@@ -357,9 +382,9 @@ function init()
         app.moveToProblem(probid);
     new Reports("reports","problem.php",180,app.moveToProblem.bind(app)).load();
     new SearchWidget ('search',
-                        { url: 'http://www.free-map.org.uk/freemap/ws/'+
-							'search.php',
+                        { url: 'http://www.free-map.org.uk/0.6/ws/'+
+                            'search.php',
                           callback: app.setLocation.bind(app),
-						  parameters: 'poi=all&outProj=4326'} 
+                          parameters: 'poi=all&outProj=4326'} 
                           );
 }

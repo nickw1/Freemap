@@ -79,6 +79,9 @@ else
 }
 ?>
 </div><!--login-->
+<p><strong>IMPORTANT! - this site is up for demo purposes. It is not
+guaranteed to work currently.</strong></p>
+
 <p>StreetView for the world's trails and footpaths!
 Read <a href='howto.html'>how to contribute</a> or
 <a href='psbmt.php'>submit some photos...</a></p>
