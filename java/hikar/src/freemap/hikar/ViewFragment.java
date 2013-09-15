@@ -90,6 +90,7 @@ public class ViewFragment extends Fragment
         ((Hikar)getActivity()).getHUD().invalidate();
         
         
+       
         if(integrator!=null && integrator.getDEM()!=null)
             glView.getRenderer().operateOnRenderedWays(this);
         
@@ -147,21 +148,20 @@ public class ViewFragment extends Fragment
     
     public void visit(RenderedWay rw)
     {
-        HGTTileDeliverer dem = integrator.getDEM();
-        if(locOSGB!=null && dem!=null)
-        {
-            
         
+        HGTTileDeliverer dem = integrator.getDEM();
+        if(locOSGB!=null && dem!=null && rw.isValid())
+        {   
             int nVisibles = 0;
             float[] wayVertices = rw.getWayVertices();
-            for(int i=0; i<wayVertices.length; i++)
+            for(int i=0; i<wayVertices.length; i+=3)
             {
           
-                boolean los = dem.lineOfSight(locOSGB, new Point(wayVertices[i*3],wayVertices[i*3+1],wayVertices[i*3+2]));
+                boolean los = dem.lineOfSight(locOSGB, new Point(wayVertices[i],wayVertices[i+1],wayVertices[i+2]));
                 if(los)
                 {
                   nVisibles++; 
-                   // rw.setVtxDisplayStatus(i, los);
+                  // rw.setVtxDisplayStatus(i, los);
                 }
             }
             rw.setDisplayed(nVisibles > 1);

@@ -269,7 +269,8 @@ public class OpenGLView extends GLSurfaceView  {
         {
             synchronized(renderedWays)
             {
-                renderedWays.put(w.getId(), new RenderedWay(w,2.0f));
+                if(renderedWays.get(w.getId())==null)
+                    renderedWays.put(w.getId(), new RenderedWay(w,2.0f));
             }
             //Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
         }

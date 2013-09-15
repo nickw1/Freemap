@@ -89,8 +89,10 @@ public class HGTTileDeliverer extends freemap.datasource.TileDeliverer {
                        //System.out.println("Height=" + ht + " expHt=" + expHt);
                        
                        // If the surface is above the line-of-sight, return false
+                      
                        if(ht > expHt)
                            return false;
+                       
                    }  
                    expHt += htInc;
                }

@@ -1031,7 +1031,7 @@ public class OpenTrail extends MapActivity implements
 				if(recordingWalkroute!=null && recordingWalkroute.getPoints().size()!=0)
 					dataDisplayer.showWalkroute(recordingWalkroute);
 				
-				mapView.invalidate();
+				
 			}
 			catch(Exception e)
 			{
@@ -1039,7 +1039,9 @@ public class OpenTrail extends MapActivity implements
 			}
 				
 		}
-			
+		
+		if(mapView!=null)
+		    mapView.invalidate(); // originally in try block - want to move "where am I" marker	
 				
 		Point osgb = this.proj.project(pt);
 		String gridsq = new OSRef(osgb.x,osgb.y).toSixFigureString().substring(0,2).toLowerCase();

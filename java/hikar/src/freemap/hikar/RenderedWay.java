@@ -8,6 +8,7 @@ import java.nio.ShortBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class RenderedWay {
 
@@ -18,6 +19,7 @@ public class RenderedWay {
 	short[] indices;
 	float[] vertices;
 	static float[] road, path, bridleway, track, cycleway, byway;
+	boolean valid;
 	
 	boolean displayed;
     boolean[] vtxDisplayStatus;
@@ -47,10 +49,25 @@ public class RenderedWay {
 	{
 
 		float dx, dy, dxperp=0.0f, dyperp=0.0f, len;
-		int nPts = w.nPoints();
+		
+		
+		ArrayList<Integer> includedPoints = new ArrayList<Integer>();
+		for(int i=0; i<w.nPoints(); i++)
+		    if(w.getPoint(i).z >= 0.00000001)
+		        includedPoints.add(i);
+		    
+		
+		
+		int nPts = includedPoints.size();
+		
+		if(nPts==0)
+		    return;
+		
+		
 		ByteBuffer buf = ByteBuffer.allocateDirect(nPts*6*4);
 		buf.order(ByteOrder.nativeOrder());
 		vertexBuffer = buf.asFloatBuffer();
+		
 		ByteBuffer ibuf = ByteBuffer.allocateDirect((nPts-1)*6*2);
 		ibuf.order(ByteOrder.nativeOrder());
 		indexBuffer = ibuf.asShortBuffer();
@@ -62,43 +79,44 @@ public class RenderedWay {
 		
 		displayed = true;
 		
+		
 		for(int i=0; i<nPts-1; i++)
 		{
 		
-		
-			dx=(float)(w.getPoint(i+1).x - w.getPoint(i).x);
-			dy=(float)(w.getPoint(i+1).y - w.getPoint(i).y);
-			len=(float)(w.getPoint(i).distanceTo(w.getPoint(i+1)));
-			dxperp = -(dy*(width/2))/len;
-			dyperp = (dx*(width/2))/len;
-			vertices[i*6] = (float)(w.getPoint(i).x+dxperp);
-			vertices[i*6+1] = (float)(w.getPoint(i).y+dyperp);
-			vertices[i*6+2] = (float)w.getPoint(i).z;
-			vertices[i*6+3] = (float)(w.getPoint(i).x-dxperp);
-			vertices[i*6+4] = (float)(w.getPoint(i).y-dyperp);
-			vertices[i*6+5] = (float)w.getPoint(i).z;
+		  
+		        dx=(float)(w.getPoint(includedPoints.get(i+1)).x - w.getPoint(includedPoints.get(i)).x);
+		        dy=(float)(w.getPoint(includedPoints.get(i+1)).y - w.getPoint(includedPoints.get(i)).y);
+		        len=(float)(w.getPoint(includedPoints.get(i)).distanceTo(w.getPoint(includedPoints.get(i+1))));
+		        dxperp = -(dy*(width/2))/len;
+		        dyperp = (dx*(width/2))/len;
+		        vertices[i*6] = (float)(w.getPoint(includedPoints.get(i)).x+dxperp);
+		        vertices[i*6+1] = (float)(w.getPoint(includedPoints.get(i)).y+dyperp);
+		        vertices[i*6+2] = (float)w.getPoint(includedPoints.get(i)).z;
+		        vertices[i*6+3] = (float)(w.getPoint(includedPoints.get(i)).x-dxperp);
+		        vertices[i*6+4] = (float)(w.getPoint(includedPoints.get(i)).y-dyperp);
+		        vertices[i*6+5] = (float)w.getPoint(includedPoints.get(i)).z;
 			
 			
-			wayVertices[i*3] = (float)w.getPoint(i).x;
-            wayVertices[i*3+1] = (float)w.getPoint(i).y;
-            wayVertices[i*3+2] = (float)w.getPoint(i).z;
-            vtxDisplayStatus[i] = true;
-			/*
-			for(int j=0; j<6; j++)
-				System.out.println("Vertex : " + (i*6+j)+ " position:" +vertices[i*6+j]);
-			*/
-			
+		        wayVertices[i*3] = (float)w.getPoint(includedPoints.get(i)).x;
+		        wayVertices[i*3+1] = (float)w.getPoint(includedPoints.get(i)).y;
+		        wayVertices[i*3+2] = (float)w.getPoint(includedPoints.get(i)).z;
+		        vtxDisplayStatus[i] = true;
+		        /*
+			    for(int j=0; j<6; j++)
+				    System.out.println("Vertex : " + (i*6+j)+ " position:" +vertices[i*6+j]);
+		        */
+		   
 		}
 		int k=nPts-1;
-		vertices[k*6] = (float)(w.getPoint(k).x+dxperp);
-		vertices[k*6+1] = (float)(w.getPoint(k).y+dyperp);
-		vertices[k*6+2] = (float)w.getPoint(k).z;
-		vertices[k*6+3] = (float)(w.getPoint(k).x-dxperp);
-		vertices[k*6+4] = (float)(w.getPoint(k).y-dyperp);
-		vertices[k*6+5] = (float)w.getPoint(k).z;
-		wayVertices[k*3] = (float)w.getPoint(k).x;
-        wayVertices[k*3+1] = (float)w.getPoint(k).y;
-        wayVertices[k*3+2] = (float)w.getPoint(k).z;
+		vertices[k*6] = (float)(w.getPoint(includedPoints.get(k)).x+dxperp);
+		vertices[k*6+1] = (float)(w.getPoint(includedPoints.get(k)).y+dyperp);
+		vertices[k*6+2] = (float)w.getPoint(includedPoints.get(k)).z;
+		vertices[k*6+3] = (float)(w.getPoint(includedPoints.get(k)).x-dxperp);
+		vertices[k*6+4] = (float)(w.getPoint(includedPoints.get(k)).y-dyperp);
+		vertices[k*6+5] = (float)w.getPoint(includedPoints.get(k)).z;
+		wayVertices[k*3] = (float)w.getPoint(includedPoints.get(k)).x;
+        wayVertices[k*3+1] = (float)w.getPoint(includedPoints.get(k)).y;
+        wayVertices[k*3+2] = (float)w.getPoint(includedPoints.get(k)).z;
 		vtxDisplayStatus[k]= true;
 		for(int i=0; i<nPts-1; i++)
 		{
@@ -125,12 +143,13 @@ public class RenderedWay {
 			else
 				colour = road;
 		}
+		valid=true;
 	}
 	
 	public void draw(GPUInterface gpuInterface)
 	{
 	    
-		if(colour!=null)
+		if(valid && colour!=null)
 		{
 		    gpuInterface.setUniform4fv("uColour", colour);
 			gpuInterface.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex");
@@ -155,23 +174,30 @@ public class RenderedWay {
 
 	Point getAveragePosition()
 	{
-		Point p=new Point();
-		int nPoints=vertexBuffer.limit() / 3;
-		for(int i=0; i<vertexBuffer.limit(); i+=3)
-		{
-			p.x += vertexBuffer.get(i);
-			p.y += vertexBuffer.get(i+1);
+	    if(valid)
+	    {
+	        Point p=new Point();
+	        int nPoints=vertexBuffer.limit() / 3;
+	        for(int i=0; i<vertexBuffer.limit(); i+=3)
+	        {
+	            p.x += vertexBuffer.get(i);
+	            p.y += vertexBuffer.get(i+1);
 			
-		}
-		p.x /= nPoints;
-		p.y /= nPoints;
+	        }
+	        p.x /= nPoints;
+	        p.y /= nPoints;
 		
-		return p;
+	        return p;
+	    }
+	    return null;
 	}
 	
 	public double distanceTo(Point p)
 	{
-		return getAveragePosition().distanceTo(p);
+		Point av = getAveragePosition();
+		if(av!=null)
+		    return av.distanceTo(p);
+		return -1.0;
 	}
 	
 	// NEW
@@ -196,6 +222,8 @@ public class RenderedWay {
     // best call infrequently
     public void regenerateDisplayedVertexIndices()
     {
+        if(valid)
+        {
         // remove indices either side of the given vertex
         
            
@@ -218,11 +246,18 @@ public class RenderedWay {
                     nVisibles++;
                 }
             }
+        }
     }
     
     public float[] getWayVertices()
     {
         return wayVertices;
     }
+    
+    public boolean isValid()
+    {
+        return valid;
+    }
+  
     // NEW END
 }

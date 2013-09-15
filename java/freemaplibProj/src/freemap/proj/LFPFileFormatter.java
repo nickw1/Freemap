@@ -1,4 +1,4 @@
-package freemap.hikar;
+package freemap.proj;
 
 import uk.me.jstott.jcoord.OSRef;
 import freemap.data.Point;

@@ -11,6 +11,7 @@ import freemap.data.Point;
 import freemap.datasource.XMLDataInterpreter;
 import freemap.datasource.FreemapDataHandler;
 import freemap.jdem.DEM;
+import freemap.proj.LFPFileFormatter;
 import freemap.proj.Proj4ProjectionFactory;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.Tile;

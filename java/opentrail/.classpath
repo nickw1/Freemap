@@ -9,7 +9,7 @@
 	<classpathentry exported="true" kind="lib" path="/home/nick/lib/java/javaproj-1.0.6-noawt.jar"/>
 	<classpathentry exported="true" kind="lib" path="/home/nick/lib/java/jcoord-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="/home/nick/lib/java/mapsforge-map-0.3.0-jar-with-dependencies.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/nick/lib/java/freemaplib_proj.jar"/>
 	<classpathentry exported="true" kind="lib" path="/home/nick/lib/java/freemaplib.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/nick/lib/java/freemaplib_proj.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
