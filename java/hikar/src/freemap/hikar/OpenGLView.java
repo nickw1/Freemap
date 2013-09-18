@@ -19,6 +19,7 @@ import java.util.HashMap;
 import freemap.data.Way;
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
+import freemap.jdem.DEM;
 
 public class OpenGLView extends GLSurfaceView  {
    
@@ -34,6 +35,7 @@ public class OpenGLView extends GLSurfaceView  {
         float hFov;
         float[] modelviewMtx, perspectiveMtx;
         HashMap<Long,RenderedWay> renderedWays;
+        HashMap<String,RenderedDEM> renderedDEMs;
         boolean calibrate;
         GLRect calibrateRect, cameraRect;
         float xDisp, yDisp, zDisp, height;
@@ -47,6 +49,7 @@ public class OpenGLView extends GLSurfaceView  {
         {
             hFov = 40.0f;
             renderedWays = new HashMap<Long,RenderedWay>();
+            renderedDEMs = new HashMap<String,RenderedDEM>();
             
             zDisp = 1.4f; 
             
@@ -76,8 +79,10 @@ public class OpenGLView extends GLSurfaceView  {
         {
             GLES20.glClearColor(0.0f,0.0f,0.3f,0.0f);
             GLES20.glClearDepthf(1.0f);
-            //GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-            //GLES20.glDepthFunc(GLES20.GL_LEQUAL);
+            GLES20.glEnable(GLES20.GL_BLEND);
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+            GLES20.glDepthFunc(GLES20.GL_LEQUAL);
             final String vertexShader = 
                     "attribute vec4 aVertex;\n" +
                     "uniform mat4 uPerspMtx, uMvMtx;\n"+
@@ -141,7 +146,7 @@ public class OpenGLView extends GLSurfaceView  {
        
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);     
             
-            
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
             if(cameraCapturer.isActive())
             {
                 cameraFeed.updateTexImage();
@@ -151,6 +156,7 @@ public class OpenGLView extends GLSurfaceView  {
                 textureInterface.select();
                 cameraRect.draw(textureInterface);
             }
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
             
             gpuInterface.select();
             
@@ -165,6 +171,14 @@ public class OpenGLView extends GLSurfaceView  {
             else
             {
                
+                
+                synchronized(renderedDEMs)
+                {
+                    for (HashMap.Entry<String,RenderedDEM> d: renderedDEMs.entrySet())
+                        d.getValue().render(gpuInterface);
+                }
+                
+                
                 if(renderedWays.size()>0)
                 { 
                    
@@ -239,19 +253,32 @@ public class OpenGLView extends GLSurfaceView  {
             this.modelviewMtx = orientMtx.clone();
         }
         
-        public void setRenderData(FreemapDataset d)
+        public void setRenderData(DownloadDataTask.ReceivedData data)
         {
-            AsyncTask<FreemapDataset,Void,Boolean> setRenderDataTask = new AsyncTask<FreemapDataset,Void,Boolean> ()
+            AsyncTask<DownloadDataTask.ReceivedData,Void,Boolean> setRenderDataTask = 
+                    new AsyncTask<DownloadDataTask.ReceivedData,Void,Boolean> ()
             {
-                protected Boolean doInBackground(FreemapDataset... d)
+                protected Boolean doInBackground(DownloadDataTask.ReceivedData... d)
                 {
+                    Log.d("hikar","Setting render data");
+                    if(d[0].dem != null)
+                    {
+                        Point p = d[0].dem.getBottomLeft();
+                        if(renderedDEMs==null) // do not clear out when we enter a new tile!
+                            renderedDEMs = new HashMap<String,RenderedDEM> ();
+                        String key = (int)p.x+":"+(int)p.y;
+                        Log.d("hikar", "Found a DEM to be rendered, key=" + key);
+                        if(renderedDEMs.get(key)==null)
+                            renderedDEMs.put(key, new RenderedDEM(d[0].dem));
+                    }
+                    
                     if(renderedWays==null) // do not clear out when we enter a new tile!
                         renderedWays = new HashMap<Long,RenderedWay> ();
-                    d[0].operateOnWays(DataRenderer.this); 
+                    d[0].osm.operateOnWays(DataRenderer.this); 
                     return true;
                 }
             };
-            setRenderDataTask.execute(d);  
+            setRenderDataTask.execute(data);  
         }
         
         public void setCameraLocation(float x,float y)

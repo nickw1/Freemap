@@ -65,10 +65,6 @@ public class OsmDemIntegrator {
 	// ASSUMPTION: the tiling systems for hgt and osm data coincide - which they do here (see constructor)
 	public boolean update(Point point) throws Exception
 	{
-		
-		
-		
-		    
 	    HashMap<String,Tile>hgtupdated = hgt.doUpdateSurroundingTiles(point,true,false);
 	   //Log.d("hikar"," DEM returned ");
 		
@@ -86,7 +82,7 @@ public class OsmDemIntegrator {
 			    !e.getValue().isCache)
 			
 			{
-			   //Log.d("hikar","Applying DEM as not cached: key=" + e.getKey());
+			   android.util.Log.d("hikar","Applying DEM as not cached: key=" + e.getKey());
 			   
 			   FreemapDataset d = (FreemapDataset)e.getValue().data;
 			   DEM dem = (DEM)(hgtupdated.get(e.getKey()).data);
@@ -96,7 +92,7 @@ public class OsmDemIntegrator {
 			}
 			else
 			{
-			   //Log.d("hikar","osm: is cache, has dem already");
+			   android.util.Log.d("hikar","osm: is cache, has dem already");
 			}
 	    }
 			

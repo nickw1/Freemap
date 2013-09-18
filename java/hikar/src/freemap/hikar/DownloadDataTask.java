@@ -4,14 +4,27 @@ import freemap.andromaps.DataCallbackTask;
 import android.content.Context;
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
+import freemap.jdem.DEM;
 
 public class DownloadDataTask extends DataCallbackTask<Point,Void> {
 
     OsmDemIntegrator integrator;
     
+    public static class ReceivedData
+    {
+        public FreemapDataset osm;
+        public DEM dem;
+        
+        public ReceivedData(FreemapDataset o, DEM d)
+        {
+            osm = o;
+            dem = d;
+        }
+    }
+    
     public interface Receiver
     {
-        public void receiveData(FreemapDataset data);
+        public void receiveData(ReceivedData data);
     }
     
     Receiver receiver;
@@ -31,7 +44,10 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
         {
            status = integrator.update(p[0]);
             if(status)
-                setData(integrator.getCurrentOSMData());
+            {
+                ReceivedData rd = new ReceivedData(integrator.getCurrentOSMData(),integrator.getCurrentDEM());
+                setData(rd);
+            }
         }
         catch(java.io.IOException e)
         {
@@ -53,6 +69,6 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
     public void receive(Object data)
     {
         if(receiver!=null)
-            receiver.receiveData((FreemapDataset)data);
+            receiver.receiveData((ReceivedData)data);
     }
 }

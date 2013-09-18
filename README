@@ -17,3 +17,13 @@ ws - Web services to return PostGIS OSM data by tile.
 lib - Library functions, used by Freemap and OTV.
 common - Common functionality; login and defines.
 javascript - Common JavaScript, including a local copy of Prototype.
+
+LICENSING:
+
+Unless stated otherwise in the source files, this code is available under the 
+GNU GPL version 2, with the exception of library code which is under the 
+Lesser GPL. Library code includes: 
+
+Anything in a directory named "lib";
+The subdirectories "freemaplib", "freemaplibProj" and "andromaps" within the
+"java" directory.

@@ -255,8 +255,19 @@ public class DEM implements freemap.datasource.TiledData {
         return ptHeight;
     }
     
+    public Point getPoint(int col, int row)
+    {
+        Point p = new Point();
+        p.x = bottomLeft.x + col*spacing;
+        p.y = topRight.y - row*spacing;
+        p.z = heights[row*ptWidth+col];
+        return p;
+    }
+    
+    public Point getPoint(int index)
+    {
+        return getPoint(index%ptWidth, index/ptHeight);
+    }
     // NEW END
-    
-    
 }
 

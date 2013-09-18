@@ -5,6 +5,7 @@ import freemap.datasource.FreemapDataset;
 import freemap.proj.OSGBProjection;
 import freemap.data.Projection;
 import freemap.jdem.HGTTileDeliverer;
+import freemap.jdem.DEM;
 import android.app.Fragment;
 import android.app.Activity;
 import android.location.Location;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.os.AsyncTask;
 
 
 public class ViewFragment extends Fragment 
@@ -26,6 +28,8 @@ public class ViewFragment extends Fragment
     SensorInput sensorInput;
     Projection proj;
     Point locOSGB;
+    long lineOfSightTestFinish;
+    boolean doingLineOfSightTest;
     
     
     public ViewFragment()
@@ -45,9 +49,10 @@ public class ViewFragment extends Fragment
         locationProcessor = new LocationProcessor(activity,this,5000,10);
         glView.setOnTouchListener(new PinchListener(this));
         FreemapDataset data = integrator.getCurrentOSMData();
+        DEM dem = integrator.getCurrentDEM();
         setHFOV();
         if(data!=null)
-            glView.getRenderer().setRenderData(data);
+            glView.getRenderer().setRenderData(new DownloadDataTask.ReceivedData(data, dem));
     }
     
     public void onCreate(Bundle savedInstanceState)
@@ -89,23 +94,47 @@ public class ViewFragment extends Fragment
         ((Hikar)getActivity()).getHUD().setHeight((float)height);
         ((Hikar)getActivity()).getHUD().invalidate();
         
-        
-       
-        if(integrator!=null && integrator.getDEM()!=null)
-            glView.getRenderer().operateOnRenderedWays(this);
-        
-        
         if(integrator.needNewData(p))
         {
             downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
             downloadDataTask.setDialogDetails("Loading...", "Loading data...");
             downloadDataTask.execute(p);
         }
+        
+        else if(integrator!=null && integrator.getDEM()!=null && !doingLineOfSightTest 
+                && System.currentTimeMillis() - lineOfSightTestFinish > 10000)
+        {
+            /*
+            AsyncTask<OpenGLView.RenderedWayVisitor,Void,Boolean> t = new AsyncTask<OpenGLView.RenderedWayVisitor,Void,Boolean>()
+            {
+                protected void onPreExecute()
+                {
+                    doingLineOfSightTest = true;
+                }
+                
+                protected Boolean doInBackground(OpenGLView.RenderedWayVisitor... v)
+                {        
+                    glView.getRenderer().operateOnRenderedWays(v[0]);
+                    return true;
+                }
+                
+                protected void onPostExecute(Boolean result)
+                {
+                    lineOfSightTestFinish = System.currentTimeMillis();
+                    doingLineOfSightTest = false;
+                }
+            };
+            t.execute(this);
+              */
+        }
+      
+        
+        
     }
     
     public void noGPS() { }
     
-    public void receiveData(FreemapDataset data)
+    public void receiveData(DownloadDataTask.ReceivedData data)
     {
         glView.getRenderer().setRenderData(data);
     }

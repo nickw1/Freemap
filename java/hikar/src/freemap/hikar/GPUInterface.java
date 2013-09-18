@@ -67,6 +67,11 @@ public class GPUInterface {
     // and then draw the data
     public void drawBufferedData(Buffer vertices, Buffer indices, int stride, String attrVar)
     {
+        drawBufferedData(vertices,indices,stride,attrVar,GLES20.GL_TRIANGLES);
+    }
+    
+    public void drawBufferedData(Buffer vertices, Buffer indices, int stride, String attrVar, int mode)
+    {
         if(isValid())
         {
             int attrVarRef= getShaderVarRef(attrVar);
@@ -74,7 +79,7 @@ public class GPUInterface {
             indices.position(0);
             GLES20.glEnableVertexAttribArray(attrVarRef);
             GLES20.glVertexAttribPointer(attrVarRef, 3, GLES20.GL_FLOAT, false, stride, vertices);
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.limit(), GLES20.GL_UNSIGNED_SHORT, indices);
+            GLES20.glDrawElements(mode, indices.limit(), GLES20.GL_UNSIGNED_SHORT, indices);
         }
     }
     
