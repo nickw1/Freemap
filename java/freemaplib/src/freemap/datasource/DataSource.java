@@ -33,6 +33,7 @@ public abstract class DataSource  {
 	{
 		InputStream in = getInputStream(bottomLeft);
 		
+		System.out.println("DataSource.getData(): cacheFile=" + cacheFile);
 		if(cacheFile!=null)
 		{
 		    FileOutputStream out = new FileOutputStream(cacheFile);  
@@ -44,6 +45,7 @@ public abstract class DataSource  {
 		    out.close();
 		    in.close();  
 		    in = new FileInputStream(cacheFile);
+		    System.out.println("wrote to CacheFile, now reading from it");
 		}
 		
 		Object data= interpreter.getData(in);

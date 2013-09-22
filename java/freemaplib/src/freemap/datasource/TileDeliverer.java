@@ -26,6 +26,7 @@ public class TileDeliverer {
 	DataInterpreter interpreter;
 	protected Projection proj;
 	String name, cachedir;
+	boolean reprojectCachedData;
 	
 	
 
@@ -151,7 +152,7 @@ public class TileDeliverer {
 	}
 	
 	
-	// !!! this is still using the old caching system
+	// !!! now using new caching system
 	
 	protected TiledData doUpdate(Point origin, boolean cacheData, boolean forceReload) throws Exception
 	{
@@ -170,7 +171,7 @@ public class TileDeliverer {
 			else
 			{
 				//System.out.println("Loading from web");
-				curData = dataWrap(origin,dataSource.getData(origin,interpreter));
+				curData = dataWrap(origin,dataSource.getData(origin,interpreter,cacheData? cachefile: null));
 				
 				
 				
@@ -180,8 +181,10 @@ public class TileDeliverer {
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
 				//System.out.println("Reprojecting to " + proj);
 				curData.reproject(proj);
+				/*
 				if(cacheData)
 					cache(curData,cachefile);
+		        */
 			}
 			
 			//System.out.println("Adding to data with the key: " + key);
@@ -234,7 +237,10 @@ public class TileDeliverer {
 		FileDataSource ds = new FileDataSource(cachefile);
 		curData = dataWrap(origin,ds.getData(interpreter));
 		
-		// TODO if we're using an instant on-download cache this will need to be reprojected
+		// We'll need to reproject if we did an instant cache but not if the data was cached later
+		// e.g. if we apply a DEM to unprojected OSM data
+		if(reprojectCachedData)
+		    curData.reproject(proj);
 		
 		//System.out.println("Curdata=" + curData);
 	
@@ -357,6 +363,8 @@ public class TileDeliverer {
     }
     // END NEW
     
-    
-   
+    public void setReprojectCachedData (boolean r)
+    {
+        reprojectCachedData = r;
+    }  
 }

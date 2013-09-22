@@ -1,7 +1,7 @@
 package freemap.hikar;
 
 import freemap.data.Projection;
-import freemap.datasource.TileDeliverer;
+import freemap.datasource.CachedTileDeliverer;
 import freemap.datasource.WebDataSource;
 import freemap.jdem.DEMSource;
 import freemap.jdem.HGTDataInterpreter;
@@ -18,12 +18,12 @@ import freemap.datasource.Tile;
 import java.io.File;
 import java.util.HashMap;
 import android.util.Log;
-import freemap.andromaps.GeoJSONDataInterpreter;
+
 
 
 public class OsmDemIntegrator {
 
-	TileDeliverer osm;
+	CachedTileDeliverer osm;
 	HGTTileDeliverer hgt;
 	Projection tilingProj;
 	
@@ -52,14 +52,15 @@ public class OsmDemIntegrator {
 						5000, 5000, tilingProj,101,101,50,cacheDir.getAbsolutePath());
 						
 		
-		osm = new TileDeliverer("osm",osmDataSource, 
-					//new XMLDataInterpreter(new FreemapDataHandler(factory)),
-		            new GeoJSONDataInterpreter(),
+		osm = new CachedTileDeliverer("osm",osmDataSource, 
+					new XMLDataInterpreter(new FreemapDataHandler(factory)),
 					5000,5000,
 					tilingProj,
 					cacheDir.getAbsolutePath());
 		
-		
+		hgt.setCache(true);
+		osm.setCache(false);
+		osm.setReprojectCachedData(false);
 		
 	}
 	
@@ -72,13 +73,13 @@ public class OsmDemIntegrator {
 	public boolean update(Point point) throws Exception
 	{
 	 Log.d("hikar","Getting DEM data... time=" + System.currentTimeMillis());
-	    HashMap<String,Tile>hgtupdated = hgt.doUpdateSurroundingTiles(point,false,false);
+	    HashMap<String,Tile>hgtupdated = hgt.doUpdateSurroundingTiles(point);
 	   //Log.d("hikar"," DEM returned ");
 		
 	       
 	   Log.d("hikar","Getting OSM data... time=" + System.currentTimeMillis());
 		
-		HashMap<String,Tile>osmupdated = osm.doUpdateSurroundingTiles(point,false,false);
+		HashMap<String,Tile>osmupdated = osm.doUpdateSurroundingTiles(point);
 	     Log.d("hikar","Finished getting OSM data... time=" + System.currentTimeMillis());
 			    
 	    for(HashMap.Entry<String,Tile> e: osmupdated.entrySet())

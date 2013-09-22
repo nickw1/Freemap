@@ -26,10 +26,10 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	DataSource dataSource;
 	
 	DataInterpreter interpreter;
-	protected Projection proj;
+	
 	String cachedir;
 	
-	private boolean cacheData, forceReload;
+	private boolean cacheData, forceReload, reprojectCachedData;
 	
 
 	public CachedTileDeliverer(String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
@@ -42,6 +42,7 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 		
 		cacheData = true;
 		forceReload = false;
+		reprojectCachedData = true;
 	}
 	
 	public void setCache(boolean cache)
@@ -54,6 +55,10 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	    forceReload = fr;
 	}
 	
+	public void setReprojectCachedData(boolean rp)
+	{
+	    reprojectCachedData = rp;
+	}
 		
 	public TiledData updateSurroundingTiles(Point lonLat) throws Exception
     {
@@ -110,7 +115,7 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 				// reproject on the client side. This is because it's a bit of
 				// a pain to reproject into arbitrary projections server side
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
-				//System.out.println("Reprojecting to " + proj);
+				System.out.println("Reprojecting to " + proj);
 				curData.reproject(proj);
 			}
 			
@@ -130,17 +135,35 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	// 220913 deleted all the cache() and cacheByKey() methods, I don't think we need
 	// them anymore, they are in TileDeliverer in case they turn out to be needed...
 	
+	// we need these two to do later caching e.g. after applying a DEM
+	
+    public void cache(TiledData data,String cachefile) throws Exception
+    {
+        System.out.println("Caching data");
+        if(cachedir!=null && data!=null)
+        {   
+            //System.out.println("Actually caching data");
+            data.save(cachefile);   
+        }
+    }
+    
+    public void cacheByKey(TiledData data, String key) throws Exception
+    {
+        cache(data,cachedir+"/"+name+"."+key);
+    }
+	
 	protected TiledData loadFromCache(String cachefile,Point origin) throws Exception
 	{
 		TiledData curData = null;
-		//System.out.println("Loading from file");
+		System.out.println("Loading from cache " + cachefile);
 		FileDataSource ds = new FileDataSource(cachefile);
 		curData = dataWrap(origin,ds.getData(interpreter));
 		//System.out.println("Curdata=" + curData);
 		
 		// 220913 We now need to reproject cached data as we are dumping the data straight to cache
-		// on loading from the web
-		curData.reproject(proj);
+		// on loading from the web, unless the data was cached later (e.g. applying a DEM)
+		if(reprojectCachedData)
+		    curData.reproject(proj);
 		return curData;
 	}
 	

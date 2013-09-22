@@ -1,6 +1,6 @@
 package freemap.jdem;
 
-import java.util.HashMap;
+
 
 import freemap.data.Point;
 import freemap.data.Projection;
@@ -8,7 +8,7 @@ import freemap.datasource.DataInterpreter;
 import freemap.datasource.DataSource;
 import freemap.datasource.TiledData;
 
-public class HGTTileDeliverer extends freemap.datasource.TileDeliverer {
+public class HGTTileDeliverer extends freemap.datasource.CachedTileDeliverer {
 
 	int demWidth, demHeight;
 	double demRes;
