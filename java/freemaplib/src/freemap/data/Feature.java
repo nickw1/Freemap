@@ -3,6 +3,7 @@ package freemap.data;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 public class Feature extends Projectable {
 	protected HashMap<String,String> tags;
@@ -54,5 +55,10 @@ public class Feature extends Projectable {
 	public boolean containsKey(String k)
 	{
 		return tags.containsKey(k);
+	}
+	
+	public Iterator<String> keys()
+	{
+	    return tags.keySet().iterator();
 	}
 }

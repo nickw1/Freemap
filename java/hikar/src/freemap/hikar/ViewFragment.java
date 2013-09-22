@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.os.AsyncTask;
+import android.util.Log;
 
 
 public class ViewFragment extends Fragment 
@@ -136,7 +137,9 @@ public class ViewFragment extends Fragment
     
     public void receiveData(DownloadDataTask.ReceivedData data)
     {
+        Log.d("hikar", "Setting render data: " + System.currentTimeMillis());
         glView.getRenderer().setRenderData(data);
+       
     }
     
     public void receiveSensorInput(float[] matrix, float[] orientation)

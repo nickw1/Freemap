@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import freemap.data.POI;
 import freemap.data.Way;
@@ -23,6 +24,7 @@ public class FreemapDataset implements TiledData
 	HashMap<Long,POI> pois;
 	HashMap<Integer,Annotation> annotations;
 	Projection proj;
+
 	
 	public interface WayVisitor 
 	{
@@ -117,15 +119,18 @@ public class FreemapDataset implements TiledData
 	
 	public void save(String filename) throws IOException
 	{
-		PrintWriter pw = new PrintWriter(new FileWriter(filename));
-		pw.println("<rdata>");
-		writeProjection(pw);
-		savePOIs(pw);
-		saveWays(pw);
-		saveAnnotations(pw);
-		pw.println("</rdata>");
-		pw.flush();
-		pw.close();
+	
+	    PrintWriter pw = new PrintWriter(new FileWriter(filename));
+	  
+	    pw.println("<rdata>");
+	    writeProjection(pw);
+	    savePOIs(pw);
+	    saveWays(pw);
+	    saveAnnotations(pw);
+	    pw.println("</rdata>");
+	       
+	    pw.flush();
+        pw.close();
 	}
 	
 	public void writeProjection(PrintWriter pw)
@@ -278,6 +283,16 @@ public class FreemapDataset implements TiledData
 		}
 		return found;
 	}
+	
+	public Iterator<Long> poiIterator()
+	{
+	    return pois.keySet().iterator();
+	}
+	
+	public Iterator<Long> wayIterator()
+	{
+	    return ways.keySet().iterator();
+    }
 }
 
 

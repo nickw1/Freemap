@@ -2,6 +2,7 @@ package freemap.data;
 
 import freemap.jdem.DEM;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,9 +32,14 @@ public class POI extends Feature{
 
 	public POI(double x, double y)
 	{
-		point=new Point(x,y);
+		this(x,y,-1.0);
 	}
 
+	public POI(double x, double y, double z)
+	{
+	    point=new Point(x,y,z);
+	}
+	
 	public Point getPoint()
 	{
 		return point;
@@ -55,7 +61,7 @@ public class POI extends Feature{
 		pw.println(tagsAsXML());
 		pw.println("</poi>");
 	}
-
+	
 	public void reproject(Projection newProj)
 	{
 		point = (proj==null) ? point: proj.unproject(point);

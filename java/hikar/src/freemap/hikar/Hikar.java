@@ -22,7 +22,8 @@ public class Hikar extends Activity
         hud=new HUD(this);
         setContentView(R.layout.activity_main);
         addContentView(hud, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
-        viewFragment = (ViewFragment)getFragmentManager().findFragmentById(R.id.view_fragment);        
+        viewFragment = (ViewFragment)getFragmentManager().findFragmentById(R.id.view_fragment);  
+        try { JSONWayFactory.test(); } catch(org.json.JSONException e) { android.util.Log.e("hikar",e.toString()); }
     }
 
    

@@ -58,6 +58,10 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
         {
             msg= e.getMessage();
         }
+        catch(org.json.JSONException e)
+        {
+            android.util.Log.e("hikar", "JSON parsing error: " + e.getStackTrace());
+        }
         catch(Exception e)
         {
             android.util.Log.e("hikar", "Internal error: " + e.getStackTrace());

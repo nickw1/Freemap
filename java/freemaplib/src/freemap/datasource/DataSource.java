@@ -3,24 +3,18 @@ package freemap.datasource;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.InputStream;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
+import java.io.FileOutputStream;
 import freemap.data.Point;
 
 
-
-public abstract class DataSource {
+public abstract class DataSource  {
 	protected FileFormatter formatter;
 	String basePath;
 	
 
 	public DataSource(String basePath, FileFormatter formatter)
 	{
-		System.out.println("DataSource constructor: basePath="+basePath);
+		System.out.println("StreamDataSource constructor: basePath="+basePath);
 		this.basePath=basePath;
 		this.formatter=formatter;
 	}
@@ -32,7 +26,25 @@ public abstract class DataSource {
 	
 	public Object getData(Point bottomLeft, DataInterpreter interpreter) throws Exception
 	{
+	    return getData(bottomLeft, interpreter, null);
+	}
+	
+	public Object getData(Point bottomLeft, DataInterpreter interpreter, String cacheFile) throws Exception
+	{
 		InputStream in = getInputStream(bottomLeft);
+		
+		if(cacheFile!=null)
+		{
+		    FileOutputStream out = new FileOutputStream(cacheFile);  
+		    byte[] bytes = new byte[1024];
+		    int nRead;
+		    while((nRead = in.read(bytes)) > -1)
+		        out.write(bytes, 0, nRead);
+		    out.flush();
+		    out.close();
+		    in.close();  
+		    in = new FileInputStream(cacheFile);
+		}
 		
 		Object data= interpreter.getData(in);
 		in.close();
@@ -48,7 +60,8 @@ public abstract class DataSource {
 	{
 	
 		String filename = basePath + "/" + formatter.format(bottomLeft);
-		return getInputStream(filename);
+		InputStream is = getInputStream(filename);
+		return is;
 	}
 	
 	public FileFormatter getFormatter()

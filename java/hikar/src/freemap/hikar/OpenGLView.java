@@ -275,6 +275,7 @@ public class OpenGLView extends GLSurfaceView  {
                     if(renderedWays==null) // do not clear out when we enter a new tile!
                         renderedWays = new HashMap<Long,RenderedWay> ();
                     d[0].osm.operateOnWays(DataRenderer.this); 
+                    Log.d("hikar", "Setting render data done:" + System.currentTimeMillis());
                     return true;
                 }
             };

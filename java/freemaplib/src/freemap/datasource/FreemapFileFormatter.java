@@ -9,14 +9,19 @@ import freemap.data.GoogleProjection;
 
 public class FreemapFileFormatter extends FileFormatter{
 
-	String projID, selectedWays, selectedPOIs;
+	String projID, selectedWays, selectedPOIs, format;
 	boolean doAnnotations;
 	String script;
 	
-	
 	public FreemapFileFormatter(String projID)
 	{
+	    this(projID, "xml");
+	}
+	
+	public FreemapFileFormatter(String projID, String format)
+	{
 		this.projID=projID;
+		this.format=format;
 		script="rsvr.php";
 	}
 	
@@ -59,7 +64,7 @@ public class FreemapFileFormatter extends FileFormatter{
 			(selectedWays==null?"":"&way="+selectedWays)+
 			(selectedPOIs==null?"":"&poi="+selectedPOIs)+
 			(doAnnotations==true?"&annotation=1":"")+
-			 "&inProj="+projID.replace("epsg:","")+"&outProj=epsg:4326";
+			 "&format="+format+"&inProj="+projID.replace("epsg:","")+"&outProj=epsg:4326";
 		
 	}
 }

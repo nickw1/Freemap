@@ -151,6 +151,8 @@ public class TileDeliverer {
 	}
 	
 	
+	// !!! this is still using the old caching system
+	
 	protected TiledData doUpdate(Point origin, boolean cacheData, boolean forceReload) throws Exception
 	{
 		TiledData curData=null;
@@ -169,7 +171,10 @@ public class TileDeliverer {
 			{
 				//System.out.println("Loading from web");
 				curData = dataWrap(origin,dataSource.getData(origin,interpreter));
-				// It is assumed the data is in standard 4326 and we 
+				
+				
+				
+				// It is assumed the data is in standard 4326 and we
 				// reproject on the client side. This is because it's a bit of
 				// a pain to reproject into arbitrary projections server side
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
@@ -228,7 +233,11 @@ public class TileDeliverer {
 		//System.out.println("Loading from file");
 		FileDataSource ds = new FileDataSource(cachefile);
 		curData = dataWrap(origin,ds.getData(interpreter));
+		
+		// TODO if we're using an instant on-download cache this will need to be reprojected
+		
 		//System.out.println("Curdata=" + curData);
+	
 		return curData;
 	}
 	
@@ -347,6 +356,7 @@ public class TileDeliverer {
         return getData(origin);
     }
     // END NEW
+    
     
    
 }
