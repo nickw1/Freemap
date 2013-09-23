@@ -15,6 +15,7 @@ import freemap.proj.LFPFileFormatter;
 import freemap.proj.Proj4ProjectionFactory;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.Tile;
+import freemap.andromaps.GeoJSONDataInterpreter;
 import java.io.File;
 import java.util.HashMap;
 import android.util.Log;
@@ -53,14 +54,15 @@ public class OsmDemIntegrator {
 						
 		
 		osm = new CachedTileDeliverer("osm",osmDataSource, 
-					new XMLDataInterpreter(new FreemapDataHandler(factory)),
+					//new XMLDataInterpreter(new FreemapDataHandler(factory)),
+		            new GeoJSONDataInterpreter(),
 					5000,5000,
 					tilingProj,
 					cacheDir.getAbsolutePath());
 		
 		hgt.setCache(true);
-		osm.setCache(false);
-		osm.setReprojectCachedData(false);
+		osm.setCache(true);
+		osm.setReprojectCachedData(true);
 		
 	}
 	
@@ -86,18 +88,18 @@ public class OsmDemIntegrator {
 		{
 	        
 	        //Log.d("hikar", "DEM projection: " +((DEM)(hgtupdated.get(e.getKey()).data)).getProjection());
-			if(hgtupdated.get(e.getKey()) !=null && osmupdated.get(e.getKey()) != null && 
-			    !e.getValue().isCache)
+			if(hgtupdated.get(e.getKey()) !=null && osmupdated.get(e.getKey()) != null)
+			    //&& !e.getValue().isCache)
 			
 			{
-			   android.util.Log.d("hikar","Applying DEM as not cached: key=" + e.getKey());
+			   android.util.Log.d("hikar","Applying DEM as not applied yet: key=" + e.getKey());
 			   
 			   FreemapDataset d = (FreemapDataset)e.getValue().data;
 			   DEM dem = (DEM)(hgtupdated.get(e.getKey()).data);
 	           Log.d("hikar","Applying DEM: time=" + System.currentTimeMillis());
 			   d.applyDEM(dem);
-			   Log.d("hikar","Caching: time=" + System.currentTimeMillis());
-			   osm.cacheByKey(d, e.getKey());
+			   Log.d("hikar","Not Caching: time=" + System.currentTimeMillis());
+			   //osm.cacheByKey(d, e.getKey());
 			   //Log.d("hikar","Done");
 			   Log.d("hikar","Finished: time=" + System.currentTimeMillis());
 			}

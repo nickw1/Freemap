@@ -19,11 +19,10 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
     
     public Object getData (InputStream in) throws Exception
     {
-    FreemapDataset dataset = new FreemapDataset();
-        try
-        {
+        FreemapDataset dataset = new FreemapDataset();
+        
         String json = RawDataSource.doLoad(in);
-        System.out.println("Loaded JSON=" + json);
+        //System.out.println("Loaded JSON=" + json);
         Log.d("hikar", "Loaded JSON, time=" + System.currentTimeMillis());
         JSONObject jsonObj = new JSONObject(json);
         JSONArray coordinates;
@@ -41,34 +40,19 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
             String type = geometry.getString("type");
             if(type.equals("Point"))
             {   
-                curFeature = new POI(coordinates.getDouble(0), coordinates.getDouble(1),
-                            coordinates.length()==3 ? coordinates.getDouble(2): -1);
+                curFeature = makePOI(coordinates); 
             }
-            else if (type.equals("LineString"))
+            else if (type.equals("LineString") || type.equals("MultiLineString") ||
+                        type.equals("Polygon"))
             {
-                curFeature = new Way();
-                buildWay((Way)curFeature, coordinates);
-                
+                curFeature = makeWay(coordinates, type);    
             }
-            else if (type.equals("MultiLineString") || type.equals("Polygon"))
-            {
-                curFeature = new Way();
-                for(int j=0; j<coordinates.length(); j++)
-                {
-                    buildWay((Way)curFeature, coordinates.getJSONArray(j));
-                }
-            }
+            
             
             if(curFeature!=null)
             {
-                properties = feature.getJSONObject("properties");
-                Iterator keys = properties.keys();
-                String key;
-                while(keys.hasNext())
-                {
-                    key=(String)keys.next();
-                    curFeature.addTag(key, properties.getString(key));
-                }
+                properties = feature.getJSONObject("properties");      
+                addProperties (curFeature, properties);
                 
                 if(type.equals("Point"))
                     dataset.add((POI)curFeature);
@@ -76,23 +60,80 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
                     dataset.add((Way)curFeature);
             }
         }
-        }
-        catch (JSONException e)
-        {
-            Log.e("hikar",e.getMessage());
-            e.printStackTrace();
-        }
+        
         return dataset;
     }
     
-    private void buildWay(Way way, JSONArray coordinates) throws JSONException
+    
+    
+    public static Feature jsonToFeature(String json) throws JSONException
     {
-        for(int j=0; j<coordinates.length(); j++)
+        JSONObject jsonObj = new JSONObject(json);
+        String geomType = jsonObj.getString("type");
+        Feature f = null;
+        
+        if(geomType.equals("LineString") || geomType.equals("MultiLineString") ||
+                geomType.equals("Polygon"))
         {
-            way.addPoint(coordinates.getJSONArray(j).getDouble(0),
-                                   coordinates.getJSONArray(j).getDouble(1),
-                                   coordinates.getJSONArray(j).length()==3 ?
-                                           coordinates.getJSONArray(j).getDouble(2) : -1.0);
+           JSONArray arr = jsonObj.getJSONArray("coordinates");
+           f = makeWay(arr, geomType);
+        }  
+        else if (geomType.equals("Point"))
+        {
+            JSONArray arr = jsonObj.getJSONArray("coordinates");
+            if(arr.length() >= 2)
+            {
+                f = makePOI(arr);
+            }
+        }
+        return f;
+    } 
+    
+    private static void wayFromLinestring(Way way, JSONArray arr) throws JSONException
+    {
+        for(int i=0; i<arr.length(); i++)
+        {
+            JSONArray curCoord = arr.getJSONArray(i);
+            double x = curCoord.getDouble(0), y = curCoord.getDouble(1);
+            way.addPoint(x, y);
+        }
+    }
+    
+    private static POI makePOI(JSONArray coordinates) throws JSONException
+    {
+        return new POI(coordinates.getDouble(0), coordinates.getDouble(1),
+            coordinates.length()==3 ? coordinates.getDouble(2): -1);
+    }
+    
+    private static Way makeWay(JSONArray coords, String geomType) throws JSONException
+    {
+        Way f = new Way();
+        
+        if(geomType.equals("LineString"))
+            wayFromLinestring((Way)f, coords);
+     
+ 
+        else if (geomType.equals("MultiLineString") || geomType.equals("Polygon"))
+        {
+            
+            
+            for(int i=0; i<coords.length(); i++)
+            {
+                wayFromLinestring((Way)f, coords.getJSONArray(i));
+            }
+        }
+        return f;
+    }
+    
+    private static void addProperties (Feature f, JSONObject properties) throws JSONException
+    {
+        
+        Iterator keys = properties.keys();
+        String key;
+        while(keys.hasNext())
+        {
+            key=(String)keys.next();
+            f.addTag(key, properties.getString(key));
         }
     }
 }

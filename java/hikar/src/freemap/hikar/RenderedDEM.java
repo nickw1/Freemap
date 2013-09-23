@@ -88,7 +88,7 @@ public class RenderedDEM {
                 istr+="\n";
         } 
         
-        Log.d("hikar","indices (first 3 rows and last row): " + istr);
+        //Log.d("hikar","indices (first 3 rows and last row): " + istr);
         Log.d("hikar","Expected size of indices=" + nIndices + " actual=" + i);
         
         indexBuffer.put(indices);

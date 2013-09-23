@@ -88,6 +88,7 @@ public class ViewFragment extends Fragment
     
     public void receiveLocation(Location loc) {
         Point p = new Point(loc.getLongitude(), loc.getLatitude());
+        //Point p = new Point(-0.72, 51.05);
         locOSGB = proj.project(p);
         glView.getRenderer().setCameraLocation((float)locOSGB.x, (float)locOSGB.y);
         double height = integrator.getHeight(locOSGB);
