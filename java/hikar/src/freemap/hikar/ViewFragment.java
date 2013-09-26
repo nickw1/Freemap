@@ -15,6 +15,8 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.os.AsyncTask;
 import android.util.Log;
+import java.util.HashMap;
+import freemap.datasource.Tile;
 
 
 public class ViewFragment extends Fragment 
@@ -49,10 +51,10 @@ public class ViewFragment extends Fragment
         sensorInput.attach(activity);
         locationProcessor = new LocationProcessor(activity,this,5000,10);
         glView.setOnTouchListener(new PinchListener(this));
-        FreemapDataset data = integrator.getCurrentOSMData();
-        DEM dem = integrator.getCurrentDEM();
+        HashMap<String, Tile> data = integrator.getCurrentOSMTiles();
+        HashMap<String, Tile> dem = integrator.getCurrentDEMTiles();
         setHFOV();
-        if(data!=null)
+        if(data!=null && dem!=null)
             glView.getRenderer().setRenderData(new DownloadDataTask.ReceivedData(data, dem));
     }
     

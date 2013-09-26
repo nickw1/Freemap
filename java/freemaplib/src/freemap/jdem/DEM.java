@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import freemap.datasource.TiledData;
 
-public class DEM implements freemap.datasource.TiledData {
+public class DEM implements freemap.datasource.TiledData { 
 	private Point bottomLeft, topRight;
 	int ptWidth, ptHeight;
 	double spacing;

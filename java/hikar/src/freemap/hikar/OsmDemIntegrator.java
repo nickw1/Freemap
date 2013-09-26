@@ -27,6 +27,7 @@ public class OsmDemIntegrator {
 	CachedTileDeliverer osm;
 	HGTTileDeliverer hgt;
 	Projection tilingProj;
+	HashMap<String,Tile> hgtupdated, osmupdated;
 	
 	public OsmDemIntegrator(String projID)
 	{
@@ -43,7 +44,6 @@ public class OsmDemIntegrator {
 		Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
 		tilingProj = factory.generate(projID);
 		File cacheDir = new File(android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
-		//File cacheDir = new File("/storage/extSdCard/hikar/cache/" +
 		        tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
 		if(!cacheDir.exists())
 		    cacheDir.mkdirs();
@@ -74,34 +74,30 @@ public class OsmDemIntegrator {
 	// ASSUMPTION: the tiling systems for hgt and osm data coincide - which they do here (see constructor)
 	public boolean update(Point point) throws Exception
 	{
-	 Log.d("hikar","Getting DEM data... time=" + System.currentTimeMillis());
-	    HashMap<String,Tile>hgtupdated = hgt.doUpdateSurroundingTiles(point);
-	   //Log.d("hikar"," DEM returned ");
+	    Log.d("hikar","Getting DEM data... time=" + System.currentTimeMillis());
+	    hgtupdated = hgt.doUpdateSurroundingTiles(point);
+	   
 		
 	       
 	   Log.d("hikar","Getting OSM data... time=" + System.currentTimeMillis());
-		
-		HashMap<String,Tile>osmupdated = osm.doUpdateSurroundingTiles(point);
-	     Log.d("hikar","Finished getting OSM data... time=" + System.currentTimeMillis());
+	   osmupdated = osm.doUpdateSurroundingTiles(point);
+	   Log.d("hikar","Finished getting OSM data. Starting DEM application. time=" + System.currentTimeMillis());
 			    
 	    for(HashMap.Entry<String,Tile> e: osmupdated.entrySet())
 		{
-	        
-	        //Log.d("hikar", "DEM projection: " +((DEM)(hgtupdated.get(e.getKey()).data)).getProjection());
 			if(hgtupdated.get(e.getKey()) !=null && osmupdated.get(e.getKey()) != null)
 			    //&& !e.getValue().isCache)
 			
 			{
-			   android.util.Log.d("hikar","Applying DEM as not applied yet: key=" + e.getKey());
+			   
 			   
 			   FreemapDataset d = (FreemapDataset)e.getValue().data;
 			   DEM dem = (DEM)(hgtupdated.get(e.getKey()).data);
-	           Log.d("hikar","Applying DEM: time=" + System.currentTimeMillis());
+	          
 			   d.applyDEM(dem);
-			   Log.d("hikar","Not Caching: time=" + System.currentTimeMillis());
+			  
 			   //osm.cacheByKey(d, e.getKey());
-			   //Log.d("hikar","Done");
-			   Log.d("hikar","Finished: time=" + System.currentTimeMillis());
+
 			}
 			else
 			{
@@ -109,7 +105,7 @@ public class OsmDemIntegrator {
 			}
 	    }
 			
-	   Log.d("hikar","update() finished: time=" + System.currentTimeMillis());
+	   Log.d("hikar","DEM application finished: time=" + System.currentTimeMillis());
 		
 		return true;
 	}
@@ -120,7 +116,6 @@ public class OsmDemIntegrator {
 		if(dem!=null)
 		{
 			double h=dem.getHeight(p.x,p.y,tilingProj);
-			//Log.d("OpenTrail","Height at: " + p.x+" "+p.y+"="+h+" proj=" + tilingProj);
 			return h;
 		}
 		return -1;
@@ -136,13 +131,25 @@ public class OsmDemIntegrator {
 		return (DEM)hgt.getData();
 	}
 	
+	
 	public FreemapDataset getCurrentOSMData()
 	{
-		return (FreemapDataset)osm.getData();
+		return (FreemapDataset)osm.getData();    
 	}
+	
 	
 	public HGTTileDeliverer getDEM()
     {
         return hgt;
     }
+	
+	public HashMap<String, Tile> getCurrentOSMTiles()
+	{
+	    return osmupdated;
+	}
+	
+	public HashMap<String, Tile> getCurrentDEMTiles()
+	{
+	    return hgtupdated;
+	}
 }

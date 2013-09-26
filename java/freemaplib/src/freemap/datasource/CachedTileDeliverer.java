@@ -101,32 +101,32 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 		{
 		   
 			String cachefile=cachedir+"/"+name+"."+key;
-			//System.out.println("cachefile="+cachefile);
+			
 			if(cachedir!=null && isCache(cachefile) && !forceReload)
 			{
 				curData = loadFromCache(cachefile,origin);
 			}
 			else
 			{
-				//System.out.println("Loading from web");
+				
 				curData = getDataFromSource(origin, cacheData ? cachefile: null);
 				
 				// It is assumed the data is in standard 4326 and we 
 				// reproject on the client side. This is because it's a bit of
 				// a pain to reproject into arbitrary projections server side
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
-				System.out.println("Reprojecting to " + proj);
+				
 				curData.reproject(proj);
 			}
 			
-			//System.out.println("Adding to data with the key: " + key);
+			
 			data.put(key,curData);
 		}
 		else
 		{
 			curData=data.get(key);
 		}
-		//System.out.println("Returning curData");
+		
 		return new Tile(origin,curData,isCache(cachedir+"/"+name+"."+key));
 		
 	}
@@ -139,10 +139,10 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	
     public void cache(TiledData data,String cachefile) throws Exception
     {
-        System.out.println("Caching data");
+      
         if(cachedir!=null && data!=null)
         {   
-            //System.out.println("Actually caching data");
+          
             data.save(cachefile);   
         }
     }
@@ -155,10 +155,10 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	protected TiledData loadFromCache(String cachefile,Point origin) throws Exception
 	{
 		TiledData curData = null;
-		System.out.println("Loading from cache " + cachefile);
+		
 		FileDataSource ds = new FileDataSource(cachefile);
 		curData = dataWrap(origin,ds.getData(interpreter));
-		//System.out.println("Curdata=" + curData);
+		
 		
 		// 220913 We now need to reproject cached data as we are dumping the data straight to cache
 		// on loading from the web, unless the data was cached later (e.g. applying a DEM)
@@ -195,7 +195,7 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 		Point curPoint = new Point(blProjected.x,blProjected.y);
 		while((int)curPoint.x <= (int)trProjected.x)
 		{
-			System.out.println("Downloading tile: " + curPoint);
+			
 			curPoint.y = blProjected.y;
 			while((int)curPoint.y <= (int)trProjected.y)
 			{

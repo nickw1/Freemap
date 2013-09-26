@@ -84,12 +84,12 @@ public abstract class BaseTileDeliverer {
         Point newPos = proj.project(lonLat);
         
         Point curOrigin = null;
-        int i=0;
+       
         if(curPos==null || isNewObject(curPos,newPos))
         {   
             curPos = newPos;
             Point origin = getOrigin(newPos);
-            //System.out.println("update calling doUpdate");
+            
             for(int row=-1; row<=1; row++)
             {
                 for(int col=-1; col<=1; col++)
@@ -103,11 +103,11 @@ public abstract class BaseTileDeliverer {
                     updatedData.put(key, t);
                 } 
             }
-            //System.out.println("done");
+            
         }
         else
         {
-            //System.out.println("No change in tile");
+            
             curPos = newPos;    
         }
         return updatedData;
@@ -132,23 +132,14 @@ public abstract class BaseTileDeliverer {
 		   
 			
 				
-			curData = getDataFromSource(origin); // dataWrap(origin,dataSource.getData(origin,interpreter));
-				// file/web sources: It is assumed the data is in standard 4326 and we 
-				// reproject on the client side. This is because it's a bit of
-				// a pain to reproject into arbitrary projections server side
-				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
-				//System.out.println("Reprojecting to " + proj);
-				
-			
-			
-			//System.out.println("Adding to data with the key: " + key);
+			curData = getDataFromSource(origin); 
 			data.put(key,curData);
 		}
 		else
 		{
 			curData=data.get(key);
 		}
-		//System.out.println("Returning curData");
+		
 		return new Tile(origin, curData, false);
 	}
 
@@ -187,18 +178,6 @@ public abstract class BaseTileDeliverer {
 	protected TiledData dataWrap(Point origin,Object rawData)
 	{
 		return (TiledData)rawData;
-	}
-	
-	public TiledData getAllData()
-	{
-		FreemapDataset allData = new FreemapDataset();
-		allData.setProjection(proj);
-		Set<Map.Entry<String, TiledData>> entries = data.entrySet();
-		for(Map.Entry<String, TiledData> e: entries)
-		{
-			allData.merge(e.getValue());
-		}
-		return allData;
 	}
 	
 	// NEW

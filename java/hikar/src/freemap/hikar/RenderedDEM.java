@@ -17,6 +17,7 @@ public class RenderedDEM {
     FloatBuffer vertexBuffer;
     ShortBuffer indexBuffer;
     float[] surfaceColour = { 0.0f, 1.0f, 0.0f, 0.1f };
+    Point centrePoint;
     
     public RenderedDEM (DEM dem)
     {
@@ -33,7 +34,13 @@ public class RenderedDEM {
         ibuf.order(ByteOrder.nativeOrder());
         indexBuffer = ibuf.asShortBuffer();
         
-       
+        Point bottomLeft = dem.getBottomLeft(), topRight = dem.getTopRight();
+        
+        centrePoint = new Point();
+        centrePoint.x = (bottomLeft.x + topRight.x) / 2;
+        centrePoint.y = (bottomLeft.y + topRight.y) / 2;
+        
+        
        
         for(int row=0; row<nrows; row++)
         {
@@ -100,5 +107,10 @@ public class RenderedDEM {
     {
         gpu.setUniform4fv("uColour", surfaceColour);
         gpu.drawBufferedData(vertexBuffer, indexBuffer, 12, "aVertex", GLES20.GL_TRIANGLE_STRIP);
+    }
+    
+    public double centreDistanceTo(Point p)
+    {
+        return centrePoint.distanceTo(p);
     }
 }

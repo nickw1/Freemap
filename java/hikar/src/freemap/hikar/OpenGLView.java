@@ -20,10 +20,13 @@ import freemap.data.Way;
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import freemap.jdem.DEM;
+import freemap.datasource.Tile;
 
 public class OpenGLView extends GLSurfaceView  {
    
    DataRenderer renderer;
+   
+   boolean loadingDEMs;
     
    public interface RenderedWayVisitor
    {
@@ -36,6 +39,7 @@ public class OpenGLView extends GLSurfaceView  {
         float[] modelviewMtx, perspectiveMtx;
         HashMap<Long,RenderedWay> renderedWays;
         HashMap<String,RenderedDEM> renderedDEMs;
+        HashMap<String,FreemapDataset> receivedDatasets;
         boolean calibrate;
         GLRect calibrateRect, cameraRect;
         float xDisp, yDisp, zDisp, height;
@@ -50,6 +54,7 @@ public class OpenGLView extends GLSurfaceView  {
             hFov = 40.0f;
             renderedWays = new HashMap<Long,RenderedWay>();
             renderedDEMs = new HashMap<String,RenderedDEM>();
+            receivedDatasets = new HashMap<String,FreemapDataset>();
             
             zDisp = 1.4f; 
             
@@ -170,21 +175,31 @@ public class OpenGLView extends GLSurfaceView  {
             }
             else
             {
-               
                 
-                synchronized(renderedDEMs)
+                //Matrix.translateM(modelviewMtx, 0, 0, 0, -zDisp); // needed????
+                Point p = new Point((double)xDisp,(double)yDisp,(double)height);
+                
+                // Prevent the ConcurrentModificationException, This is supposed to happen because you're
+                // adding to the renderedDEMs while iterating through them, and you can't add to a 
+                // collection at the same time as iterating through it 
+                if(true)//!loadingDEMs)
                 {
-                    for (HashMap.Entry<String,RenderedDEM> d: renderedDEMs.entrySet())
-                        d.getValue().render(gpuInterface);
+                    synchronized(renderedDEMs)
+                    {
+                        Log.d("hikar","***Rendering DEMs, renderedDEMs should be synchronised");
+                        for (HashMap.Entry<String,RenderedDEM> d: renderedDEMs.entrySet())
+                        {
+                            if (d.getValue().centreDistanceTo(p) < 5000.0)
+                                d.getValue().render(gpuInterface);
+                        }
+                        Log.d("hikar","***Rendering DEMs, end.");
+                    }
                 }
-                
                 
                 if(renderedWays.size()>0)
                 { 
                    
-                    
-                    //Matrix.translateM(modelviewMtx, 0, 0, 0, -zDisp); // needed????
-                    Point p = new Point((double)xDisp,(double)yDisp,(double)height);
+             
                     
                     // NOTE! The result matrix must not refer to the same array in memory as either
                     // input matrix! Otherwise you get strange results.
@@ -261,22 +276,46 @@ public class OpenGLView extends GLSurfaceView  {
                 protected Boolean doInBackground(DownloadDataTask.ReceivedData... d)
                 {
                     Log.d("hikar","Setting render data");
+                    loadingDEMs = true;
                     if(d[0].dem != null)
                     {
-                        Point p = d[0].dem.getBottomLeft();
-                        if(renderedDEMs==null) // do not clear out when we enter a new tile!
-                            renderedDEMs = new HashMap<String,RenderedDEM> ();
-                        String key = (int)p.x+":"+(int)p.y;
-                        Log.d("hikar", "Found a DEM to be rendered, key=" + key);
-                        if(renderedDEMs.get(key)==null)
-                            renderedDEMs.put(key, new RenderedDEM(d[0].dem));
+                        for(HashMap.Entry<String, Tile> entry: d[0].dem.entrySet())
+                        {
+                            DEM curDEM = (DEM)entry.getValue().data;
+                            
+                            if(renderedDEMs==null) // do not clear out when we enter a new tile!
+                                renderedDEMs = new HashMap<String,RenderedDEM> ();
+                            String key = entry.getKey();
+                            Log.d("hikar", "Found a DEM to be rendered, adding it, key=" + key);
+                            if(renderedDEMs.get(key)==null)
+                                renderedDEMs.put(key, new RenderedDEM(curDEM));
+                        }
                     }
                     
                     if(renderedWays==null) // do not clear out when we enter a new tile!
                         renderedWays = new HashMap<Long,RenderedWay> ();
-                    d[0].osm.operateOnWays(DataRenderer.this); 
+                    if(d[0].osm != null)
+                    {
+                        
+                        for(HashMap.Entry<String, Tile> entry: d[0].osm.entrySet())
+                        {
+                            // We don't want to have to operate on a tile we've already dealt with
+                            if(receivedDatasets.get(entry.getKey())==null)
+                            {
+                                FreemapDataset curOSM = (FreemapDataset)entry.getValue().data;
+                                receivedDatasets.put(entry.getKey(), curOSM);
+                                curOSM.operateOnWays(DataRenderer.this);
+                            }
+                        }
+                
+                    }
                     Log.d("hikar", "Setting render data done:" + System.currentTimeMillis());
                     return true;
+                }
+                
+                public void onPostExecute(Boolean result)
+                {
+                    loadingDEMs = false;
                 }
             };
             setRenderDataTask.execute(data);  

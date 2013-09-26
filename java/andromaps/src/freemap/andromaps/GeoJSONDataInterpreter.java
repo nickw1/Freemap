@@ -22,8 +22,7 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
         FreemapDataset dataset = new FreemapDataset();
         
         String json = RawDataSource.doLoad(in);
-        //System.out.println("Loaded JSON=" + json);
-        Log.d("hikar", "Loaded JSON, time=" + System.currentTimeMillis());
+        
         JSONObject jsonObj = new JSONObject(json);
         JSONArray coordinates;
         JSONObject properties, feature, geometry;

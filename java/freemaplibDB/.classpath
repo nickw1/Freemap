@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="/home/nick/lib/java/freemaplib.jar"/>
 	<classpathentry kind="lib" path="/home/nick/bin/java/classes"/>
+	<classpathentry kind="lib" path="/home/nick/lib/java/freemaplib.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

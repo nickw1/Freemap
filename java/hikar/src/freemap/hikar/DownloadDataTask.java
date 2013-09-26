@@ -3,8 +3,8 @@ package freemap.hikar;
 import freemap.andromaps.DataCallbackTask;
 import android.content.Context;
 import freemap.data.Point;
-import freemap.datasource.FreemapDataset;
-import freemap.jdem.DEM;
+import java.util.HashMap;
+import freemap.datasource.Tile;
 
 public class DownloadDataTask extends DataCallbackTask<Point,Void> {
 
@@ -12,10 +12,9 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
     
     public static class ReceivedData
     {
-        public FreemapDataset osm;
-        public DEM dem;
+        public HashMap<String, Tile> osm, dem;
         
-        public ReceivedData(FreemapDataset o, DEM d)
+        public ReceivedData(HashMap<String,Tile> o, HashMap<String, Tile> d)
         {
             osm = o;
             dem = d;
@@ -45,7 +44,8 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
            status = integrator.update(p[0]);
             if(status)
             {
-                ReceivedData rd = new ReceivedData(integrator.getCurrentOSMData(),integrator.getCurrentDEM());
+                ReceivedData rd = new ReceivedData(integrator.getCurrentOSMTiles(),
+                            integrator.getCurrentDEMTiles());
                 setData(rd);
             }
         }

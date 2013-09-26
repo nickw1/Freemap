@@ -23,6 +23,7 @@ public class SpatialiteTileDeliverer extends freemap.datasource.BaseTileDelivere
         this.dbPath = dbPath;
      
         db = new jsqlite.Database();
+        
        
     }
     
@@ -34,13 +35,25 @@ public class SpatialiteTileDeliverer extends freemap.datasource.BaseTileDelivere
        String projID = proj.getID().replace("epsg:","");
  
         int ox = (int)origin.x, oy = (int)origin.y;
+        Point blLL = proj.unproject(origin);
+        Point trLL = proj.unproject(new Point(ox+tileWidth, oy+tileHeight));
+       
         String box = ox + " " + oy + "," + (ox+tileWidth) + " " + oy + 
                     "," + (ox+tileWidth) + " " + (oy+tileHeight) +
                     "," + ox + " " + (oy+tileHeight) +
                     "," + ox + " " + oy;
+        
         String sql = "select asgeojson(transform(geometry,"+projID+")),id,sub_type " +
                     "from ln_highway where intersects( GeomFromText('POLYGON(("+box+"))'," + projID
                     + "),transform(geometry,"+projID+"))";
+        /*
+        String sql = "select asgeojson(transform(geometry," + projID+")),id,sub_type " +
+                    "from ln_highway where id in " +
+                    "(select id from idx_ln_highway_geometry where xmin > " +blLL.x +
+                    " and xmax < " + trLL.x +
+                    " and ymin > " + blLL.y +
+                    " and ymax < " + trLL.y + ")";
+        */
         System.out.println("SQL is: " + sql);
        
         Stmt stmt = db.prepare(sql);
