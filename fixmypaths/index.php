@@ -73,8 +73,9 @@ not forwarded to the council.</em></p>
 not officially affiliated with Hampshire County Council.</p>
 <p>Purple=footpath; green=bridleway; red=byway; blue=restricted byway.</p>
 </div>
-<div id='appmsg'><strong>WANTED!</strong> Testers for the
-<a href='app.html'>FixMyPaths Android App</a>!</div>
+<div id='appmsg'>Download the FixMyPaths
+<strong>Android App</strong>
+<a href='app.html'>here</a>!</div>
 <?php
 write_login();
 ?>

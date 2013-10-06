@@ -1,11 +1,7 @@
 package freemap.hikar;
 
 import freemap.data.Point;
-import freemap.datasource.FreemapDataset;
-import freemap.proj.OSGBProjection;
-import freemap.data.Projection;
-import freemap.jdem.HGTTileDeliverer;
-import freemap.jdem.DEM;
+import freemap.proj.Proj4ProjectionFactory;
 import android.app.Fragment;
 import android.app.Activity;
 import android.location.Location;
@@ -13,10 +9,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.os.AsyncTask;
 import android.util.Log;
 import java.util.HashMap;
 import freemap.datasource.Tile;
+import freemap.data.Projection;
+
 
 
 public class ViewFragment extends Fragment 
@@ -29,33 +26,43 @@ public class ViewFragment extends Fragment
     DownloadDataTask downloadDataTask;
     LocationProcessor locationProcessor;
     SensorInput sensorInput;
-    Projection proj;
-    Point locOSGB;
+    String tilingProjID;
+    Point locDisplayProj;
     long lineOfSightTestFinish;
     boolean doingLineOfSightTest;
+    int demType;
+    String[] tilingProjIDs = { "epsg:27700", "epsg:4326" };
+    TileDisplayProjectionTransformation trans;
     
     
     public ViewFragment()
     {
-        proj = new OSGBProjection();
+        tilingProjID = "";
         setRetainInstance(true);
         sensorInput = new SensorInput(this);
-        integrator = new OsmDemIntegrator(proj.getID()); 
-    
+        demType = OsmDemIntegrator.HGT_OSGB_LFP;
+        trans = new TileDisplayProjectionTransformation ( null, null );
     }
     
     public void onAttach(Activity activity)
     {
         super.onAttach(activity);
-        glView = new OpenGLView(activity);  
+        
+        // We don't do any reprojection on RenderedWays if the display projection and tiling projection
+        // are the same
+        glView = new OpenGLView(activity);
         sensorInput.attach(activity);
         locationProcessor = new LocationProcessor(activity,this,5000,10);
         glView.setOnTouchListener(new PinchListener(this));
-        HashMap<String, Tile> data = integrator.getCurrentOSMTiles();
-        HashMap<String, Tile> dem = integrator.getCurrentDEMTiles();
-        setHFOV();
-        if(data!=null && dem!=null)
-            glView.getRenderer().setRenderData(new DownloadDataTask.ReceivedData(data, dem));
+        
+        if(integrator!=null)
+        {
+            HashMap<String, Tile> data = integrator.getCurrentOSMTiles();
+            HashMap<String, Tile> dem = integrator.getCurrentDEMTiles();
+            setHFOV();
+            if(data!=null && dem!=null)
+                glView.getRenderer().setRenderData(new DownloadDataTask.ReceivedData(data, dem));
+        }
     }
     
     public void onCreate(Bundle savedInstanceState)
@@ -88,52 +95,38 @@ public class ViewFragment extends Fragment
         sensorInput.detach();
     }
     
+    public void restartIntegrator()
+    {
+        Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
+        trans.setTilingProj(fac.generate(tilingProjID));   
+        integrator = new OsmDemIntegrator(trans.getTilingProj(), demType);        
+        glView.getRenderer().setProjectionTransformation (trans);                             
+    }
+    
     public void receiveLocation(Location loc) {
-        Point p = new Point(loc.getLongitude(), loc.getLatitude());
-        //Point p = new Point(-0.72, 51.05);
-        locOSGB = proj.project(p);
-        glView.getRenderer().setCameraLocation((float)locOSGB.x, (float)locOSGB.y);
-        double height = integrator.getHeight(locOSGB);
-        glView.getRenderer().setHeight((float)height);
-        ((Hikar)getActivity()).getHUD().setHeight((float)height);
-        ((Hikar)getActivity()).getHUD().invalidate();
-        
-        if(integrator.needNewData(p))
+    
+        Log.d("hikar","received location");
+        if(integrator!=null)
         {
-            downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
-            downloadDataTask.setDialogDetails("Loading...", "Loading data...");
-            downloadDataTask.execute(p);
-        }
+            Log.d("hikar","OsmDemIntegrator exists so doing something with it");
+            Point p = new Point(loc.getLongitude(), loc.getLatitude());
+            locDisplayProj = trans.getDisplayProj().project(p);
+            
+            Log.d("hikar","location in display projection=" + locDisplayProj);
+            glView.getRenderer().setCameraLocation((float)locDisplayProj.x, (float)locDisplayProj.y);
         
-        else if(integrator!=null && integrator.getDEM()!=null && !doingLineOfSightTest 
-                && System.currentTimeMillis() - lineOfSightTestFinish > 10000)
-        {
-            /*
-            AsyncTask<OpenGLView.RenderedWayVisitor,Void,Boolean> t = new AsyncTask<OpenGLView.RenderedWayVisitor,Void,Boolean>()
+            double height = integrator.getHeight(new Point(loc.getLongitude(), loc.getLatitude()));
+            glView.getRenderer().setHeight((float)height);
+            ((Hikar)getActivity()).getHUD().setHeight((float)height);
+            ((Hikar)getActivity()).getHUD().invalidate();
+        
+            if(integrator.needNewData(p))
             {
-                protected void onPreExecute()
-                {
-                    doingLineOfSightTest = true;
-                }
-                
-                protected Boolean doInBackground(OpenGLView.RenderedWayVisitor... v)
-                {        
-                    glView.getRenderer().operateOnRenderedWays(v[0]);
-                    return true;
-                }
-                
-                protected void onPostExecute(Boolean result)
-                {
-                    lineOfSightTestFinish = System.currentTimeMillis();
-                    doingLineOfSightTest = false;
-                }
-            };
-            t.execute(this);
-              */
+                downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
+                downloadDataTask.setDialogDetails("Loading...", "Loading data...");
+                downloadDataTask.execute(p);
+            }
         }
-      
-        
-        
     }
     
     public void noGPS() { }
@@ -182,25 +175,32 @@ public class ViewFragment extends Fragment
     }
     
     public void visit(RenderedWay rw)
+    {   
+        // old line of sight stuff - removed
+    }
+    
+    public boolean setDEM (int demType)
     {
         
-        HGTTileDeliverer dem = integrator.getDEM();
-        if(locOSGB!=null && dem!=null && rw.isValid())
-        {   
-            int nVisibles = 0;
-            float[] wayVertices = rw.getWayVertices();
-            for(int i=0; i<wayVertices.length; i+=3)
-            {
-          
-                boolean los = dem.lineOfSight(locOSGB, new Point(wayVertices[i],wayVertices[i+1],wayVertices[i+2]));
-                if(los)
-                {
-                  nVisibles++; 
-                  // rw.setVtxDisplayStatus(i, los);
-                }
-            }
-            rw.setDisplayed(nVisibles > 1);
+        this.demType = demType;
+        if(!(tilingProjID.equals(tilingProjIDs[demType])))
+        {
+            tilingProjID = tilingProjIDs[demType];
+            return true;
         }
-       
+        
+        return false;
+    }
+    
+    public boolean setDisplayProjectionID (String displayProjectionID)
+    {
+        Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
+        Projection proj = fac.generate(displayProjectionID);
+        if(proj!=null)
+        {
+            trans.setDisplayProj(proj);
+            return true;
+        }
+        return false;
     }
 }

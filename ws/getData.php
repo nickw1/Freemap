@@ -247,8 +247,14 @@ function getSRTM($w,$s,$e,$n)
 						if(!($byte==0 && $row==$idx_n))
 							echo ",";
 
-						printf("%d", ord($bytes[$byte])*256+
-								ord($bytes[$byte+1]));
+						$val = ord($bytes[$byte])*256+ ord($bytes[$byte+1]);
+
+						if($val==32768) // Voids
+							$val=0;
+						elseif($val>32768)
+							$val -= 65536;
+
+						printf("%d", val); 
 					}
 				}
 				fclose($fp);

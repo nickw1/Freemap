@@ -51,11 +51,10 @@ public class DEM implements freemap.datasource.TiledData {
 		Point p = new Point(lon,lat);
 	
 		
-		/*
 		
-		System.out.println("getHeight(): lon="+lon+ " lat="+lat+ " coordProj=" + coordProj +
-				" proj=" + proj);
-		*/
+		
+		//System.out.println("DEM.getHeight(): lon="+lon+ " lat="+lat+ " coordProj=" + coordProj +" proj=" + proj);
+		
 		
 		if((!(proj==null && coordProj==null)) && (!(proj!=null && proj.equals(coordProj))))
 		{
@@ -119,7 +118,7 @@ public class DEM implements freemap.datasource.TiledData {
 	public String toString()
 	{
 		String s= "bottomLeft: " + bottomLeft + " spacing=" + spacing + " heights=" +
-			"[";
+			"[\n";
 		
 		for(int i=0; i<ptHeight; i++)
 		{
@@ -130,6 +129,7 @@ public class DEM implements freemap.datasource.TiledData {
 			}
 			s+="\n";
 		}
+		s+="]";
 		return s;
 	}
 	

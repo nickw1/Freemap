@@ -41,6 +41,11 @@ class DataGetter
                             "col"=>"xy")
                             ); 
         $this->SRID = $srid;
+
+		// 240913 if not in kothic mode we want the full ways, not just
+		// the intersection with the bbox
+		$this->dbq->setIntersection($this->kothic_gran !==null);
+
     }
 
     function setCopyright($copyright)

@@ -22,7 +22,7 @@ public class WebDataSource extends DataSource
 	
 	protected InputStream getInputStream(String url)throws IOException
 	{
-		System.out.println("downloading from : " + url);
+		System.out.println("***WebDataSource : downloading from : " + url + "***");
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
 		HttpResponse response = client.execute(request);

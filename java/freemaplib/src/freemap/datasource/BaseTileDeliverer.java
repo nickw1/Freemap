@@ -30,21 +30,29 @@ public abstract class BaseTileDeliverer {
 	protected Projection proj;
 	protected String name;
 	
+	// in case our projection is WGS84/4326 but we want to use microdegrees for tiles so we
+	// can deal in whole numbers
+	protected double tileMultiplier; 
 	
-
 	public BaseTileDeliverer(String name,int tileWidth,int tileHeight,Projection proj)
 	{
-		data=new HashMap<String,TiledData>();
-		
-		this.tileWidth=tileWidth;
-		this.tileHeight=tileHeight;
-		this.proj=proj;
-		this.name=name;
+		this(name,tileWidth,tileHeight,proj,1.0);
 	}
 	
+	public BaseTileDeliverer(String name,int tileWidth,int tileHeight,Projection proj,double multiplier)
+	{
+	    data=new HashMap<String,TiledData>();
+    
+	    this.tileWidth=tileWidth;
+	    this.tileHeight=tileHeight;
+	    this.proj=proj;
+	    this.name=name;
+	    this.tileMultiplier = multiplier;
+	}
 	public TiledData update(Point lonLat) throws Exception
     {
         Point newPos = proj.project(lonLat);
+        // IMPORTANT curPos is projected but has no multiplier applied
         TiledData curData=null;
         if(curPos==null || isNewObject(curPos,newPos))
         {   
@@ -84,12 +92,14 @@ public abstract class BaseTileDeliverer {
         Point newPos = proj.project(lonLat);
         
         Point curOrigin = null;
-       
+        
         if(curPos==null || isNewObject(curPos,newPos))
         {   
             curPos = newPos;
+            System.out.println("newPos=" + newPos + " tileWidth=" + tileWidth + " tileHieght=" + tileHeight +
+                        " multiplier=" + tileMultiplier);
             Point origin = getOrigin(newPos);
-            
+            System.out.println("origin=" + origin);
             for(int row=-1; row<=1; row++)
             {
                 for(int col=-1; col<=1; col++)
@@ -99,7 +109,7 @@ public abstract class BaseTileDeliverer {
                     
                     Tile t  = doUpdate(curOrigin);
                     String key = ""+(int)curOrigin.x+"." + (int)curOrigin.y;
-                    
+                   
                     updatedData.put(key, t);
                 } 
             }
@@ -143,9 +153,9 @@ public abstract class BaseTileDeliverer {
 		return new Tile(origin, curData, false);
 	}
 
-	public boolean needNewData(Point p)
+	public boolean needNewData(Point lonLat)
 	{
-		return curPos==null || isNewObject(curPos,proj.project(p));
+		return curPos==null || isNewObject(curPos,proj.project(lonLat));
 	}
 	
 	protected boolean isNewObject(Point oldPos, Point newPos)
@@ -156,7 +166,8 @@ public abstract class BaseTileDeliverer {
 	
 	protected Point getOrigin(Point p)
 	{
-		return (p==null) ? null:new Point(Math.floor(p.x/tileWidth)*tileWidth,Math.floor(p.y/tileHeight)*tileHeight);
+		return (p==null) ? null:new Point(Math.floor((p.x*tileMultiplier)/tileWidth)*tileWidth,
+		        Math.floor((p.y*tileMultiplier)/tileHeight)*tileHeight);
 	}
 	
 	public TiledData getData()
@@ -188,27 +199,6 @@ public abstract class BaseTileDeliverer {
         String key = "" + ((int)bottomLeft.x)+"."+((int)bottomLeft.y);
         return data.get(key);
     }
-    
-    
-	
-    // tested
-    public int[] getTileID(Point p)
-    {
-        int[] tileID = new int[2];
-        tileID[0]= (int)p.x / tileWidth;
-        tileID[1] = -(int)p.y / tileHeight - 1;
-        return tileID;
-    }
-    
-    // tested
-    public Object tileIDToData(int[] tileID)
-    {
-        Point origin = new Point();
-        origin.x = tileID[0] * tileWidth;
-        origin.y = -(tileID[1]+1) * tileHeight;
-        return getData(origin);
-    }
-    // END NEW
-    
+        
     public abstract TiledData getDataFromSource(Point origin) throws Exception;
 }

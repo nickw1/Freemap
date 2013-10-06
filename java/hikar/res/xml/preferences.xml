@@ -7,4 +7,16 @@
     android:summary="Height in metres of the camera above ground."
     android:inputType="numberDecimal" />
 
+<ListPreference android:key="prefDEM"
+    android:title="Height source"
+    android:summary="Source of height data, OSGB or SRTM" 
+    android:entries="@array/demKeys"
+    android:entryValues="@array/demValues" />
+
+<EditTextPreference android:key="prefDisplayProjection"
+    android:defaultValue="27700"
+    android:title="Display projection"
+    android:summary="SRID for display projection e.g. 27700 (OSGB) or 3857 (Google)"
+    android:inputType="number" />
+
 </PreferenceScreen>

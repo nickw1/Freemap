@@ -32,10 +32,16 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	private boolean cacheData, forceReload, reprojectCachedData;
 	
 
-	public CachedTileDeliverer(String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
-							Projection proj,String cachedir)
+	public CachedTileDeliverer (String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
+                            Projection proj,String cachedir)
 	{
-	    super (name, tileWidth, tileHeight, proj);
+	    this(name,ds,interpreter,tileWidth,tileHeight,proj,cachedir,1.0);
+	}
+	
+	public CachedTileDeliverer(String name,DataSource ds, DataInterpreter interpreter,int tileWidth,int tileHeight,
+							Projection proj,String cachedir,double multiplier)
+	{
+	    super (name, tileWidth, tileHeight, proj, multiplier);
 		dataSource=ds;
 		this.interpreter=interpreter;	
 		this.cachedir=cachedir;
@@ -97,11 +103,13 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 		TiledData curData=null;
 		String key = "" + ((int)origin.x)+"."+((int)origin.y);
 		
+		System.out.println("doUpdate(): Key=" + key);
 		if(!data.containsKey(key))
 		{
 		   
 			String cachefile=cachedir+"/"+name+"."+key;
 			
+			System.out.println("cachefile=" + cachefile);
 			if(cachedir!=null && isCache(cachefile) && !forceReload)
 			{
 				curData = loadFromCache(cachefile,origin);
@@ -187,11 +195,11 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 	public void forceDownload(Point bottomLeft, Point topRight) throws Exception
 	{
 		Point blProjected = proj.project(bottomLeft);
-		blProjected.x = Math.floor(blProjected.x/tileWidth) * tileWidth;
-		blProjected.y = Math.floor(blProjected.y/tileHeight) * tileHeight;
+		blProjected.x = Math.floor(blProjected.x/tileWidth) * tileWidth * tileMultiplier;
+		blProjected.y = Math.floor(blProjected.y/tileHeight) * tileHeight * tileMultiplier;
 		Point trProjected = proj.project(topRight);
-		trProjected.x = Math.floor(trProjected.x/tileWidth) * tileWidth;
-		trProjected.y = Math.floor(trProjected.y/tileHeight) * tileHeight;
+		trProjected.x = Math.floor(trProjected.x/tileWidth) * tileWidth * tileMultiplier;
+		trProjected.y = Math.floor(trProjected.y/tileHeight) * tileHeight * tileMultiplier;
 		Point curPoint = new Point(blProjected.x,blProjected.y);
 		while((int)curPoint.x <= (int)trProjected.x)
 		{

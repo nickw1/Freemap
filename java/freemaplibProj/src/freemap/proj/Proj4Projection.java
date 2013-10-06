@@ -3,11 +3,12 @@ package freemap.proj;
 import freemap.data.Point;
 import com.jhlabs.map.proj.ProjectionFactory;
 import com.jhlabs.map.Point2D; // must use modified, AWT-free proj4java
+import freemap.data.Projection;
 
 // Wrapper class to allow the proj4java library to be used with
 // the freemaplib Projection interface.
 
-public class Proj4Projection implements freemap.data.Projection {
+public class Proj4Projection implements Projection {
 
 	String name;
 	com.jhlabs.map.proj.Projection proj4proj;
@@ -42,7 +43,7 @@ public class Proj4Projection implements freemap.data.Projection {
 		return null;
 	}
 	
-	public boolean equals(Proj4Projection other)
+	public boolean equals(Projection other)
 	{
 		return (proj4proj==null) ? false:getID().equals(other.getID());
 	}
@@ -55,5 +56,10 @@ public class Proj4Projection implements freemap.data.Projection {
 	public String toString()
 	{
 		return getID();
+	}
+	
+	public boolean isValid()
+	{
+	    return proj4proj != null;
 	}
 }

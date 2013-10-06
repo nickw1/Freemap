@@ -21,6 +21,9 @@ import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import freemap.jdem.DEM;
 import freemap.datasource.Tile;
+import freemap.data.Projection;
+import freemap.data.IdentityProjection;
+
 
 public class OpenGLView extends GLSurfaceView  {
    
@@ -48,6 +51,7 @@ public class OpenGLView extends GLSurfaceView  {
         int textureId;
         SurfaceTexture cameraFeed;
         CameraCapturer cameraCapturer;
+        TileDisplayProjectionTransformation trans;
         
         public DataRenderer()
         {
@@ -78,6 +82,8 @@ public class OpenGLView extends GLSurfaceView  {
             perspectiveMtx = new float[16];
             Matrix.setIdentityM(modelviewMtx, 0);
             Matrix.setIdentityM(perspectiveMtx, 0);
+            
+            
         }
         
         public void onSurfaceCreated(GL10 unused,EGLConfig config)
@@ -182,17 +188,17 @@ public class OpenGLView extends GLSurfaceView  {
                 // Prevent the ConcurrentModificationException, This is supposed to happen because you're
                 // adding to the renderedDEMs while iterating through them, and you can't add to a 
                 // collection at the same time as iterating through it 
-                if(true)//!loadingDEMs)
+                if(false)//!loadingDEMs) 
                 {
                     synchronized(renderedDEMs)
                     {
-                        Log.d("hikar","***Rendering DEMs, renderedDEMs should be synchronised");
+                        
                         for (HashMap.Entry<String,RenderedDEM> d: renderedDEMs.entrySet())
                         {
                             if (d.getValue().centreDistanceTo(p) < 5000.0)
                                 d.getValue().render(gpuInterface);
                         }
-                        Log.d("hikar","***Rendering DEMs, end.");
+                        
                     }
                 }
                 
@@ -279,16 +285,22 @@ public class OpenGLView extends GLSurfaceView  {
                     loadingDEMs = true;
                     if(d[0].dem != null)
                     {
-                        for(HashMap.Entry<String, Tile> entry: d[0].dem.entrySet())
+                        if(renderedDEMs==null) // do not clear out when we enter a new tile!
+                            renderedDEMs = new HashMap<String,RenderedDEM> ();
+                        synchronized(renderedDEMs)
                         {
-                            DEM curDEM = (DEM)entry.getValue().data;
+                            for(HashMap.Entry<String, Tile> entry: d[0].dem.entrySet())
+                            {
+                                DEM curDEM = (DEM)entry.getValue().data;
                             
-                            if(renderedDEMs==null) // do not clear out when we enter a new tile!
-                                renderedDEMs = new HashMap<String,RenderedDEM> ();
-                            String key = entry.getKey();
-                            Log.d("hikar", "Found a DEM to be rendered, adding it, key=" + key);
-                            if(renderedDEMs.get(key)==null)
-                                renderedDEMs.put(key, new RenderedDEM(curDEM));
+                   
+                            
+                           
+                                String key = entry.getKey();
+                                Log.d("hikar", "Found a DEM to be rendered, adding it, key=" + key);
+                                if(renderedDEMs.get(key)==null && trans!=null)
+                                    renderedDEMs.put(key, new RenderedDEM(curDEM, trans));
+                            }
                         }
                     }
                     
@@ -336,8 +348,8 @@ public class OpenGLView extends GLSurfaceView  {
         {
             synchronized(renderedWays)
             {
-                if(renderedWays.get(w.getId())==null)
-                    renderedWays.put(w.getId(), new RenderedWay(w,2.0f));
+                if(renderedWays.get(w.getId())==null && trans!=null)
+                    renderedWays.put(w.getId(), new RenderedWay(w,2.0f,trans));
             }
             //Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
         }
@@ -403,6 +415,11 @@ public class OpenGLView extends GLSurfaceView  {
         { 
             for(HashMap.Entry<Long,RenderedWay> entry : renderedWays.entrySet())
                 visitor.visit(entry.getValue());
+        }
+        
+        public void setProjectionTransformation(TileDisplayProjectionTransformation trans)
+        {
+            this.trans = trans;
         }
     }
     

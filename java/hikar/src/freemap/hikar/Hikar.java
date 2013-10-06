@@ -1,5 +1,6 @@
 package freemap.hikar;
 
+import freemap.andromaps.DialogUtils;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.Activity;
@@ -23,7 +24,6 @@ public class Hikar extends Activity
         setContentView(R.layout.activity_main);
         addContentView(hud, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
         viewFragment = (ViewFragment)getFragmentManager().findFragmentById(R.id.view_fragment);  
-        try { JSONWayFactory.test(); } catch(org.json.JSONException e) { android.util.Log.e("hikar",e.toString()); }
     }
 
    
@@ -40,7 +40,7 @@ public class Hikar extends Activity
         boolean retcode=false;
         
         switch(item.getItemId())
-        {
+        {    
             case R.id.menu_calibrate:
                 viewFragment.toggleCalibrate();
                 item.setTitle(item.getTitle().equals("Calibrate") ? "Stop calibrating": "Calibrate");
@@ -65,6 +65,12 @@ public class Hikar extends Activity
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         float cameraHeight = Float.parseFloat(prefs.getString("prefCameraHeight","1.4"));
         viewFragment.setCameraHeight(cameraHeight);
+        int prefDEM = Integer.valueOf(prefs.getString("prefDEM","0"));
+        String prefDisplayProjectionID = "epsg:" + prefs.getString("prefDisplayProjection", "27700");
+        if(!viewFragment.setDisplayProjectionID(prefDisplayProjectionID))
+            DialogUtils.showDialog(this, "Invalid projection " + prefDisplayProjectionID);
+        if(viewFragment.setDEM(prefDEM))
+            viewFragment.restartIntegrator();
     }
     
     public HUD getHUD()

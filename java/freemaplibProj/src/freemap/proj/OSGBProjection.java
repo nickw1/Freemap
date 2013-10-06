@@ -13,7 +13,7 @@ public class OSGBProjection extends SimpleProjection implements Projection{
 		LatLng ll=new LatLng(lonLat.y,lonLat.x);
 		ll.toOSGB36();
 		OSRef gr = ll.toOSRef();
-		return new Point(gr.getEasting(), gr.getNorthing());
+		return new Point(gr.getEasting(), gr.getNorthing(), lonLat.z);
 		
 	}
 
@@ -22,7 +22,7 @@ public class OSGBProjection extends SimpleProjection implements Projection{
 		OSRef gr = new OSRef(projected.x,projected.y);
 		LatLng ll = gr.toLatLng();
 		ll.toWGS84();
-		return new Point(ll.getLng(), ll.getLat());
+		return new Point(ll.getLng(), ll.getLat(), projected.z);
 	}
 	
 	public String getID()

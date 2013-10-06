@@ -40,6 +40,12 @@ $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '4326';
 adjustProj($inProj);
 adjustProj($outProj);
 
+if($cleaned['inUnits'] && $cleaned['inUnits']=='microdeg' && $inProj=='4326')
+{
+	for($i=0; $i<4; $i++)
+		$values[$i] /= 1000000.0;
+}
+
 // Native projection of DB is 900913 (Google Mercator)
 list($sw['e'],$sw['n']) = reproject($values[0],$values[1],$inProj,'900913');
 list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'900913');

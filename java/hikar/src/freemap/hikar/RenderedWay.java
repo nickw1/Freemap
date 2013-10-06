@@ -1,7 +1,9 @@
 package freemap.hikar;
 
 import freemap.data.Point;
+import freemap.data.Projection;
 import freemap.data.Way;
+import freemap.data.IdentityProjection;
 
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
@@ -45,15 +47,16 @@ public class RenderedWay {
 		colours.put("highway:cycleway", cycleway );
 	}
 	
-	public RenderedWay(Way w,float width)
+	
+	
+	public RenderedWay(Way w,float width,TileDisplayProjectionTransformation trans)
 	{
-
 		float dx, dy, dxperp=0.0f, dyperp=0.0f, len;
 		
 		
 		ArrayList<Integer> includedPoints = new ArrayList<Integer>();
 		for(int i=0; i<w.nPoints(); i++)
-		    if(w.getPoint(i).z >= 0.00000001)
+		    if(w.getPoint(i).z >= -0.9)
 		        includedPoints.add(i);
 		    
 		
@@ -79,28 +82,34 @@ public class RenderedWay {
 		
 		displayed = true;
 		
+		Point thisPoint;
 		
 		for(int i=0; i<nPts-1; i++)
 		{
 		
-		  
-		        dx=(float)(w.getPoint(includedPoints.get(i+1)).x - w.getPoint(includedPoints.get(i)).x);
-		        dy=(float)(w.getPoint(includedPoints.get(i+1)).y - w.getPoint(includedPoints.get(i)).y);
-		        len=(float)(w.getPoint(includedPoints.get(i)).distanceTo(w.getPoint(includedPoints.get(i+1))));
+		       thisPoint = trans.tileToDisplay(w.getPoint(includedPoints.get(i)));
+		       Point nextPoint = trans.tileToDisplay(w.getPoint(includedPoints.get(i+1)));
+		        
+		        dx=(float)(nextPoint.x - thisPoint.x);
+		        dy=(float)(nextPoint.y - thisPoint.y);
+		        len=(float)thisPoint.distanceTo(nextPoint);
+		        
 		        dxperp = -(dy*(width/2))/len;
 		        dyperp = (dx*(width/2))/len;
-		        vertices[i*6] = (float)(w.getPoint(includedPoints.get(i)).x+dxperp);
-		        vertices[i*6+1] = (float)(w.getPoint(includedPoints.get(i)).y+dyperp);
-		        vertices[i*6+2] = (float)w.getPoint(includedPoints.get(i)).z;
-		        vertices[i*6+3] = (float)(w.getPoint(includedPoints.get(i)).x-dxperp);
-		        vertices[i*6+4] = (float)(w.getPoint(includedPoints.get(i)).y-dyperp);
-		        vertices[i*6+5] = (float)w.getPoint(includedPoints.get(i)).z;
+		        vertices[i*6] = (float)(thisPoint.x+dxperp);
+		        vertices[i*6+1] = (float)(thisPoint.y+dyperp);
+		        vertices[i*6+2] = (float)thisPoint.z;
+		        vertices[i*6+3] = (float)(thisPoint.x-dxperp);
+		        vertices[i*6+4] = (float)(thisPoint.y-dyperp);
+		        vertices[i*6+5] = (float)thisPoint.z;
 			
 			
-		        wayVertices[i*3] = (float)w.getPoint(includedPoints.get(i)).x;
-		        wayVertices[i*3+1] = (float)w.getPoint(includedPoints.get(i)).y;
-		        wayVertices[i*3+2] = (float)w.getPoint(includedPoints.get(i)).z;
+		        wayVertices[i*3] = (float)thisPoint.x;
+		        wayVertices[i*3+1] = (float)thisPoint.y;
+		        wayVertices[i*3+2] = (float)thisPoint.z;
 		        vtxDisplayStatus[i] = true;
+		        
+		       
 		        /*
 			    for(int j=0; j<6; j++)
 				    System.out.println("Vertex : " + (i*6+j)+ " position:" +vertices[i*6+j]);
@@ -108,15 +117,17 @@ public class RenderedWay {
 		   
 		}
 		int k=nPts-1;
-		vertices[k*6] = (float)(w.getPoint(includedPoints.get(k)).x+dxperp);
-		vertices[k*6+1] = (float)(w.getPoint(includedPoints.get(k)).y+dyperp);
-		vertices[k*6+2] = (float)w.getPoint(includedPoints.get(k)).z;
-		vertices[k*6+3] = (float)(w.getPoint(includedPoints.get(k)).x-dxperp);
-		vertices[k*6+4] = (float)(w.getPoint(includedPoints.get(k)).y-dyperp);
-		vertices[k*6+5] = (float)w.getPoint(includedPoints.get(k)).z;
-		wayVertices[k*3] = (float)w.getPoint(includedPoints.get(k)).x;
-        wayVertices[k*3+1] = (float)w.getPoint(includedPoints.get(k)).y;
-        wayVertices[k*3+2] = (float)w.getPoint(includedPoints.get(k)).z;
+		thisPoint = trans.tileToDisplay(w.getPoint(includedPoints.get(k)));
+		vertices[k*6] = (float)(thisPoint.x+dxperp);
+		vertices[k*6+1] = (float)(thisPoint.y+dyperp);
+		vertices[k*6+2] = (float)thisPoint.z;
+		vertices[k*6+3] = (float)(thisPoint.x-dxperp);
+		vertices[k*6+4] = (float)(thisPoint.y-dyperp);
+		vertices[k*6+5] = (float)thisPoint.z;
+		wayVertices[k*3] = (float)thisPoint.x;
+        wayVertices[k*3+1] = (float)thisPoint.y;
+        wayVertices[k*3+2] = (float)thisPoint.z;
+        
 		vtxDisplayStatus[k]= true;
 		for(int i=0; i<nPts-1; i++)
 		{

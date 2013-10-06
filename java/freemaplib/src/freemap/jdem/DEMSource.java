@@ -56,8 +56,9 @@ public class DEMSource {
 		int ptHeight = (indexS-indexN)+1;
 		int mostSignificant = (endianness==LITTLE_ENDIAN) ? 1: 0,
 				leastSignificant = (endianness==LITTLE_ENDIAN) ? 0:1; 
-		//System.out.println("Size of metres array: " + ptWidth*ptHeight);
+		System.out.println("Allocating DEM: Size of metres array: " + ptWidth*ptHeight);
 		int[] metres = new int[ptWidth*ptHeight];
+		int rawHeight;
 		
 		//System.out.println("width=" + width+ " ptWIdth=" + ptWidth+  " ptHeight=" + ptHeight+ " spacing=" + spacing);
 		byte[] d2= new byte[1024];
@@ -84,7 +85,8 @@ public class DEMSource {
 						
 							ls=(int)d2[(i-metresTotal)*2+leastSignificant] & 0xff;
 							ms=(int)d2[(i-metresTotal)*2+mostSignificant] & 0xff;
-							metres[metreCount++]=ls+ms*256;
+							rawHeight = ls+ms*256;
+							metres[metreCount++]=rawHeight>=0 && rawHeight<9000 ? rawHeight: 0; 
 					}
 					
 					

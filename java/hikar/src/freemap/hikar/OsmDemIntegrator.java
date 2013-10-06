@@ -8,14 +8,13 @@ import freemap.jdem.HGTDataInterpreter;
 import freemap.jdem.HGTTileDeliverer;
 import freemap.datasource.FreemapFileFormatter;
 import freemap.data.Point;
-import freemap.datasource.XMLDataInterpreter;
-import freemap.datasource.FreemapDataHandler;
 import freemap.jdem.DEM;
 import freemap.proj.LFPFileFormatter;
 import freemap.proj.Proj4ProjectionFactory;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.Tile;
 import freemap.andromaps.GeoJSONDataInterpreter;
+import freemap.jdem.SRTMMicrodegFileFormatter;
 import java.io.File;
 import java.util.HashMap;
 import android.util.Log;
@@ -28,73 +27,99 @@ public class OsmDemIntegrator {
 	HGTTileDeliverer hgt;
 	Projection tilingProj;
 	HashMap<String,Tile> hgtupdated, osmupdated;
+	int demType;
+	double[] multipliers = { 1, 1000000 };
 	
-	public OsmDemIntegrator(String projID)
+	public static final int HGT_OSGB_LFP = 0, HGT_SRTM = 1;
+	
+	public OsmDemIntegrator(Projection tilingProj)
 	{
-		WebDataSource hgtDataSource=new WebDataSource("http://www.free-map.org.uk/downloads/lfp/", 
-				new LFPFileFormatter());
+	    this (tilingProj, HGT_OSGB_LFP);
+	}
+	
+	public OsmDemIntegrator(Projection tilingProj, int demType)
+	{
+	    this.demType = demType;
+	    
+	    int[] ptWidths = { 101, 61 }, ptHeights = { 101, 31 }, tileWidths = { 5000, 50000 },
+                tileHeights = { 5000, 25000 }, endianness = { DEMSource.LITTLE_ENDIAN, DEMSource.BIG_ENDIAN };
+        double[] resolutions = { 50, 1 / 1200.0 };
+        
+		WebDataSource demDataSource= demType==HGT_OSGB_LFP ?
+		        new WebDataSource("http://www.free-map.org.uk/downloads/lfp/", 
+				new LFPFileFormatter()):
+				  new WebDataSource("http://www.free-map.org.uk/ws/",
+				new SRTMMicrodegFileFormatter("srtm2.php", tileWidths[demType], tileHeights[demType]));
 		
-		
-		FreemapFileFormatter formatter=new FreemapFileFormatter(projID, "geojson");
+	
+		String[] tileUnits = { "metres", "microdeg" };
+		FreemapFileFormatter formatter=new FreemapFileFormatter(tilingProj.getID(), "geojson", tileWidths[demType],
+		                                                        tileHeights[demType]);
         formatter.setScript("bsvr.php");
         formatter.selectWays("highway");
+        formatter.addKeyval("inUnits", tileUnits[demType]); // used to tell server that bbox is in microdeg
         
         WebDataSource osmDataSource=new WebDataSource("http://www.free-map.org.uk/0.6/ws/",formatter);
         
-		Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
-		tilingProj = factory.generate(projID);
+        Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
+		this.tilingProj = tilingProj;
 		File cacheDir = new File(android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +
 		        tilingProj.getID().toLowerCase().replace("epsg:","")+"/");
 		if(!cacheDir.exists())
 		    cacheDir.mkdirs();
 		
-		hgt=new HGTTileDeliverer("dem",hgtDataSource, new HGTDataInterpreter(101,101,50,
-											DEMSource.LITTLE_ENDIAN),
-						5000, 5000, tilingProj,101,101,50,cacheDir.getAbsolutePath());
-						
+		Log.d("hikar","OsmDemIntegrator: tilewidth=" + tileWidths[demType] + " tileheight=" +
+		        tileHeights[demType] + " resolution=" + resolutions[demType] +
+		            " endianness=" + endianness[demType] + " ptwidth=" + ptWidths[demType] +
+		            " ptheight=" + ptHeights[demType] + " multiplier=" + multipliers[demType]);
 		
+		hgt=new HGTTileDeliverer("dem",demDataSource, new HGTDataInterpreter(
+		                ptWidths[demType],ptHeights[demType],resolutions[demType],
+		                                    endianness[demType]),
+						tileWidths[demType], tileHeights[demType], tilingProj,ptWidths[demType],
+						ptHeights[demType],resolutions[demType],cacheDir.getAbsolutePath(),
+						multipliers[demType]);
+				
 		osm = new CachedTileDeliverer("osm",osmDataSource, 
 					//new XMLDataInterpreter(new FreemapDataHandler(factory)),
 		            new GeoJSONDataInterpreter(),
-					5000,5000,
+					tileWidths[demType], tileHeights[demType],
 					tilingProj,
-					cacheDir.getAbsolutePath());
+					cacheDir.getAbsolutePath(), multipliers[demType]);
 		
 		hgt.setCache(true);
 		osm.setCache(true);
 		osm.setReprojectCachedData(true);
-		
 	}
 	
-	public boolean needNewData(Point point)
+	public boolean needNewData(Point lonLat)
 	{
-	    return osm.needNewData(point) || hgt.needNewData(point);
+	    Log.d("hikar","OsmDemIntegrator.needNewData: lonLat="  + lonLat);
+	    return osm.needNewData(lonLat) || hgt.needNewData(lonLat);
 	}
 	
 	// ASSUMPTION: the tiling systems for hgt and osm data coincide - which they do here (see constructor)
-	public boolean update(Point point) throws Exception
+	public boolean update(Point lonLat) throws Exception
 	{
 	    Log.d("hikar","Getting DEM data... time=" + System.currentTimeMillis());
-	    hgtupdated = hgt.doUpdateSurroundingTiles(point);
+	    hgtupdated = hgt.doUpdateSurroundingTiles(lonLat);
 	   
 		
 	       
 	   Log.d("hikar","Getting OSM data... time=" + System.currentTimeMillis());
-	   osmupdated = osm.doUpdateSurroundingTiles(point);
+	   osmupdated = osm.doUpdateSurroundingTiles(lonLat);
 	   Log.d("hikar","Finished getting OSM data. Starting DEM application. time=" + System.currentTimeMillis());
 			    
 	    for(HashMap.Entry<String,Tile> e: osmupdated.entrySet())
 		{
 			if(hgtupdated.get(e.getKey()) !=null && osmupdated.get(e.getKey()) != null)
 			    //&& !e.getValue().isCache)
-			
 			{
-			   
-			   
 			   FreemapDataset d = (FreemapDataset)e.getValue().data;
 			   DEM dem = (DEM)(hgtupdated.get(e.getKey()).data);
 	          
-			   d.applyDEM(dem);
+			   //System.out.println("DEM for " + e.getKey() + "=" + dem);
+			   d.applyDEM(dem); 
 			  
 			   //osm.cacheByKey(d, e.getKey());
 
@@ -110,12 +135,14 @@ public class OsmDemIntegrator {
 		return true;
 	}
 	
-	public double getHeight(Point p)
+	public double getHeight(Point lonLat)
 	{
 		DEM dem = (DEM) hgt.getData();
+		Point projectedPoint = tilingProj.project(lonLat);
+		
 		if(dem!=null)
 		{
-			double h=dem.getHeight(p.x,p.y,tilingProj);
+			double h=dem.getHeight(projectedPoint.x,projectedPoint.y,tilingProj);
 			return h;
 		}
 		return -1;

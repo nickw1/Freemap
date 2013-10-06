@@ -85,7 +85,7 @@ class RightOfWay
             $msg .= "Grid ref: easting ".round($osgb[0])." northing ".
                 round($osgb[1])."\n\n"; 
             $msg .= "Reported By: $name (email $email)";
-            if(this->the_data["properties"]["county"]=="Hampshire")
+            if($this->the_data["properties"]["county"]=="Hampshire")
             {
                 mail(HANTS_EMAIL, 
                     "Right Of Way problem reported via FixMyPaths",$msg);

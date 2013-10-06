@@ -19,7 +19,8 @@ public class RenderedDEM {
     float[] surfaceColour = { 0.0f, 1.0f, 0.0f, 0.1f };
     Point centrePoint;
     
-    public RenderedDEM (DEM dem)
+  
+    public RenderedDEM (DEM dem, TileDisplayProjectionTransformation trans)
     {
         int nrows = dem.getPtHeight(), ncols = dem.getPtWidth(), nvertices = nrows*ncols;
         
@@ -34,11 +35,10 @@ public class RenderedDEM {
         ibuf.order(ByteOrder.nativeOrder());
         indexBuffer = ibuf.asShortBuffer();
         
-        Point bottomLeft = dem.getBottomLeft(), topRight = dem.getTopRight();
+        Point bottomLeft = trans.tileToDisplay(dem.getBottomLeft()), topRight = trans.tileToDisplay(dem.getTopRight());
         
-        centrePoint = new Point();
-        centrePoint.x = (bottomLeft.x + topRight.x) / 2;
-        centrePoint.y = (bottomLeft.y + topRight.y) / 2;
+        centrePoint = new Point((bottomLeft.x + topRight.x) / 2,
+                                (bottomLeft.y + topRight.y) / 2);
         
         
        
@@ -46,7 +46,7 @@ public class RenderedDEM {
         {
             for(int col=0; col<ncols; col++)
             {
-                Point p = dem.getPoint(col, row);
+                Point p = trans.tileToDisplay(dem.getPoint(col, row));
        
                 vertexBuffer.put( (float)p.x);
                 vertexBuffer.put( (float)p.y);

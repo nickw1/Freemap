@@ -4,5 +4,6 @@
     <string name="app_name">Hikar</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_calibrate">Calibrate</string>
+    <string name="menu_start">Start</string>
 
 </resources>

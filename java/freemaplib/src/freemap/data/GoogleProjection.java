@@ -16,12 +16,12 @@ public class GoogleProjection extends SimpleProjection implements Projection {
 	
 	public Point project (Point lonLat)
 	{
-		return new Point(lonToGoogle(lonLat.x), latToGoogle(lonLat.y));
+		return new Point(lonToGoogle(lonLat.x), latToGoogle(lonLat.y), lonLat.z);
 	}
 	
 	public Point unproject (Point projected)
 	{
-		return new Point(googleToLon(projected.x),googleToLat(projected.y));
+		return new Point(googleToLon(projected.x),googleToLat(projected.y), projected.z);
 	}
 	
 	private double lonToGoogle(double lon)
@@ -57,7 +57,7 @@ public class GoogleProjection extends SimpleProjection implements Projection {
 	
 	public String getID()
 	{
-		return "epsg:3785";
+		return "epsg:3857";
 	}
 	
 	
