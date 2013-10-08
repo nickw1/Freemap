@@ -1,7 +1,7 @@
 <?php
-define('HGTDIR','/var/www/data/hgt');
 require_once("../lib/latlong.php");
 require_once("../lib/functionsnew.php");
+require_once("../common/defines.php");
 
 
 // note $w $s $e $n in microdegrees

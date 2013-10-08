@@ -19,4 +19,19 @@
     android:summary="SRID for display projection e.g. 27700 (OSGB) or 3857 (Google)"
     android:inputType="number" />
 
+<EditTextPreference android:key="prefLfpUrl"
+    android:defaultValue="http://www.free-map.org.uk/downloads/lfp/"
+    android:title="LandForm PANORAMA directory URL"
+    android:summary="URL of web directory holding LandForm PANORAMA files" />
+
+<EditTextPreference android:key="prefSrtmUrl"
+    android:defaultValue="http://www.free-map.org.uk/ws/"
+    android:title="SRTM web service directory URL"
+    android:summary="URL of web directory containing web service serving SRTM data" />
+
+<EditTextPreference android:key="prefOsmUrl"
+    android:defaultValue="http://www.free-map.org.uk/0.6/ws/"
+    android:title="OSM GeoJSON web service directory URL"
+    android:summary="URL of web directory containing web service serving GeoJSON OSM data" />
+
 </PreferenceScreen>

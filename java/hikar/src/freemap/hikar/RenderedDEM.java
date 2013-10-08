@@ -40,17 +40,16 @@ public class RenderedDEM {
         centrePoint = new Point((bottomLeft.x + topRight.x) / 2,
                                 (bottomLeft.y + topRight.y) / 2);
         
-        
+       
        
         for(int row=0; row<nrows; row++)
         {
             for(int col=0; col<ncols; col++)
             {
                 Point p = trans.tileToDisplay(dem.getPoint(col, row));
-       
                 vertexBuffer.put( (float)p.x);
                 vertexBuffer.put( (float)p.y);
-                vertexBuffer.put( (float)p.z-5);
+                vertexBuffer.put( (float)(p.z-5*trans.getMultiplier()));
             }
         }
          

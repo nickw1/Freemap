@@ -34,10 +34,12 @@ public class OsmDemIntegrator {
 	
 	public OsmDemIntegrator(Projection tilingProj)
 	{
-	    this (tilingProj, HGT_OSGB_LFP);
+	    this (tilingProj, HGT_OSGB_LFP, "http://www.free-map.org.uk/downloads/lfp/",
+	            "http://www.free-map.org.uk/ws/", "http://www.free-map.org.uk/0.6/ws/");
 	}
 	
-	public OsmDemIntegrator(Projection tilingProj, int demType)
+	public OsmDemIntegrator(Projection tilingProj, int demType,
+	                            String lfpUrl, String srtmUrl, String osmUrl)
 	{
 	    this.demType = demType;
 	    
@@ -46,9 +48,9 @@ public class OsmDemIntegrator {
         double[] resolutions = { 50, 1 / 1200.0 };
         
 		WebDataSource demDataSource= demType==HGT_OSGB_LFP ?
-		        new WebDataSource("http://www.free-map.org.uk/downloads/lfp/", 
+		        new WebDataSource(lfpUrl, 
 				new LFPFileFormatter()):
-				  new WebDataSource("http://www.free-map.org.uk/ws/",
+				  new WebDataSource(srtmUrl,
 				new SRTMMicrodegFileFormatter("srtm2.php", tileWidths[demType], tileHeights[demType]));
 		
 	
@@ -59,7 +61,7 @@ public class OsmDemIntegrator {
         formatter.selectWays("highway");
         formatter.addKeyval("inUnits", tileUnits[demType]); // used to tell server that bbox is in microdeg
         
-        WebDataSource osmDataSource=new WebDataSource("http://www.free-map.org.uk/0.6/ws/",formatter);
+        WebDataSource osmDataSource=new WebDataSource(osmUrl,formatter);
         
         Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
 		this.tilingProj = tilingProj;

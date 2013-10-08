@@ -83,13 +83,16 @@ public class RenderedWay {
 		displayed = true;
 		
 		Point thisPoint;
+	
+		width *= trans.getMultiplier();
 		
 		for(int i=0; i<nPts-1; i++)
 		{
 		
 		       thisPoint = trans.tileToDisplay(w.getPoint(includedPoints.get(i)));
 		       Point nextPoint = trans.tileToDisplay(w.getPoint(includedPoints.get(i+1)));
-		        
+		      
+		       
 		        dx=(float)(nextPoint.x - thisPoint.x);
 		        dy=(float)(nextPoint.y - thisPoint.y);
 		        len=(float)thisPoint.distanceTo(nextPoint);

@@ -10,6 +10,7 @@
 // tbl_prefix - prefix for tables (default planet_osm)
 
 require_once('../../lib/functionsnew.php');
+require_once('../../common/defines.php');
 require_once('DataGetter.php');
 require_once('xml.php');
 require_once('DBDetails.php');
@@ -18,8 +19,6 @@ $cleaned = clean_input($_REQUEST);
 
 // DBDetails: poi way poly contour coast ann
 
-define('CONTOUR_CACHE','/home/www-data/contourcache');
-define('CACHE','/home/www-data/fmapcache');
 
 $x = $cleaned["x"];
 $y = $cleaned["y"];

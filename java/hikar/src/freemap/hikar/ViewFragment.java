@@ -33,6 +33,7 @@ public class ViewFragment extends Fragment
     int demType;
     String[] tilingProjIDs = { "epsg:27700", "epsg:4326" };
     TileDisplayProjectionTransformation trans;
+    String lfpUrl, srtmUrl, osmUrl;
     
     
     public ViewFragment()
@@ -41,7 +42,10 @@ public class ViewFragment extends Fragment
         setRetainInstance(true);
         sensorInput = new SensorInput(this);
         demType = OsmDemIntegrator.HGT_OSGB_LFP;
-        trans = new TileDisplayProjectionTransformation ( null, null );
+        trans = new TileDisplayProjectionTransformation ( null, null, 1.0 );
+        lfpUrl = "http://www.free-map.org.uk/downloads/lfp/";
+        srtmUrl = "http://www.free-map.org.uk/ws/";
+        osmUrl = "http://www.free-map.org.uk/0.6/ws/";
     }
     
     public void onAttach(Activity activity)
@@ -95,12 +99,19 @@ public class ViewFragment extends Fragment
         sensorInput.detach();
     }
     
-    public void restartIntegrator()
+    public void setActivate (boolean activate)
     {
-        Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
-        trans.setTilingProj(fac.generate(tilingProjID));   
-        integrator = new OsmDemIntegrator(trans.getTilingProj(), demType);        
-        glView.getRenderer().setProjectionTransformation (trans);                             
+        if(activate)
+        {
+            Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
+            trans.setTilingProj(fac.generate(tilingProjID));   
+            integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);        
+            glView.getRenderer().setProjectionTransformation (trans);                             
+        }
+        else
+        {
+            integrator = null;
+        }
     }
     
     public void receiveLocation(Location loc) {
@@ -111,7 +122,7 @@ public class ViewFragment extends Fragment
             Log.d("hikar","OsmDemIntegrator exists so doing something with it");
             Point p = new Point(loc.getLongitude(), loc.getLatitude());
             locDisplayProj = trans.getDisplayProj().project(p);
-            
+          
             Log.d("hikar","location in display projection=" + locDisplayProj);
             glView.getRenderer().setCameraLocation((float)locDisplayProj.x, (float)locDisplayProj.y);
         
@@ -199,8 +210,19 @@ public class ViewFragment extends Fragment
         if(proj!=null)
         {
             trans.setDisplayProj(proj);
+            trans.setMultiplier(displayProjectionID.equals("epsg:3857") || displayProjectionID.equals("epsg:3785") ||
+                                displayProjectionID.equals("epsg:900913") ? 0.1 : 1.0 );
             return true;
         }
         return false;
+    }
+    
+    public boolean setDataUrls (String lfpUrl, String srtmUrl, String osmUrl)
+    {
+        boolean change=!(this.lfpUrl.equals(lfpUrl)) || !(this.srtmUrl.equals(srtmUrl)) || !(this.osmUrl.equals(osmUrl));
+        this.lfpUrl = lfpUrl;
+        this.srtmUrl = srtmUrl;
+        this.osmUrl = osmUrl;
+        return change;
     }
 }

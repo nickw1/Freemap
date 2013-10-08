@@ -50,6 +50,14 @@ public class Hikar extends Activity
             case R.id.menu_settings:
                 Intent i = new Intent(this,Preferences.class);
                 startActivity(i);
+                break;
+            
+            case R.id.menu_start:
+                boolean start = item.getTitle().equals("Start");
+                viewFragment.setActivate(start);
+                item.setTitle(start ? "Stop" : "Start");
+                break;
+                
         }
         return retcode;
     }
@@ -65,12 +73,15 @@ public class Hikar extends Activity
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         float cameraHeight = Float.parseFloat(prefs.getString("prefCameraHeight","1.4"));
         viewFragment.setCameraHeight(cameraHeight);
+        String prefSrtmUrl=prefs.getString("prefSrtmUrl","http://www.free-map.org.uk/ws/"), 
+                prefLfpUrl=prefs.getString("prefLfpUrl", "http://www.free-map.org.uk/downloads/lfp/"), 
+                prefOsmUrl=prefs.getString("prefOsmUrl", "http://www.free-map.org.uk/0.6/ws/");
+        boolean urlchange = viewFragment.setDataUrls(prefLfpUrl, prefSrtmUrl, prefOsmUrl);
         int prefDEM = Integer.valueOf(prefs.getString("prefDEM","0"));
+        viewFragment.setDEM(prefDEM);
         String prefDisplayProjectionID = "epsg:" + prefs.getString("prefDisplayProjection", "27700");
         if(!viewFragment.setDisplayProjectionID(prefDisplayProjectionID))
             DialogUtils.showDialog(this, "Invalid projection " + prefDisplayProjectionID);
-        if(viewFragment.setDEM(prefDEM))
-            viewFragment.restartIntegrator();
     }
     
     public HUD getHUD()

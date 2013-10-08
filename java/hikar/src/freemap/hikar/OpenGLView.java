@@ -83,7 +83,7 @@ public class OpenGLView extends GLSurfaceView  {
             Matrix.setIdentityM(modelviewMtx, 0);
             Matrix.setIdentityM(perspectiveMtx, 0);
             
-            
+            trans = new TileDisplayProjectionTransformation (new IdentityProjection(), new IdentityProjection(), 1.0);
         }
         
         public void onSurfaceCreated(GL10 unused,EGLConfig config)
@@ -183,19 +183,19 @@ public class OpenGLView extends GLSurfaceView  {
             {
                 
                 //Matrix.translateM(modelviewMtx, 0, 0, 0, -zDisp); // needed????
-                Point p = new Point((double)xDisp,(double)yDisp,(double)height);
+                Point p = new Point(xDisp*trans.getMultiplier(), yDisp*trans.getMultiplier(), height*trans.getMultiplier());
                 
                 // Prevent the ConcurrentModificationException, This is supposed to happen because you're
                 // adding to the renderedDEMs while iterating through them, and you can't add to a 
                 // collection at the same time as iterating through it 
-                if(false)//!loadingDEMs) 
+                if(true)//!loadingDEMs) 
                 {
                     synchronized(renderedDEMs)
                     {
                         
                         for (HashMap.Entry<String,RenderedDEM> d: renderedDEMs.entrySet())
                         {
-                            if (d.getValue().centreDistanceTo(p) < 5000.0)
+                            if (d.getValue().centreDistanceTo(p) < 5000.0*trans.getMultiplier())
                                 d.getValue().render(gpuInterface);
                         }
                         
@@ -214,7 +214,8 @@ public class OpenGLView extends GLSurfaceView  {
                         Matrix.multiplyMM(modelviewMtx, 0, modelviewMtx, 0, modelviewMtx, 0);
                     */
                     
-                    Matrix.translateM(modelviewMtx, 0, -xDisp, -yDisp, -height-zDisp);
+                    Matrix.translateM(modelviewMtx, 0, (float)(-xDisp*trans.getMultiplier()), 
+                                (float)(-yDisp*trans.getMultiplier()), (float)((-height-zDisp)*trans.getMultiplier()));
                    
                     gpuInterface.sendMatrix(modelviewMtx, "uMvMtx");
                     gpuInterface.sendMatrix(perspectiveMtx, "uPerspMtx");
@@ -225,7 +226,7 @@ public class OpenGLView extends GLSurfaceView  {
                         for(HashMap.Entry<Long, RenderedWay> entry: renderedWays.entrySet())
                         {          
                             rWay = entry.getValue();
-                            if(rWay.isDisplayed() && rWay.distanceTo(p) <= 3000.0f)
+                            if(rWay.isDisplayed() && rWay.distanceTo(p) <= 3000.0f*trans.getMultiplier())
                             {
                                 rWay.draw(gpuInterface); 
                             }       
@@ -241,7 +242,8 @@ public class OpenGLView extends GLSurfaceView  {
             GLES20.glViewport(0, 0, width, height);
             float aspectRatio = (float)width/(float)height;
             Matrix.setIdentityM(perspectiveMtx, 0);
-            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 0.1f, 3000.0f);
+            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, (float)(0.1f*trans.getMultiplier()), 
+                                    (float)(3000.0f*trans.getMultiplier()));
         }
         
         public void onPause()
@@ -292,10 +294,7 @@ public class OpenGLView extends GLSurfaceView  {
                             for(HashMap.Entry<String, Tile> entry: d[0].dem.entrySet())
                             {
                                 DEM curDEM = (DEM)entry.getValue().data;
-                            
                    
-                            
-                           
                                 String key = entry.getKey();
                                 Log.d("hikar", "Found a DEM to be rendered, adding it, key=" + key);
                                 if(renderedDEMs.get(key)==null && trans!=null)
@@ -319,7 +318,6 @@ public class OpenGLView extends GLSurfaceView  {
                                 curOSM.operateOnWays(DataRenderer.this);
                             }
                         }
-                
                     }
                     Log.d("hikar", "Setting render data done:" + System.currentTimeMillis());
                     return true;
@@ -420,6 +418,10 @@ public class OpenGLView extends GLSurfaceView  {
         public void setProjectionTransformation(TileDisplayProjectionTransformation trans)
         {
             this.trans = trans;
+            float aspectRatio = (float)getWidth()/(float)getHeight();
+            Matrix.setIdentityM(perspectiveMtx, 0);
+            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, (float)(0.1f*trans.getMultiplier()), 
+                                    (float)(3000.0f*trans.getMultiplier()));
         }
     }
     

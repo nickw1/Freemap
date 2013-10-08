@@ -6,11 +6,13 @@ import freemap.data.Point;
 public class TileDisplayProjectionTransformation {
 
     Projection tilingProj, displayProj;
+    double multiplier;
     
-    public TileDisplayProjectionTransformation (Projection tilingProj, Projection displayProj)
+    public TileDisplayProjectionTransformation (Projection tilingProj, Projection displayProj, double multiplier)
     {
         this.tilingProj = tilingProj;
         this.displayProj = displayProj;
+        this.multiplier = multiplier;
     }
     
     public Point tileToDisplay (Point p)
@@ -24,6 +26,10 @@ public class TileDisplayProjectionTransformation {
             if(displayProj != null)
                 projected = displayProj.project(projected);
         }
+        projected.x *= multiplier;
+        projected.y *= multiplier;
+        projected.z *= multiplier;
+        
         return projected;
        
     }
@@ -46,5 +52,16 @@ public class TileDisplayProjectionTransformation {
     public Projection getDisplayProj()
     {
         return displayProj;
+    }
+    
+    public void setMultiplier (double multiplier)
+    {
+        this.multiplier = multiplier;
+    }
+    
+    
+    public double getMultiplier()
+    {
+        return multiplier;
     }
 }
