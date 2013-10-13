@@ -105,29 +105,33 @@ public class ViewFragment extends Fragment
         {
             Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
             trans.setTilingProj(fac.generate(tilingProjID));   
-            integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);        
-            glView.getRenderer().setProjectionTransformation (trans);                             
+            integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);                                   
         }
         else
         {
             integrator = null;
+            glView.getRenderer().deactivate();
         }
     }
     
     public void receiveLocation(Location loc) {
     
-        Log.d("hikar","received location");
+       
         if(integrator!=null)
         {
-            Log.d("hikar","OsmDemIntegrator exists so doing something with it");
+           
             Point p = new Point(loc.getLongitude(), loc.getLatitude());
+            double height = integrator.getHeight(p);
+            p.z = height;
+            
             locDisplayProj = trans.getDisplayProj().project(p);
           
             Log.d("hikar","location in display projection=" + locDisplayProj);
-            glView.getRenderer().setCameraLocation((float)locDisplayProj.x, (float)locDisplayProj.y);
+            //glView.getRenderer().setCameraLocation((float)locDisplayProj.x, (float)locDisplayProj.y);
+            glView.getRenderer().setCameraLocation(p);
         
-            double height = integrator.getHeight(new Point(loc.getLongitude(), loc.getLatitude()));
-            glView.getRenderer().setHeight((float)height);
+         
+       
             ((Hikar)getActivity()).getHUD().setHeight((float)height);
             ((Hikar)getActivity()).getHUD().invalidate();
         
@@ -144,7 +148,7 @@ public class ViewFragment extends Fragment
     
     public void receiveData(DownloadDataTask.ReceivedData data)
     {
-        Log.d("hikar", "Setting render data: " + System.currentTimeMillis());
+        
         glView.getRenderer().setRenderData(data);
        
     }
@@ -209,9 +213,12 @@ public class ViewFragment extends Fragment
         Projection proj = fac.generate(displayProjectionID);
         if(proj!=null)
         {
+           
             trans.setDisplayProj(proj);
             trans.setMultiplier(displayProjectionID.equals("epsg:3857") || displayProjectionID.equals("epsg:3785") ||
                                 displayProjectionID.equals("epsg:900913") ? 0.1 : 1.0 );
+           
+            glView.getRenderer().setProjectionTransformation (trans);  
             return true;
         }
         return false;

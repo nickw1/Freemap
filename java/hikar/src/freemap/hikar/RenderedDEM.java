@@ -47,9 +47,12 @@ public class RenderedDEM {
             for(int col=0; col<ncols; col++)
             {
                 Point p = trans.tileToDisplay(dem.getPoint(col, row));
+                Log.d("hikar","dem.getPoint() is " + dem.getPoint(col, row));
                 vertexBuffer.put( (float)p.x);
                 vertexBuffer.put( (float)p.y);
                 vertexBuffer.put( (float)(p.z-5*trans.getMultiplier()));
+                Log.d("hikar","Adding rendered DEM point wihtout adjusted z: " + p.x + "," + p.y + "," + 
+                (p.z-5*trans.getMultiplier()));
             }
         }
          

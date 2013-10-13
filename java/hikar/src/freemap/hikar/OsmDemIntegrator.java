@@ -96,21 +96,21 @@ public class OsmDemIntegrator {
 	
 	public boolean needNewData(Point lonLat)
 	{
-	    Log.d("hikar","OsmDemIntegrator.needNewData: lonLat="  + lonLat);
+	   
 	    return osm.needNewData(lonLat) || hgt.needNewData(lonLat);
 	}
 	
 	// ASSUMPTION: the tiling systems for hgt and osm data coincide - which they do here (see constructor)
 	public boolean update(Point lonLat) throws Exception
 	{
-	    Log.d("hikar","Getting DEM data... time=" + System.currentTimeMillis());
+	    
 	    hgtupdated = hgt.doUpdateSurroundingTiles(lonLat);
 	   
 		
 	       
-	   Log.d("hikar","Getting OSM data... time=" + System.currentTimeMillis());
+	   
 	   osmupdated = osm.doUpdateSurroundingTiles(lonLat);
-	   Log.d("hikar","Finished getting OSM data. Starting DEM application. time=" + System.currentTimeMillis());
+	   
 			    
 	    for(HashMap.Entry<String,Tile> e: osmupdated.entrySet())
 		{
@@ -132,7 +132,7 @@ public class OsmDemIntegrator {
 			}
 	    }
 			
-	   Log.d("hikar","DEM application finished: time=" + System.currentTimeMillis());
+	  
 		
 		return true;
 	}

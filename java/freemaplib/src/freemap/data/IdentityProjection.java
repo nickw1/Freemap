@@ -2,6 +2,20 @@ package freemap.data;
 
 public class IdentityProjection extends SimpleProjection implements Projection {
 
+    private static IdentityProjection instance;
+    
+    private IdentityProjection()
+    {
+        
+    }
+    
+    public static IdentityProjection getInstance()
+    {
+        if(instance==null)
+            instance = new IdentityProjection();
+        return instance;
+    }
+    
     public Point project (Point p)
     {
         return new Point (p.x, p.y, p.z);

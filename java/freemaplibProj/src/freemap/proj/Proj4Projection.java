@@ -27,7 +27,7 @@ public class Proj4Projection implements Projection {
 		{
 			Point2D.Double in=new Point2D.Double(p.x,p.y), out=new Point2D.Double();
 			out=proj4proj.transform(in,out);
-			return new Point(out.x,out.y);
+			return new Point(out.x,out.y,p.z);
 		}
 		return null;
 	}
@@ -38,7 +38,7 @@ public class Proj4Projection implements Projection {
 		{
 			Point2D.Double in=new Point2D.Double(p.x,p.y), out=new Point2D.Double();
 			out=proj4proj.inverseTransform(in,out);
-			return new Point(out.x,out.y);
+			return new Point(out.x,out.y,p.z);
 		}
 		return null;
 	}
