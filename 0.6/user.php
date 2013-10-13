@@ -1,11 +1,10 @@
 <?php
-require_once('/home/www-data/private/defines.php');
 require_once('../lib/functionsnew.php');
 require_once('User.php');
 
 session_start();
 
-$conn=pg_connect("dbname=gis user=gis");
+$conn=pg_connect(pgconnstring());
 $cleaned=clean_input($_REQUEST,'pgsql');
 
 switch($cleaned["action"])

@@ -1,10 +1,10 @@
 <?php
 
-require_once('/home/www-data/private/defines.php');
+require_once('../lib/functionsnew.php');
 
 session_start();
 
-$conn=pg_connect("dbname=gis user=gis");
+$conn=pg_connect(pgconnstring());
 
 $lat = (isset($_GET['lat'])) ? $_GET['lat']: 
 	(isset($_GET['y']) ? $_GET["y"]/1000000 : "null");

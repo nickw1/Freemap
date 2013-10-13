@@ -4,7 +4,7 @@ require_once('../User.php');
 
 session_start();
 
-$conn=pg_connect("dbname=gis user=gis");
+$conn=pg_connect(pgconnstring());
 $cleaned = clean_input($_POST,'pgsql');
 
 $inProj = isset($cleaned['inProj']) ? $cleaned['inProj']:'4326';

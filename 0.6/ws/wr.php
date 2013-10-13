@@ -5,7 +5,7 @@ require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
 require_once('../User.php');
 
-$pconn=pg_connect("dbname=gis user=gis");
+$pconn=pg_connect(pgconnstring());
 $cleaned=clean_input($_REQUEST,'pgsql');
 $cleaned["format"] = isset($cleaned["format"]) ? $cleaned["format"]:"geojson";
 

@@ -30,7 +30,7 @@ $tbl_prefix=isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"]:"planet_osm";
 $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '900913';
 adjustProj($outProj);
 
-$conn=pg_connect("dbname=gis user=gis");
+$conn=pg_connect(pgconnstring());
 
 $bbox = get_sphmerc_bbox($x,$y,$z);
 if(isset($cleaned["kothic"]) && $cleaned["kothic"])

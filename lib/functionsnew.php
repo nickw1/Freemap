@@ -1,6 +1,6 @@
 <?php
 
-require_once('/home/www-data/private/defines.php');
+require_once('/home/www-data/private/defines.php'); // DELETE ON OTHER SERVERS!
 require_once('/var/www/common/defines.php');
 require_once('latlong.php');
 require_once('/var/www/phpcoord/phpcoord.php');
@@ -546,5 +546,10 @@ function mkgeom(&$coords, $lonidx, $latidx, $geomtype)
     }
     $txt .= $geomtype=="MULTILINESTRING" ? "))" : ")";
     return $txt;
+}
+
+function pgconnstring()
+{
+	return "dbname=". PG_DBNAME ." user=".PG_USER;
 }
 ?>

@@ -11,7 +11,7 @@ $cleaned = clean_input($_GET);
 
 $tbl_prefix = isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"] : "planet_osm";
 
-$conn=pg_connect("dbname=gis user=gis");
+$conn=pg_connect(pgconnstring());
 
 
 if (!isset($cleaned["q"]))

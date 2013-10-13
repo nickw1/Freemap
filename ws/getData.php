@@ -232,7 +232,6 @@ function getSRTM($w,$s,$e,$n)
 				($lon<0 ? "W":"E"),
 				($lon<0 ? -$lon:$lon) );
 			$fp = fopen($file,"r");
-			//echo $file;
 			if($fp)
 			{
 				echo "\"heights\": [ ";
@@ -253,8 +252,8 @@ function getSRTM($w,$s,$e,$n)
 							$val=0;
 						elseif($val>32768)
 							$val -= 65536;
+						printf("%d", $val); 
 
-						printf("%d", val); 
 					}
 				}
 				fclose($fp);

@@ -6,7 +6,6 @@
 # for details.                                                                 #
 ################################################################################
 //header("Content-type: text/xml");
-require_once('/home/www-data/private/defines.php');
 //require_once('database.php');
 //define('OSM_LOGIN','NOT_NEEDED');
 
