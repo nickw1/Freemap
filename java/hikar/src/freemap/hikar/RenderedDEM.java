@@ -16,7 +16,8 @@ public class RenderedDEM {
 
     FloatBuffer vertexBuffer;
     ShortBuffer indexBuffer;
-    float[] surfaceColour = { 0.0f, 1.0f, 0.0f, 0.1f };
+    float[] surfaceColour = { 0.0f, 1.0f, 0.0f, 0.05f };
+    
     Point centrePoint;
     
   
@@ -47,12 +48,11 @@ public class RenderedDEM {
             for(int col=0; col<ncols; col++)
             {
                 Point p = trans.tileToDisplay(dem.getPoint(col, row));
-                Log.d("hikar","dem.getPoint() is " + dem.getPoint(col, row));
+            
                 vertexBuffer.put( (float)p.x);
                 vertexBuffer.put( (float)p.y);
                 vertexBuffer.put( (float)(p.z-5*trans.getMultiplier()));
-                Log.d("hikar","Adding rendered DEM point wihtout adjusted z: " + p.x + "," + p.y + "," + 
-                (p.z-5*trans.getMultiplier()));
+                
             }
         }
          
@@ -98,7 +98,7 @@ public class RenderedDEM {
         } 
         
         //Log.d("hikar","indices (first 3 rows and last row): " + istr);
-        Log.d("hikar","Expected size of indices=" + nIndices + " actual=" + i);
+        
         
         indexBuffer.put(indices);
         indexBuffer.position(0);

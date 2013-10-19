@@ -200,5 +200,10 @@ public abstract class BaseTileDeliverer {
         return data.get(key);
     }
         
+    public Projection getProjection()
+    {
+        return proj;
+    }
+    
     public abstract TiledData getDataFromSource(Point origin) throws Exception;
 }

@@ -62,7 +62,7 @@ import freemap.data.Walkroute;
 import freemap.datasource.FreemapDataHandler;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.FreemapFileFormatter;
-import freemap.datasource.TileDeliverer;
+import freemap.datasource.CachedTileDeliverer;
 import freemap.datasource.WebDataSource;
 import freemap.datasource.XMLDataInterpreter;
 import freemap.datasource.AnnotationCacheManager;
@@ -107,7 +107,7 @@ public class OpenTrail extends MapActivity implements
 	boolean tracking;
 	
 	FreemapFileFormatter formatter;
-	TileDeliverer poiDeliverer;
+	CachedTileDeliverer poiDeliverer;
 	String cachedir;
 	boolean prefGPSTracking, prefAutoDownload, prefAnnotations, recordingWalkroute;
 	Drawable personIcon, annotationIcon, markerIcon;
@@ -255,9 +255,10 @@ public class OpenTrail extends MapActivity implements
     		formatter.selectPOIs("place,amenity,natural");
     		formatter.selectAnnotations(true);
     		WebDataSource ds=new WebDataSource("http://www.free-map.org.uk/0.6/ws/",formatter);
-    		poiDeliverer=new TileDeliverer("poi",ds, new XMLDataInterpreter
+    		poiDeliverer=new CachedTileDeliverer("poi",ds, new XMLDataInterpreter
     				(new FreemapDataHandler()),5000,5000,this.proj,cachedir);
-        	
+    		poiDeliverer.setCache(true);
+    		poiDeliverer.setReprojectCachedData(false);
     		
     		
     		if (Shared.pois==null)

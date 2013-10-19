@@ -1,9 +1,13 @@
 package freemap.opentrail;
 
+import java.util.Map;
+import java.util.Set;
+
 import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
+import freemap.datasource.TiledData;
 import android.content.Context;
-import freemap.datasource.TileDeliverer;
+import freemap.datasource.CachedTileDeliverer;
 import android.util.Log;
 import freemap.andromaps.DataCallbackTask;
 import org.mapsforge.core.GeoPoint;
@@ -13,11 +17,11 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 	
 	
 	
-	TileDeliverer td;
+	CachedTileDeliverer td;
 	boolean forceWebDownload;
 	GeoPoint location;
 	
-	public DownloadPOIsTask(Context ctx, TileDeliverer td, DataReceiver receiver, boolean showDialog,
+	public DownloadPOIsTask(Context ctx, CachedTileDeliverer td, DataReceiver receiver, boolean showDialog,
 								boolean forceWebDownload, GeoPoint location)
 	{
 		super(ctx,receiver);
@@ -36,12 +40,26 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		
 		try
 		{
+		  
+		    td.setForceReload(forceWebDownload);
 			Point p = new Point(location.getLongitude(),location.getLatitude());
 			Log.d("OpenTrail","Updating data with point: " + p);
-			Log.d("OpenTrail","getSurroiundingties()retuend:" +td.updateSurroundingTiles(p,true,forceWebDownload));
-			setData((FreemapDataset)td.getAllData());
+			Log.d("OpenTrail","getSurroundingTiles()retuend:" +td.updateSurroundingTiles(p));
+			//setData((FreemapDataset)td.getAllData());
 			Log.d("OpenTrail","done");
-			return "Successfully downloaded";
+			
+
+			
+			/* old TileDeliverer getAllData() code */
+			FreemapDataset allData = new FreemapDataset();
+	        allData.setProjection(td.getProjection());
+	        Set<Map.Entry<String, TiledData>> entries = td.getAllTiles();
+	        for(Map.Entry<String, TiledData> e: entries)
+	        {
+	            allData.merge(e.getValue());
+	        }
+	        setData(allData);
+	        return "Successfully downloaded";
 		}
 		catch(Exception e)
 		{

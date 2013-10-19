@@ -405,6 +405,11 @@ Freemap.prototype.setupModes = function()
         if(this.modes[i].submenu)
         {
             var childDiv=document.createElement("div");
+			childDiv.onclick = function (e)
+			{
+				e.stopPropagation();
+			};
+
             for(var j=0; j<this.modes[i].submenu.length; j++)
             {
                 var a = document.createElement("a");
