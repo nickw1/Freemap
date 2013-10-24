@@ -9,6 +9,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.MenuItem;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.view.KeyEvent;
 
 
 public class Hikar extends Activity 
@@ -24,6 +25,14 @@ public class Hikar extends Activity
         setContentView(R.layout.activity_main);
         addContentView(hud, new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
         viewFragment = (ViewFragment)getFragmentManager().findFragmentById(R.id.view_fragment);  
+        
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if(prefs != null)
+        {
+            float orientationAdjustment = prefs.getFloat("orientationAdjustment", 0.0f);
+            viewFragment.changeOrientationAdjustment(orientationAdjustment);
+        }
+       
     }
 
    
@@ -82,6 +91,43 @@ public class Hikar extends Activity
         String prefDisplayProjectionID = "epsg:" + prefs.getString("prefDisplayProjection", "27700");
         if(!viewFragment.setDisplayProjectionID(prefDisplayProjectionID))
             DialogUtils.showDialog(this, "Invalid projection " + prefDisplayProjectionID);
+    }
+    
+    
+    public boolean onKeyDown(int key, KeyEvent ev)
+    {
+       
+        boolean handled=false;
+        
+        switch(key)
+        {
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                viewFragment.changeOrientationAdjustment(-1.0f);
+                handled=true;
+                break;
+                
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                viewFragment.changeOrientationAdjustment(1.0f);
+                handled=true;
+                break;
+        }
+        
+        return handled ? true: super.onKeyDown(key, ev);
+    }
+    
+    public boolean onKeyUp(int key,KeyEvent ev)
+    {
+        return key==KeyEvent.KEYCODE_VOLUME_DOWN || key==KeyEvent.KEYCODE_VOLUME_UP ? true: super.onKeyUp(key,ev);
+    }
+  
+    public void onDestroy()
+    {
+        super.onDestroy();
+        
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putFloat("orientationAdjustment", viewFragment.getOrientationAdjustment());
+        editor.commit();
     }
     
     public HUD getHUD()

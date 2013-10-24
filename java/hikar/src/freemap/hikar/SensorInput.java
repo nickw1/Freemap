@@ -20,7 +20,7 @@ public class SensorInput implements SensorEventListener
     
     public interface SensorInputReceiver
     {
-        public void receiveSensorInput(float[] rotMtx, float[] orientation);
+        public void receiveSensorInput(float[] rotMtx);
     }
     
     public SensorInput(SensorInputReceiver receiver)
@@ -92,7 +92,7 @@ public class SensorInput implements SensorEventListener
         if(accelValues!=null && magValues!=null && ctx!=null)
         {
             SensorManager.getRotationMatrix(R, I, accelValues, magValues);
-            SensorManager.getOrientation(R, orientation);
+            
             
             WindowManager wm = (WindowManager)ctx.getSystemService(Context.WINDOW_SERVICE);
             switch(wm.getDefaultDisplay().getRotation())
@@ -100,21 +100,23 @@ public class SensorInput implements SensorEventListener
                 case Surface.ROTATION_90:
                     SensorManager.remapCoordinateSystem(R,SensorManager.AXIS_Y,SensorManager.AXIS_MINUS_X,glR);
                     break;
-                 
+             
                 case Surface.ROTATION_180:
                     SensorManager.remapCoordinateSystem(R,SensorManager.AXIS_MINUS_X,SensorManager.AXIS_MINUS_Y,glR);
                     break;   
-                    
+                
                 case Surface.ROTATION_270:
                     SensorManager.remapCoordinateSystem(R,SensorManager.AXIS_MINUS_Y,SensorManager.AXIS_X,glR);
                     break;
-                    
+                
                 case Surface.ROTATION_0:
                     System.arraycopy(R, 0, glR, 0, 16);
                     break;
-                
+            
             }
-            receiver.receiveSensorInput(glR, orientation);
+            
+            
+            receiver.receiveSensorInput(glR);
         }
     }
 }

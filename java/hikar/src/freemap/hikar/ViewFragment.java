@@ -4,12 +4,18 @@ import freemap.data.Point;
 import freemap.proj.Proj4ProjectionFactory;
 import android.app.Fragment;
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.SensorManager;
 import android.location.Location;
+import android.opengl.Matrix;
 import android.os.Bundle;
+import android.view.Surface;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.util.Log;
+import android.hardware.GeomagneticField;
 import java.util.HashMap;
 import freemap.datasource.Tile;
 import freemap.data.Projection;
@@ -34,6 +40,8 @@ public class ViewFragment extends Fragment
     String[] tilingProjIDs = { "epsg:27700", "epsg:4326" };
     TileDisplayProjectionTransformation trans;
     String lfpUrl, srtmUrl, osmUrl;
+    GeomagneticField field;
+    float orientationAdjustment;
     
     
     public ViewFragment()
@@ -116,13 +124,20 @@ public class ViewFragment extends Fragment
     
     public void receiveLocation(Location loc) {
     
-       
+        
         if(integrator!=null)
         {
            
             Point p = new Point(loc.getLongitude(), loc.getLatitude());
             double height = integrator.getHeight(p);
             p.z = height;
+            
+            // We assume we won't travel far enough in one session for magnetic north to change much
+            if(field==null)
+            {
+                field = new GeomagneticField ((float)loc.getLatitude(), (float)loc.getLongitude(), 
+                                            0, System.currentTimeMillis());
+            }
             
             locDisplayProj = trans.getDisplayProj().project(p);
           
@@ -153,9 +168,17 @@ public class ViewFragment extends Fragment
        
     }
     
-    public void receiveSensorInput(float[] matrix, float[] orientation)
-    {  
-        glView.getRenderer().setOrientMtx(matrix);
+    public void receiveSensorInput(float[] glR)
+    { 
+        float[] orientation = new float[3];
+        
+        float magNorth = field==null ? 0.0f : field.getDeclination(),
+                actualAdjustment = magNorth + orientationAdjustment;
+        Matrix.rotateM (glR, 0, actualAdjustment, 0.0f, 0.0f, 1.0f);
+        
+        SensorManager.getOrientation(glR, orientation);
+         
+        glView.getRenderer().setOrientMtx(glR);
         ((Hikar)getActivity()).getHUD().setOrientation(orientation);
         ((Hikar)getActivity()).getHUD().invalidate();
     }
@@ -232,4 +255,15 @@ public class ViewFragment extends Fragment
         this.osmUrl = osmUrl;
         return change;
     }
+    
+    public void changeOrientationAdjustment(float amount)
+    {
+        orientationAdjustment += amount;
+    }
+    
+    public float getOrientationAdjustment()
+    {
+        return orientationAdjustment;
+    }
+
 }
