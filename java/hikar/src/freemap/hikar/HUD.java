@@ -9,7 +9,7 @@ import android.content.Context;
 public class HUD extends View{
 
     float[] orientation;
-    float height, hfov;
+    float height, hfov, orientationAdjustment;
     Paint paint;
     
     public HUD(Context ctx)
@@ -41,6 +41,11 @@ public class HUD extends View{
         this.hfov = hfov;
     }
    
+    public void changeOrientationAdjustment(float diff)
+    {
+        this.orientationAdjustment += diff;
+    }
+    
     public void onDraw (Canvas canvas)
     {
         super.onDraw(canvas);
@@ -49,7 +54,8 @@ public class HUD extends View{
         if(orientation!=null)
         {
            
-            String data = String.format ("Azimuth %8.3f pitch %8.3f roll %8.3f ht %8.3f hfov %8.3f", orientation[0], orientation[1],
+            String data = String.format ("Azimuth %8.3f (adj %5.1f) pitch %8.3f roll %8.3f ht %8.3f hfov %8.3f", 
+                                            orientation[0], orientationAdjustment, orientation[1],
                                             orientation[2], height, hfov);
             canvas.drawText(data, 0, getHeight()-24, paint);
             

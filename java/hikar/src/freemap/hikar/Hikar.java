@@ -31,6 +31,7 @@ public class Hikar extends Activity
         {
             float orientationAdjustment = prefs.getFloat("orientationAdjustment", 0.0f);
             viewFragment.changeOrientationAdjustment(orientationAdjustment);
+            hud.changeOrientationAdjustment(orientationAdjustment);
         }
        
     }
@@ -103,19 +104,21 @@ public class Hikar extends Activity
         {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
                 viewFragment.changeOrientationAdjustment(-1.0f);
+                hud.changeOrientationAdjustment(-1.0f);
                 handled=true;
                 break;
                 
             case KeyEvent.KEYCODE_VOLUME_UP:
                 viewFragment.changeOrientationAdjustment(1.0f);
+                hud.changeOrientationAdjustment(1.0f);
                 handled=true;
                 break;
         }
-        
+       
         return handled ? true: super.onKeyDown(key, ev);
     }
     
-    public boolean onKeyUp(int key,KeyEvent ev)
+    public boolean onKeyUp(int key, KeyEvent ev)
     {
         return key==KeyEvent.KEYCODE_VOLUME_DOWN || key==KeyEvent.KEYCODE_VOLUME_UP ? true: super.onKeyUp(key,ev);
     }
