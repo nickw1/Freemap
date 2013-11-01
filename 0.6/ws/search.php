@@ -6,6 +6,7 @@ require_once('../../lib/functionsnew.php');
 require_once('xml.php');
 
 header("Access-Control-Allow-Origin: http://www.fixmypaths.org");
+header("Access-Control-Allow-Origin: http://www.opentrailview.org");
 
 $cleaned = clean_input($_GET);
 

@@ -1,6 +1,6 @@
 <?php
 
-require_once('../0.6/User.php');
+require_once('../lib/User.php');
 
 session_start();
 

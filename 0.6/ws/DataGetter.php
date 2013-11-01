@@ -401,7 +401,6 @@ class BboxGetter extends DataGetter
 				$this->cacheData($cache);	
 			}
 			/* if cached tile over 30 days old, add to tilelist */
-
 			elseif(time() - $result > MAX_TILE_AGE && $z >= 11)
 			{
 				$tileList = new TileList();

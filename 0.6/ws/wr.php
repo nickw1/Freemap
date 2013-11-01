@@ -3,7 +3,7 @@ session_start();
 
 require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
-require_once('../User.php');
+require_once('../../lib/User.php');
 
 $pconn=pg_connect(pgconnstring());
 $cleaned=clean_input($_REQUEST,'pgsql');
