@@ -296,6 +296,17 @@ function pg_insert_id($table)
     return $row["id"];
 }
 
+function pg_next_id($table)
+{	
+	$result=pg_query("SELECT * FROM $table ORDER BY id DESC LIMIT 1");
+	if(pg_num_rows($result) == 1)
+	{
+		$row=pg_fetch_array($result,null,PGSQL_ASSOC);
+		return $row["id"]+1;
+	}
+	return 1;
+}
+
 function sphmerc_to_lon($m)
 {
     return ($m/HALF_EARTH) * 180.0;
