@@ -40,12 +40,13 @@ else
         {
             $lat=$photosphere->getLatitude();
             $lon=$photosphere->getLongitude();
+			list($e,$n) = reproject($lon,$lat,'4326','900913');
             pg_query
                 ("INSERT INTO panoramas (authorised,userid,xy) ".
                 " VALUES (0,".
 				get_user_id($_SESSION["gatekeeper"],"users","username",
 							"id","pgsql").",".
-                "GeomFromText('POINT($lon $lat)',4326))");
+                "GeomFromText('POINT($e $n)',900913))");
             echo "Successful upload";
         }
     }

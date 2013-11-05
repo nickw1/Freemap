@@ -9,6 +9,7 @@ require_once('DBDetails.php');
 require_once('xml.php');
 require_once('../../lib/latlong.php');
 
+header("Access-Control-Allow-Origin: http://www.opentrailview.org");
 
 // fernhurst -80454 6629930
 

@@ -15,6 +15,8 @@ require_once('DataGetter.php');
 require_once('xml.php');
 require_once('DBDetails.php');
 
+header("Access-Control-Allow-Origin: http://www.opentrailview.org");
+
 $cleaned = clean_input($_REQUEST);
 
 // DBDetails: poi way poly contour coast ann

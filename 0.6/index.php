@@ -33,6 +33,7 @@ href='../javascript/leaflet-0.5.1/dist/leaflet.css' />
 <script type='text/javascript' src='js/lib/Ajax.js'></script>
 <script type='text/javascript' src='js/lib/SearchWidget.js'></script>
 <script type='text/javascript' src='js/lib/Dialog.js'></script>
+<script type='text/javascript' src='js/lib/FreemapWidget.js'></script>
 <script type='text/javascript'>
 var lat=<?php echo $lat; ?>;
 var lon=<?php echo $lon; ?>;

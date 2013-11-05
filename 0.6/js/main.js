@@ -1,15 +1,6 @@
 
 function Freemap(lat,lon,zoom)
 {
-    var tileUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php' +
-        '?x={x}&y={y}&z={z}&way=all&poi=all&kothic=1&contour=1&coastline=1';
-
-    this.kothic=new L.TileLayer.Kothic(tileUrl,{minZoom:11,
-            attribution: 'Map data &copy; 2012 OpenStreetMap contributors,'+
-                'Open Database Licence,'+
-                'contours &copy; Crown Copyright and database right '+
-                'Ordnance Survey 2011, Rendering by '+
-                '<a href="http://github.com/kothic/kothic-js">Kothic JS</a>'} );
 
     //var testLayer = new OverlayCanvas();
 
@@ -84,8 +75,9 @@ function Freemap(lat,lon,zoom)
 					});
 
 
-    this.map = new L.Map('map',{layers:[this.kothic,this.geojsonLayer,
+    this.map = new FreemapWidget('map',{layers:[this.geojsonLayer,
             this.walkrouteStartsLayer,this.walkrouteLayer]});
+
     this.wrAddMgr=new WRAddMgr(this.walkrouteLayer,'main');
     if(lat===null) 
     {
@@ -107,7 +99,8 @@ function Freemap(lat,lon,zoom)
     }
 
     var startPos= new L.LatLng(lat,lon);
-    this.map.setView(new L.LatLng(lat,lon),zoom).addLayer(this.kothic);
+    //this.map.setView(new L.LatLng(lat,lon),zoom).addLayer(this.kothic);
+    this.map.setView(new L.LatLng(lat,lon),zoom);
 
 
     this.map.on('dragend',this.onDragEnd.bind(this));

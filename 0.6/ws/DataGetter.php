@@ -37,8 +37,7 @@ class DataGetter
                             "col"=>"way"),
                     array("table"=>"coastlines",
                             "col"=>"the_geom"),
-                    array("table"=>"annotations",
-                            "col"=>"xy")
+                    array("col"=>"xy")
                             ); 
         $this->SRID = $srid;
 
@@ -435,6 +434,10 @@ class BboxGetter extends DataGetter
         {
             $this->getAnnotationData();
         }
+		elseif(isset($options["overlay"]))
+		{
+			$this->getOverlayData($options["overlay"]);
+		}
 	}
 
 	function cacheData($cache)
@@ -558,7 +561,12 @@ class BboxGetter extends DataGetter
     
     function getAnnotationData()
     {
-        $pqry = $this->dbq->getAnnotationQuery($this->geomtxt);
+		self::getOverlayData("annotation");
+	}
+
+	function getOverlayData($type)
+	{
+        $pqry = $this->dbq->getOverlayQuery($this->geomtxt, $type); 
         if($pqry===null)
             return;
 
@@ -572,10 +580,10 @@ class BboxGetter extends DataGetter
             $counteddata=array();
             foreach($prow as $k=>$v)    
                 if($k!='authorised' && $k!='geojson' && 
-                    $k!=$this->dbq->annotationDetails["col"] && $v!='')
+                    $k!=$this->dbq->overlayDetails["col"] && $v!='')
                     $counteddata[$k]=$v;
             $feature["properties"] = $counteddata;
-            $feature["properties"]["annotation"] = "yes";
+            $feature["properties"][$type] = "yes";
             $feature["geometry"]=array();
             $feature["geometry"]["coordinates"] = $f["coordinates"];
             $feature["geometry"]["type"] = $f["type"];

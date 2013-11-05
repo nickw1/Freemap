@@ -2,7 +2,7 @@
 class DBDetails
 {
     public $poiDetails, $wayDetails, $polygonDetails, $contourDetails, 
-            $coastlineDetails, $annotationDetails;
+            $coastlineDetails, $overlayDetails;
 
     public function __construct($poi, $way, $poly, $contour, 
                                     $coast, $ann)
@@ -12,7 +12,7 @@ class DBDetails
         $this->polygonDetails = $poly;
         $this->contourDetails = $contour;
         $this->coastlineDetails = $coast;
-        $this->annotationDetails = $ann;
+        $this->overlayDetails = $ann;
         $this->intersection = true;
     }
 
@@ -69,14 +69,15 @@ class DBDetails
                     $this->coastlineDetails["col"] . "&& $geomtxt" : null;
     }
 
-    public function getAnnotationQuery($geomtxt)
+	// 031113 altered getAnnotationQuery() to getOverlayQuery() so that
+	// the same code can be used to load any point overlay e.g. panoramas
+    public function getOverlayQuery($geomtxt, $type)
     {
-        return ($this->annotationDetails) ?
-        "SELECT *,ST_AsGeoJSON(".$this->annotationDetails["col"].
+        return ($this->overlayDetails) ?
+        "SELECT *,ST_AsGeoJSON(".$this->overlayDetails["col"].
         ") AS geojson ".
-        " FROM ".$this->annotationDetails["table"].
-        " WHERE authorised=1 AND ".$this->annotationDetails["col"].
-            "&& $geomtxt" : null;
+        " FROM ${type}s  WHERE authorised=1 AND ".
+		$this->overlayDetails["col"].  "&& $geomtxt" : null;
     }
 
 
