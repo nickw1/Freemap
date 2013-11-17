@@ -1,6 +1,5 @@
 <?php
 
-require_once('/home/www-data/private/defines.php'); // DELETE ON OTHER SERVERS!
 require_once('/var/www/common/defines.php');
 require_once('latlong.php');
 require_once('/var/www/phpcoord/phpcoord.php');
@@ -13,12 +12,6 @@ define ('EARTH', 40075016.68);
 // Generic stuff - might be useful for other projects
 // This code is licenced under the LGPL
 
-function dbconnect($db=DB_DBASE)
-{
-    $conn = mysql_connect("localhost",DB_USERNAME,DB_PASSWORD);
-    mysql_select_db($db);
-    return $conn;
-}
 
 // get user level for a username
 // return null if the username can't be found

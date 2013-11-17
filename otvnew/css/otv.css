@@ -10,9 +10,19 @@ body
 	font-family: roboto;
 }
 
-h1, h2, h3, h4, h5, h6
+#content, #container, html, body
+{
+	height: 100%;
+}
+
+#content > h1
 {
 	background-color: #8080ff;
+	color: white;
+}
+
+#container h2
+{
 	color: white;
 }
 
@@ -28,12 +38,72 @@ em
 	font-weight: bold;
 }
 
-#container
-{
-	border: 1px solid #000080;
-}
-
 #loginlink
 {
 	float: right;
+	z-index: 999;
+	top: 0px;
+	text-shadow: black -2px -2px 4px;
+	position: relative; 
+}
+
+#commands
+{
+	color: white;
+	font-weight: bold;
+	text-shadow: black -2px -2px 4px;
+	z-index: 999;
+	position: absolute;
+	left: 50px;
+}
+
+.fmap_dlg label
+{
+	color: white; 
+	font-weight: bold;
+	text-shadow: black -2px 2px 4px;
+}
+
+
+a.panolink
+{
+	font-weight: bold;
+	color: white;
+	background-color: rgba(192,192,255,0.8);
+	padding-left: 5px;
+	padding-right: 5px;
+	border-radius: 15px;
+	margin-top: 5px;
+}
+
+
+#container a:hover
+{
+	color: yellow;
+}
+
+#container
+{
+	overflow: hidden;
+	position: relative;
+	clear: both;
+	text-shadow: black -2px -2px 4px;
+	color: white;
+}
+
+#searchterm
+{
+	border-radius: 10px;
+}
+
+#map a
+{
+	color: blue;
+}
+
+input[type=button]
+{
+	background-color: blue;
+	color: white;
+	font-family: roboto;
 }

@@ -16,23 +16,17 @@ function Dialog(parentId,callbacks,style)
     this.div.appendChild(this.contentsContainer);
     var actionsContainer = document.createElement("div");
     actionsContainer.style.textAlign = 'center';
-    if(this.callbacks && this.callbacks.ok)
-    {
-        var ok = document.createElement("input");
-        ok.value="OK";
-        ok.type="button";
-        ok.id = this.div.id + "_ok";
-        ok.onclick = this.callbacks.ok;
-        actionsContainer.appendChild(ok);
-    }
-    if(this.callbacks && this.callbacks.cancel)
-    {
-        var cancel = document.createElement("input");
-        cancel.value="Cancel";
-        cancel.type="button";
-        cancel.id = this.div.id + "_cancel";
-        cancel.onclick = this.callbacks.cancel;
-        actionsContainer.appendChild(cancel);
+	if(this.callbacks)
+	{
+		for(k in this.callbacks)
+		{
+        	var btn = document.createElement("input");
+        	btn.value=k;
+        	btn.type="button";
+        	btn.id = this.div.id + "_"+k;
+        	btn.onclick = this.callbacks[k];
+        	actionsContainer.appendChild(btn);
+		}
     }
     this.div.appendChild(actionsContainer);
     if(style)
@@ -71,7 +65,13 @@ Dialog.prototype.isVisible = function()
 
 Dialog.prototype.setPosition = function(x,y)
 {
-    this.div.style.position='absolute';
-    this.div.style.left=x+'px';
-    this.div.style.top=y+'px';
+	this.div.style.position ="absolute";
+    this.div.style.left=x;
+    this.div.style.top=y;
+}
+
+Dialog.prototype.setSize = function(w,h)
+{
+    this.div.style.width=w;
+    this.div.style.height=h;
 }

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>opentrailview2 :: about</title>
+<link rel='stylesheet' type='text/css' href='/css/otv.css' />
+<body>
+
+<div id="content">
+
+    <h1>OpenTrailView :: About</h1>
+
+	<h2>What is OpenTrailView?</h2>
+
+	<p><em>OpenTrailView</em> is a project to collect Android
+	<a href="http://www.google.co.uk/maps/about/contribute/Photo Sphere">
+	Photo Spheres</a>
+	and combine them with 
+	<a href="http://www.openstreetmap.org">OpenStreetMap</a>
+	data to produce virtual tours of the countryside, in which users can
+	navigate from one Photo Sphere to the next. The idea is basically to
+	produce something similar to Google Street View, but for footpaths rather
+	than roads, and (to avoid creating silly amounts of data) showing the
+	Photo Spheres at key points only, such as junctions, views or other
+	points of interest, rather than every few metres. </p>
+
+	<h2>How to contribute</h2>
+
+	<p>Contributing is easy if you have a recent Android device. Simply:
+		<ul>
+		<li><a href="user.php?action=signup">Sign up</a> for an account</li>
+		<li>Make sure the Photo Sphere camera app is installed on your device.
+		For some Google Nexus devices, it's probably there already. If you
+		have another modern Android device such as the Galaxy SIII or S4,
+		you'll need to install the Photo Sphere camera app separately, as 
+		the default camera app does not take Photo Spheres.
+		This has been made available by a third party, see
+		<a href="http://forums.androidcentral.com/htc-one-google-edition/292206-google-edition-camera-app-w-Photo Sphere-easy-install-no-root-needed.html">
+		here.</a>
+		</li>
+		<li>Take your Photo Sphere at your desired location. Ensure that your
+		GPS is on, because at present Photo Spheres must be tagged with 
+		latitude and longitude to be accepted by OpenTrailView.</li>
+		<li>Upload your Photo Sphere from the main page, after logging in.
+		Note that all
+		Photo Spheres need to be authorised (to guard against questionable
+		content being uploaded). Once authorised your Photo Sphere will
+		be able to be viewed; it will be shown by a camera icon on the map.
+		</li>
+		</ul>
+	</p>
+	
+	<h2>Supported browsers</h2>
+
+	<p>Current versions of Firefox and Chrome are supported. Sorry, for the
+	moment Internet Explorer isn't supported - it will at some point in the
+	future.</p>
+
+	<h2>Current status and Future plans</h2>
+
+	<p>Right now, OpenTrailView <em>shows uploaded Photo Spheres on the map
+	</em>. You can view a Photo Sphere by clicking on the camera icon. 
+	You can also show the nearest photo sphere to a given location
+	by clicking the <em>"pano view"</em> link, though given there are only
+	a small number of spheres loaded right now, this might be some 
+	considerable distance away!</p>
+	<p>
+	The functionality to link Photo Spheres using the underlying OSM data
+	is not yet implemented, but is intended to be soon. Note that on this
+	server, <em>this linking together will only work for certain areas of
+	the UK, and not globally, as, due to server limitations, only OSM data
+	for certain parts of the UK is included; see
+	<a href="http://www.free-map.org.uk/0.6/about.html#village">here</a></em>.
+	Because of this, you might be interested in setting up an OpenTrailView
+	server for your own country; see
+	<a href="http://wiki.openstreetmap.org/wiki/OpenTrailView">here</a>.
+	</p>
+
+	<p><a href="index.php">Back to main page</a></p>
+</div>
+
+</body>
+</html>

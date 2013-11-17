@@ -31,13 +31,16 @@ function SearchWidget(divId,options,resultsDivStyle)
     }
 
     holder.appendChild(txt);
-    holder.appendChild(document.createElement("br"));
-    holder.appendChild(btn);
-    var heading=document.createElement("h1");
-    heading.appendChild(document.createTextNode("Search"));
-    heading.style.marginLeft='auto';
-    heading.style.marginRight='auto';
-    div.appendChild(heading);
+	if(typeof(options.heading)=="undefined" || options.heading===true)
+	{
+    	holder.appendChild(document.createElement("br"));
+    	var heading=document.createElement("h1");
+    	heading.appendChild(document.createTextNode("Search"));
+    	heading.style.marginLeft='auto';
+    	heading.style.marginRight='auto';
+    	div.appendChild(heading);
+	}
+	holder.appendChild(btn);
     div.appendChild(holder);
     div.appendChild(results);
    

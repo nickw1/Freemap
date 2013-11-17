@@ -16,9 +16,9 @@ $probid = isset($_GET['probid']) ? $_GET['probid']: 0;
 <title>FixMyPaths</title>
 <link rel="stylesheet" type="text/css" href="css/fixmypaths.css" />
 
-</script>
+
 <script type='text/javascript' 
-src='http://www.free-map.org.uk/javascript/proj4js/lib/proj4js-combined.js'>
+src='http://www.free-map.org.uk/javascript/proj4js-compressed.js'>
 </script>
 
 <!-- NON KOTHIC
