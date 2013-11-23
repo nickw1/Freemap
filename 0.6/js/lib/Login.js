@@ -50,7 +50,8 @@ Login.prototype.loginCallback = function (xmlHTTP)
     if(xmlHTTP.status==200)
     {
         this.dialog.hide();
-        this.setLoggedIn(xmlHTTP.responseText);
+		var details = JSON.parse(xmlHTTP.responseText);
+        this.setLoggedIn(details[0], details[1]);
     }
     else
     {
@@ -58,12 +59,12 @@ Login.prototype.loginCallback = function (xmlHTTP)
     }
 }
 
-Login.prototype.setLoggedIn = function(username)
+Login.prototype.setLoggedIn = function(username, isadmin)
 {
     this.link.innerHTML = "Logout";
     this.loggedIn=true;
     if(this.callbacks && this.callbacks.onLogin)
-        this.callbacks.onLogin(username);
+        this.callbacks.onLogin(username, isadmin);
 }
 
 Login.prototype.logout = function()

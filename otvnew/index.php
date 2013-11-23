@@ -1,8 +1,11 @@
 <?php
 session_start();
+session_cache_limiter(false);
 
-$lat = isset($_GET["lat"]) ? $_GET["lat"] : 50.9;
-$lon = isset($_GET["lon"]) ? $_GET["lon"] : -1.4;
+$lat = isset($_GET["lat"]) ? $_GET["lat"] : 50.85;
+$lon = isset($_GET["lon"]) ? $_GET["lon"] : -1.65;
+
+require_once('../lib/User.php');
 
 // Change on other servers
 define('FREEMAP_ROOT','http://www.free-map.org.uk');
@@ -18,14 +21,11 @@ openstreetmap and photospheres</title>
 <link rel='stylesheet' type='text/css' 
 href='<?=FREEMAP_ROOT ?>/javascript/leaflet-0.5.1/dist/leaflet.css' />
 <script type='text/javascript' 
-src='<?=FREEMAP_ROOT ?>/javascript/photosphere/lib/sphere.js'></script>
+src='<?=FREEMAP_ROOT ?>/javascript/photosphere/lib/sphere.markembling.2.js'>
+</script>
 <script type='text/javascript' 
 src='<?=FREEMAP_ROOT ?>/javascript/photosphere/extern/three.min.js'>
 </script>
-<script type='text/javascript' 
-src='<?=FREEMAP_ROOT ?>/javascript/exif-js/binaryajax.js'></script>
-<script type='text/javascript' 
-src='<?=FREEMAP_ROOT ?>/javascript/exif-js/exif.js'></script>
 <script type='text/javascript' 
 src='<?=FREEMAP_ROOT ?>/javascript/leaflet-0.5.1/dist/leaflet.js'>
 </script>
@@ -45,8 +45,18 @@ src='<?=FREEMAP_ROOT ?>/0.6/js/FeatureLoader.js'> </script>
 var HttpData = {}, SessionData= {};
 HttpData.lat = <?php echo $lat; ?>;
 HttpData.lon = <?php echo $lon; ?>;
-SessionData.username = "<?php echo isset($_SESSION["gatekeeper"]) ? 
-    $_SESSION["gatekeeper"] :""?>";
+<?php
+$conn=pg_connect("dbname=gis user=gis");
+if(isset($_SESSION["gatekeeper"]))
+{
+	echo "SessionData.username = '$_SESSION[gatekeeper]';\n";
+	$u = User::getUserFromUsername ($_SESSION["gatekeeper"]);
+	echo "SessionData.admin = " . ($u->isAdmin() ? 1:0) .";\n";
+}
+else
+	echo "SessionData.username = '';";
+pg_close($conn);
+?>
 HttpData.panoId = <?php echo isset($_GET["id"]) && 
     ctype_digit($_GET["id"]) ?  $_GET["id"] : 0 ?>;
 HttpData.getNearest = <?php echo isset($_GET["lat"]) && 

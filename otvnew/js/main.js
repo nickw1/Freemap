@@ -20,7 +20,7 @@ function OTV(contid, switcherid, logindivid, freemapRoot)
     "position:absolute;top:0px;left:0px;width:100%; height:100%; z-index:1");
 
     this.switcher.addEventListener("click",this.switchMode.bind(this,true) , 
-										false);
+                                        false);
 
     this.mDiv = document.createElement("div");
     this.mDiv.setAttribute("id", this.mapid);
@@ -93,7 +93,7 @@ function OTV(contid, switcherid, logindivid, freemapRoot)
     this.uploadDlg.setContent(
         '<h2>Upload photospheres</h2>' +
         '<form method="post" enctype="multipart/form-data">' +
-        'Select your file: <input type="file" id="file1" /> <br />' +
+        'Select your file (max 4MB) : <input type="file" id="file1" /> <br />' +
         '<progress id="progress1" value="0" max="100" style="width: 90%">' +
         '</progress> <br />' +
         '<span id="progress2"></span><br /></form>');
@@ -112,7 +112,7 @@ function OTV(contid, switcherid, logindivid, freemapRoot)
 
     this.loadMap();
     this.login = new Login ("login", "loginlink", "user.php",
-                            { backgroundColor: 'rgba(192,192,255,0.6)',
+                            { backgroundColor: 'rgba(192,192,255,0.8)',
                                 position:'absolute',
                                 top:'50px', right:'0px',
                                 borderRadius: '10px'} ,
@@ -120,7 +120,7 @@ function OTV(contid, switcherid, logindivid, freemapRoot)
                                 onLogout: this.logoutCb.bind(this) } );
 
     if(SessionData.username!="")
-        this.login.setLoggedIn(SessionData.username);
+        this.login.setLoggedIn(SessionData.username, SessionData.admin);
 
     var search = new NominatimWidget
                     ("search",
@@ -190,9 +190,9 @@ OTV.prototype.loadMap = function()
     this.map.on("dragend", (function(e)
                             {
                                 loader.loadFeatures(e.target.getBounds());
-								var centre = e.target.getCenter();
-								this.lat = centre.getLatitude(); 
-								this.lon = centre.getLongitude();
+                                var centre = e.target.getCenter();
+                                this.lat = centre.lat; 
+                                this.lon = centre.lng;
                             }).bind(this)
                         );
 
@@ -207,8 +207,8 @@ OTV.prototype.switchMode = function (doFindNearest)
         document.getElementById("commands").style.left="0px";
         this.switcher.innerHTML = "map";
         this.mode = 1;
-		if(doFindNearest)
-			this.findNearestPhotosphere();
+        if(doFindNearest)
+            this.findNearestPhotosphere();
     }
     else
     {
@@ -222,13 +222,22 @@ OTV.prototype.switchMode = function (doFindNearest)
     }
 }
 
-OTV.prototype.loginCb =  function(username)
+OTV.prototype.loginCb =  function(username, isadmin)
 {
     this.logindiv.insertBefore (this.showUploadDlg, this.login.link);
-    this.logindiv.insertBefore
-            (document.createTextNode
-                (" Logged in as " + username + " "), 
-                this.showUploadDlg);
+    var last = this.showUploadDlg;
+    if(isadmin==1)
+    {
+        var a = document.createElement("a");
+        a.setAttribute("href", "pano.php?action=getUnmoderated");
+        a.setAttribute("class","panolink");
+        a.appendChild(document.createTextNode("Moderate"));
+        this.logindiv.insertBefore (a, this.showUploadDlg);
+        last = a;
+    }
+    var loggedInAs=document.createTextNode (" Logged in as " + username + " ");
+    this.logindiv.insertBefore (loggedInAs, last);
+        
     document.getElementById("signup").innerHTML = "";
 }
 
@@ -245,7 +254,7 @@ OTV.prototype.loadPhotosphereById = function(id)
 {
     if(this.curPhotosphereId != id)
     {
-        this.loadPhotosphere ('pano.php?id=' + id);
+        this.loadPhotosphere ('pano/' + id + ".jpg");
         this.curPhotosphereId = id;
     }
 }

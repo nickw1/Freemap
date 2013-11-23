@@ -4,6 +4,8 @@ require_once('../lib/functionsnew.php');
 require_once('../common/defines.php');
 require_once('Photosphere.php');
 
+define('MAX_FILE_SIZE', 4);
+
 session_start();
 
 $file=$_FILES["file1"]["tmp_name"];
@@ -15,6 +17,8 @@ if(!isset($_SESSION["gatekeeper"]))
 }
 elseif($file=="")
     echo "ERROR: no file uploaded!";
+elseif($_FILES["file1"]["size"] > MAX_FILE_SIZE * 1048576)
+	echo "ERROR: exceeded file size of ".MAX_FILE_SIZE." MB";
 else
 {
     $imageData = getimagesize($file);

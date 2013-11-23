@@ -97,7 +97,7 @@ class UserView
         elseif($error==3)
         {
             echo "<p class='error'>You've got to <em>actually provide</em> ".
-            "a username and password!!!!!</p>";
+            "a username and password!!!!! ;-)</p>";
         }
         ?>
         <div>

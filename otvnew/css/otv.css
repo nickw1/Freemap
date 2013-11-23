@@ -26,6 +26,12 @@ body
 	color: white;
 }
 
+h1.admin
+{
+	background-color : #800000;
+	color: white;
+}
+
 a
 {
 	color: #8080ff;

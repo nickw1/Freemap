@@ -22,6 +22,11 @@ function Ajax()
         // Set up the AJAX variable on old versions of Internet Explorer 
         this.xmlHTTP = new ActiveXObject("Microsoft.XMLHTTP");
     }
+
+	/*
+	if(this.xmlHTTP.overrideMimeType)
+		this.xmlHTTP.overrideMimeType('text/plain; charset=x-user-defined');
+	*/
 }
 
 

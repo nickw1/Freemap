@@ -35,7 +35,13 @@ class UserController
     private function remoteLogin($username,$password)
     {
         if(self::doLogin($username,$password)==true)
-            echo $_SESSION["gatekeeper"];
+        {
+            header("Content-type: application/json");
+            $user = User::getUserFromUsername($_SESSION["gatekeeper"]);
+            $info = array ($_SESSION["gatekeeper"],
+                            $user->isAdmin() ? "1":"0");
+            echo json_encode($info);
+        }
         else
             header("HTTP/1.1 401 Unauthorized");
     }
@@ -135,13 +141,14 @@ class UserController
             {
                 if($u->activate($cleaned['key']))
                     $this->view->redirectMsg("User activated.","index.php");
+                else
+                    $this->view->redirectMsg("Already activated","index.php");
             }
             else
             {
                 $this->view->redirectMsg("Invalid user ID.","index.php");
             }
         }
-        break;
     }
 
     function actionLogout($cleaned)

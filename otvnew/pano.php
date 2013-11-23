@@ -1,35 +1,21 @@
 <?php
 
-require_once('Panorama.php');
-require_once('../lib/functionsnew.php');
+require_once("PanoController.php");
+require_once("PanoView.php");
 
-$cleaned = clean_input ($_REQUEST);
+session_start();
 $conn=pg_connect("dbname=gis user=gis");
 
-switch ($cleaned["action"])
+
+$view = new PanoView();
+$controller = new PanoController($view);
+
+$cleaned = clean_input($_REQUEST, "pgsql");
+$code = $controller->action ($cleaned);
+if($code!=200)
 {
-    case "getNearest":
-        if(isset($cleaned["lat"]) && isset($cleaned["lon"]))
-        {
-            $nearest = Panorama::getNearest($cleaned["lon"], $cleaned["lat"]);
-            echo $nearest->getId();
-        }
-        else
-            header("HTTP/1.1 400 Bad Request");
-        break;
-
-    default:
-        if(isset($cleaned["id"]) && ctype_digit($cleaned["id"]))
-        {
-            header ("Content-type: image/jpg");
-            $panorama = new Panorama ($cleaned["id"]);
-            echo $panorama->getRawImageData();
-        }
-        else
-            header("HTTP/1.1 400 Bad Request");
-        break;
+	header("HTTP/1.1 $code");
+	echo "HTTP error $code";
 }
-
 pg_close($conn);
-
 ?>

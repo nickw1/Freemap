@@ -442,8 +442,9 @@ Freemap.prototype.doLogin = function()
 
 Freemap.prototype.loginSuccess = function(xmlHTTP)
 {
+	var userData = JSON.parse(xmlHTTP.responseText);
     document.getElementById('logindiv').innerHTML = 
-        '<em>Logged in as ' + xmlHTTP.responseText + 
+        '<em>Logged in as ' + userData[0] + 
         '</em> <a href="#" id="myroutes">My routes</a> | '+
         '<a href="user.php?action=logout&redirect=index.php">Log out</a>';
     document.getElementById('myroutes').onclick = this.wrViewMgr.sendRequest.
