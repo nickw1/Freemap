@@ -2,7 +2,8 @@
 class TileList
 {
     private $result;
-
+	/*
+	*/
     public function __construct()
     {
     }
@@ -14,6 +15,8 @@ class TileList
         {
             pg_query ("INSERT INTO tilelist(x,y,z) VALUES ($x,$y,$z)");
         }
+		/*
+		*/
     }
 
     public function query()

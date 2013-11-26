@@ -67,12 +67,36 @@ class PanoController
         return 401; 
     }
 
+    function actionGetWithinBbox($input)
+    {
+        $bbox = explode(",", $input["bbox"]);
+        if(count($bbox)==4)
+        {
+            $numerics=0;
+            for($i=0; $i<4; $i++)
+            {
+                if(is_numeric($bbox[$i]))
+                    $numerics++;
+            }
+
+            if($numerics==4)
+            {
+                header("Content-type: application/json");
+                $panos = Panorama::getWithinBbox($bbox);
+                $this->view->outputPanosAsJSON($panos);
+                return 200;
+            }
+        }
+        return 400;
+    }
+
     function action($input)
     {
         $actions = array("getNearest" => array("lon","lat"),
                         "authorise" => array("id"),
                         "show" => array("id"),
                         "getUnmoderated" => false, 
+                        "getWithinBbox" => array("bbox"), 
                         "delete" => array("id") );
 
 

@@ -4,7 +4,7 @@ require_once('../lib/functionsnew.php');
 require_once('../common/defines.php');
 require_once('Photosphere.php');
 
-define('MAX_FILE_SIZE', 4);
+define('MAX_FILE_SIZE', 5);
 
 session_start();
 
@@ -18,7 +18,7 @@ if(!isset($_SESSION["gatekeeper"]))
 elseif($file=="")
     echo "ERROR: no file uploaded!";
 elseif($_FILES["file1"]["size"] > MAX_FILE_SIZE * 1048576)
-	echo "ERROR: exceeded file size of ".MAX_FILE_SIZE." MB";
+    echo "ERROR: exceeded file size of ".MAX_FILE_SIZE." MB";
 else
 {
     $imageData = getimagesize($file);
@@ -31,12 +31,6 @@ else
         {
             echo "ERROR: This does not look like a photosphere.";
         }
-        elseif($photosphere->getLatitude()===false ||
-            $photosphere->getLongitude()===false)
-        {
-            echo "ERROR: Currently, photospheres must have latitude and ".
-            "longitude information. Ensure GPS turned on when you take it.";
-        }
         else
         {
             $conn=pg_connect("dbname=gis user=gis");
@@ -48,14 +42,28 @@ else
             {
                 $lat=$photosphere->getLatitude();
                 $lon=$photosphere->getLongitude();
-                list($e,$n) = reproject($lon,$lat,'4326','900913');
-                pg_query
-                ("INSERT INTO panoramas (authorised,userid,xy) ".
-                " VALUES (0,".
-                get_user_id($_SESSION["gatekeeper"],"users","username",
+                if($lon!==false && $lat!==false)
+                {
+                    list($e,$n) = reproject($lon,$lat,'4326','900913');
+                    pg_query
+                        ("INSERT INTO panoramas (authorised,userid,xy) ".
+                        " VALUES (0,".
+                        get_user_id($_SESSION["gatekeeper"],"users","username",
                             "id","pgsql").",".
-                "GeomFromText('POINT($e $n)',900913))");
-                echo "Successful upload";
+                        "GeomFromText('POINT($e $n)',900913))");
+                    echo "Successful upload";
+                }
+                else
+                {
+                    pg_query
+                        ("INSERT INTO panoramas (authorised,userid,xy) ".
+                        " VALUES (0,".
+                        get_user_id($_SESSION["gatekeeper"],"users","username",
+                            "id","pgsql").",NULL)");
+                    echo "Successful upload, but no lat/lon information. ".
+                        "Photosphere will need to be manually positioned ".
+                        "later.";
+                }
             }
         }
     }

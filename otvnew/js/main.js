@@ -93,7 +93,7 @@ function OTV(contid, switcherid, logindivid, freemapRoot)
     this.uploadDlg.setContent(
         '<h2>Upload photospheres</h2>' +
         '<form method="post" enctype="multipart/form-data">' +
-        'Select your file (max 4MB) : <input type="file" id="file1" /> <br />' +
+        'Select your file (max 5MB) : <input type="file" id="file1" /> <br />' +
         '<progress id="progress1" value="0" max="100" style="width: 90%">' +
         '</progress> <br />' +
         '<span id="progress2"></span><br /></form>');
@@ -180,9 +180,7 @@ OTV.prototype.loadMap = function()
     this.map.addLayer(panoramasLayer);
 
     var loader = new FeatureLoader
-                (this.freemapRoot+'/0.6/ws/bsvr.php',
-                 panoramasLayer,
-                 'inProj=4326&outProj=4326&overlay=panorama&format=geojson');
+                ('pano.php', panoramasLayer, 'action=getWithinBbox');
     
     this.map.setView(new L.LatLng(this.lat, this.lon),14);
     loader.loadFeatures(this.map.getBounds());

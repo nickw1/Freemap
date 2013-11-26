@@ -1,6 +1,5 @@
 <?php
 session_start();
-session_cache_limiter(false);
 
 $lat = isset($_GET["lat"]) ? $_GET["lat"] : 50.85;
 $lon = isset($_GET["lon"]) ? $_GET["lon"] : -1.65;
@@ -19,15 +18,15 @@ define('FREEMAP_ROOT','http://www.free-map.org.uk');
 openstreetmap and photospheres</title>
 <link rel='stylesheet' type='text/css' href='/css/otv.css' />
 <link rel='stylesheet' type='text/css' 
-href='<?=FREEMAP_ROOT ?>/javascript/leaflet-0.5.1/dist/leaflet.css' />
+href='<?=FREEMAP_ROOT ?>/javascript/leaflet-0.7/leaflet.css' />
 <script type='text/javascript' 
-src='<?=FREEMAP_ROOT ?>/javascript/photosphere/lib/sphere.markembling.2.js'>
+src='<?=FREEMAP_ROOT ?>/javascript/photosphere/lib/sphere.js'>
 </script>
 <script type='text/javascript' 
 src='<?=FREEMAP_ROOT ?>/javascript/photosphere/extern/three.min.js'>
 </script>
 <script type='text/javascript' 
-src='<?=FREEMAP_ROOT ?>/javascript/leaflet-0.5.1/dist/leaflet.js'>
+src='<?=FREEMAP_ROOT ?>/javascript/leaflet-0.7/leaflet.js'>
 </script>
 <script type='text/javascript' 
 src='<?=FREEMAP_ROOT ?>/0.6/js/lib/Dialog.js'> </script>

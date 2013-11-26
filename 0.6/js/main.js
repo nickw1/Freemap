@@ -5,8 +5,8 @@ function Freemap(lat,lon,zoom)
     //var testLayer = new OverlayCanvas();
 
     this.geojsonLayer=new L.GeoJSON(null,
-					{ onEachFeature:
-						(function(feature,layer)
+                    { onEachFeature:
+                        (function(feature,layer)
                         {
                             layer.bindPopup (feature.properties.text);
                             layer.options.draggable = true;
@@ -18,19 +18,19 @@ function Freemap(lat,lon,zoom)
                         }).bind(this) } );
 
     this.walkrouteLayer=new L.GeoJSON(null,
-			{ onEachFeature: (function(feature,layer)
-						{
+            { onEachFeature: (function(feature,layer)
+                        {
                             if(feature.geometry.type=='LineString' &&
                             feature.properties.description && 
-							feature.properties.title)
+                            feature.properties.title)
                             {
                             layer.bindPopup
                                 ('<h3>' + feature.properties.title +'</h3>' +
                                 '<p>'+feature.properties.description+'</p>');
                             }
                         }).bind(this) }
-			);
-			
+            );
+            
     var footIcon = L.icon(
         {iconUrl: '/0.6/images/foot.png',
         shadowUrl: null,
@@ -40,43 +40,61 @@ function Freemap(lat,lon,zoom)
         popupAnchor: new L.Point(2,-2) } );
 
     this.walkrouteStartsLayer = new L.GeoJSON(null,
-				{ onEachFeature: (function(f,layer)
-            		{
-                		if(f.properties.description && f.properties.title)
-                		{
-                    		layer.bindPopup('<h1>' + f.properties.title + 
-							'</h1>'
+                { onEachFeature: (function(f,layer)
+                    {
+                        if(f.properties.description && f.properties.title)
+                        {
+                            layer.bindPopup('<h1>' + f.properties.title + 
+                            '</h1>'
                             +'<p>'+f.properties.description+' ' +
                             '<a href="#" id="_wr_topdf">PDF</a> ' +
                             '<a href="#" id="_wr_togpx">GPX</a> ' );
 
-                    		layer.on("click",(function(ev)
-                        	{ 
-                            	document.getElementById('_wr_topdf').onclick = 
-                                	function() { alert('Not available yet'); };
-                            	document.getElementById('_wr_togpx').onclick = 
-                                	function() { 
+                            layer.on("click",(function(ev)
+                            { 
+                                document.getElementById('_wr_topdf').onclick = 
+                                    function() { alert('Not available yet'); };
+                                document.getElementById('_wr_togpx').onclick = 
+                                    function() { 
                                     window.location=
                                     '/0.6/ws/wr.php?action=get&id='+
                                     f.properties.id+'&format=gpx' 
                                 };
-                            	this.wrViewMgr.loadRoute(f.properties.id);
-							
+                                this.wrViewMgr.loadRoute(f.properties.id);
+                            
                         
-                        	} ).bind(this));
-						}
-                	} ).bind(this) 
-					,
-					
-        			 pointToLayer: function(geojson,latlng) 
-					 {
-                		return new L.Marker(latlng, { icon: footIcon } )
-					 }
-					});
+                            } ).bind(this));
+                        }
+                    } ).bind(this) 
+                    ,
+                    
+                     pointToLayer: function(geojson,latlng) 
+                     {
+                        return new L.Marker(latlng, { icon: footIcon } )
+                     }
+                    });
 
 
+    /*
     this.map = new FreemapWidget('map',{layers:[this.geojsonLayer,
             this.walkrouteStartsLayer,this.walkrouteLayer]});
+    */
+    var baseUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php';
+
+    var tileUrl = baseUrl +  
+        '?x={x}&y={y}&z={z}&way=all&poi=all&kothic=1&contour=1&coastline=1';
+
+    var kothic=new L.TileLayer.Kothic(tileUrl,{minZoom:11,
+            attribution: 'Map data &copy; 2004-' + new Date().getFullYear() +
+                        ' OpenStreetMap contributors,'+
+                'Open Database Licence,'+
+                'contours &copy; Crown Copyright and database right '+
+                'Ordnance Survey 2011, Rendering by '+
+                '<a href="http://github.com/kothic/kothic-js">Kothic JS</a>'} );
+
+    this.map = new L.Map ('map',
+                { layers: [kothic, this.geojsonLayer,
+                            this.walkrouteStartsLayer,this.walkrouteLayer]});
 
     this.wrAddMgr=new WRAddMgr(this.walkrouteLayer,'main');
     if(lat===null) 
@@ -398,10 +416,10 @@ Freemap.prototype.setupModes = function()
         if(this.modes[i].submenu)
         {
             var childDiv=document.createElement("div");
-			childDiv.onclick = function (e)
-			{
-				e.stopPropagation();
-			};
+            childDiv.onclick = function (e)
+            {
+                e.stopPropagation();
+            };
 
             for(var j=0; j<this.modes[i].submenu.length; j++)
             {
@@ -442,7 +460,7 @@ Freemap.prototype.doLogin = function()
 
 Freemap.prototype.loginSuccess = function(xmlHTTP)
 {
-	var userData = JSON.parse(xmlHTTP.responseText);
+    var userData = JSON.parse(xmlHTTP.responseText);
     document.getElementById('logindiv').innerHTML = 
         '<em>Logged in as ' + userData[0] + 
         '</em> <a href="#" id="myroutes">My routes</a> | '+

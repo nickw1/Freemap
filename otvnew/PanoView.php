@@ -17,9 +17,9 @@ class PanoView
         <head>
         <title>Admin - Moderate Panoramas</title>
         <link rel='stylesheet' type='text/css' href='css/otv.css' />
-		<style type='text/css'>
-		table, tr, td { border: 1px solid black; }
-		</style>
+        <style type='text/css'>
+        table, tr, td { border: 1px solid black; }
+        </style>
         </head>
         <body>
         <h1 class="admin">Unmoderated Panoramas</h1>
@@ -37,14 +37,36 @@ class PanoView
         }
         ?>
         </table>
-		<p><a href="index.php">Back to main page</a></p>
-		</body></html>
+        <p><a href="index.php">Back to main page</a></p>
+        </body></html>
         <?php
     }
 
-	function redirectMsg($msg, $redirect)
-	{
-		js_msg($msg, $redirect);
-	}
+    function redirectMsg($msg, $redirect)
+    {
+        js_msg($msg, $redirect);
+    }
+
+    function outputPanosAsJSON($panos)
+    {
+        $data = array();
+        $data["type"] = "FeatureCollection";
+        $data["features"] = array();
+        foreach($panos as $pano)
+        {
+            $panoJSON = array();
+            $panoJSON["geometry"] = array();
+            $panoJSON["geometry"]["type"] = "Point";
+            $panoJSON["geometry"]["coordinates"] = array($pano->getLon(),
+                                                        $pano->getLat()); 
+            $panoJSON["properties"] = array();
+            $panoJSON["properties"]["id"] = $pano->getId();
+
+            $panoJSON["type"] = "Feature";
+
+            $data["features"][] = $panoJSON;
+        }
+        echo json_encode($data);
+    }
 }
 ?>
