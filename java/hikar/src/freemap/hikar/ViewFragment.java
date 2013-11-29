@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.view.Surface;
@@ -25,7 +26,8 @@ import freemap.data.Projection;
 public class ViewFragment extends Fragment 
     implements LocationProcessor.Receiver,DownloadDataTask.Receiver,
     OpenGLView.RenderedWayVisitor,
-    SensorInput.SensorInputReceiver, PinchListener.Handler {
+    SensorInput.SensorInputReceiver, PinchListener.Handler 
+{
 
     OsmDemIntegrator integrator;
     OpenGLView glView;
@@ -35,13 +37,14 @@ public class ViewFragment extends Fragment
     String tilingProjID;
     Point locDisplayProj;
     long lineOfSightTestFinish;
-    boolean doingLineOfSightTest;
+    boolean doingLineOfSightTest, activated;
     int demType;
     String[] tilingProjIDs = { "epsg:27700", "epsg:4326" };
     TileDisplayProjectionTransformation trans;
     String lfpUrl, srtmUrl, osmUrl;
     GeomagneticField field;
     float orientationAdjustment;
+    double lastLon, lastLat;
     
     
     public ViewFragment()
@@ -54,6 +57,8 @@ public class ViewFragment extends Fragment
         lfpUrl = "http://www.free-map.org.uk/downloads/lfp/";
         srtmUrl = "http://www.free-map.org.uk/ws/";
         osmUrl = "http://www.free-map.org.uk/0.6/ws/";
+        lastLon = -181;
+        lastLat = -91;
     }
     
     public void onAttach(Activity activity)
@@ -113,36 +118,51 @@ public class ViewFragment extends Fragment
         {
             Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
             trans.setTilingProj(fac.generate(tilingProjID));   
-            integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);                                   
+            integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);   
+            
+            // If we received a location but weren't activated, now load data from the last location
+            if(lastLon >= -180 && lastLon <= 180 && lastLat >= -90 && lastLat <= 90)
+                setLocation(lastLon, lastLat);
         }
         else
         {
             integrator = null;
             glView.getRenderer().deactivate();
         }
+        activated = activate;
     }
     
-    public void receiveLocation(Location loc) {
+    public void receiveLocation(Location loc)
+    {
+        setLocation(loc.getLongitude(),loc.getLatitude(), true);
+    }
     
-        
+    public void setLocation(double lon, double lat)
+    {
+        setLocation (lon, lat, false);
+    }
+    
+    private void setLocation(double lon, double lat, boolean gpsLocation)
+    {
+        lastLon = lon;
+        lastLat = lat;
         if(integrator!=null)
         {
            
-            Point p = new Point(loc.getLongitude(), loc.getLatitude());
+            Point p = new Point(lon, lat);
             double height = integrator.getHeight(p);
             p.z = height;
             
             // We assume we won't travel far enough in one session for magnetic north to change much
             if(field==null)
             {
-                field = new GeomagneticField ((float)loc.getLatitude(), (float)loc.getLongitude(), 
+                field = new GeomagneticField ((float)lat, (float)lon, 
                                             0, System.currentTimeMillis());
             }
             
             locDisplayProj = trans.getDisplayProj().project(p);
           
             Log.d("hikar","location in display projection=" + locDisplayProj);
-            //glView.getRenderer().setCameraLocation((float)locDisplayProj.x, (float)locDisplayProj.y);
             glView.getRenderer().setCameraLocation(p);
         
          
@@ -150,9 +170,9 @@ public class ViewFragment extends Fragment
             ((Hikar)getActivity()).getHUD().setHeight((float)height);
             ((Hikar)getActivity()).getHUD().invalidate();
         
-            if(integrator.needNewData(p))
+            if(integrator.needNewData(p) && downloadDataTask==null)
             {
-                downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator);
+                downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator, gpsLocation);
                 downloadDataTask.setDialogDetails("Loading...", "Loading data...");
                 downloadDataTask.execute(p);
             }
@@ -161,11 +181,11 @@ public class ViewFragment extends Fragment
     
     public void noGPS() { }
     
-    public void receiveData(DownloadDataTask.ReceivedData data)
+    public void receiveData(DownloadDataTask.ReceivedData data, boolean sourceGPS)
     {
-        
-        glView.getRenderer().setRenderData(data);
-       
+        if (data!=null && sourceGPS) // only show data if it's a gps location, not a manual entry
+            glView.getRenderer().setRenderData(data);
+        downloadDataTask = null;
     }
     
     public void receiveSensorInput(float[] glR)
@@ -265,5 +285,4 @@ public class ViewFragment extends Fragment
     {
         return orientationAdjustment;
     }
-
 }

@@ -9,6 +9,7 @@ import freemap.datasource.Tile;
 public class DownloadDataTask extends DataCallbackTask<Point,Void> {
 
     OsmDemIntegrator integrator;
+    boolean sourceGPS;
     
     public static class ReceivedData
     {
@@ -23,16 +24,17 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
     
     public interface Receiver
     {
-        public void receiveData(ReceivedData data);
+        public void receiveData(ReceivedData data, boolean sourceGPS);
     }
     
     Receiver receiver;
     
-    public DownloadDataTask(Context ctx, Receiver receiver, OsmDemIntegrator integrator)
+    public DownloadDataTask(Context ctx, Receiver receiver, OsmDemIntegrator integrator, boolean sourceGPS)
     {
         super(ctx);
         this.receiver=receiver;
         this.integrator=integrator;
+        this.sourceGPS = sourceGPS;
     }
     
     public String doInBackground(Point... p)
@@ -73,6 +75,6 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
     public void receive(Object data)
     {
         if(receiver!=null)
-            receiver.receiveData((ReceivedData)data);
+            receiver.receiveData((ReceivedData)data, sourceGPS);
     }
 }

@@ -7,9 +7,11 @@ import android.app.Activity;
 import android.view.Menu;
 import android.view.ViewGroup.LayoutParams;
 import android.view.MenuItem;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.KeyEvent;
+import android.location.LocationManager;
 
 
 public class Hikar extends Activity 
@@ -68,6 +70,19 @@ public class Hikar extends Activity
                 item.setTitle(start ? "Stop" : "Start");
                 break;
                 
+            case R.id.menu_set_location:
+                LocationManager mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+                if(!mgr.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                {
+                    Intent intent = new Intent(this, LocationEntryActivity.class);
+                    startActivityForResult (intent, 0);
+                }
+                else
+                {
+                    DialogUtils.showDialog(this, "Can only manually specify location when GPS is off");
+                }
+                break;
+                
         }
         return retcode;
     }
@@ -94,6 +109,20 @@ public class Hikar extends Activity
             DialogUtils.showDialog(this, "Invalid projection " + prefDisplayProjectionID);
     }
     
+    public void onActivityResult (int requestCode, int resultCode, Intent intent)
+    {
+        if(resultCode == Activity.RESULT_OK)
+        {
+            switch (requestCode)
+            {
+                case 0:
+                    Bundle info = intent.getExtras();
+                    double lon = info.getDouble("freemap.hikar.lon"), lat = info.getDouble("freemap.hikar.lat");
+                    viewFragment.setLocation(lon, lat);           
+                    break;
+            }
+        }
+    }
     
     public boolean onKeyDown(int key, KeyEvent ev)
     {
