@@ -235,7 +235,7 @@ public class OpenTrail extends MapActivity implements
         							prefs.getFloat("lon", -0.72f));
         		mapFile = prefs.getString("mapFile",null);
         		
-        		mapFile = "/storage/sdcard0/opentrail/su.map";
+        	
         		readZoom = prefs.getInt("zoom", -1);
         		recordingWalkroute = prefs.getBoolean("recordingWalkroute", false);    
         		waitingForNewPOIData = prefs.getBoolean("waitingForNewPOIData", false);
@@ -324,7 +324,6 @@ public class OpenTrail extends MapActivity implements
         	boolean prefGPSTracking = sprefs.getBoolean("prefGPSTracking", true);
         	if(prefGPSTracking)
          	{
-         		//mapLocationProcessor.startUpdates(5000, 10.0f);
          		LocationManager mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
          		if(!mgr.isProviderEnabled(LocationManager.GPS_PROVIDER))
             	{
@@ -486,30 +485,34 @@ public class OpenTrail extends MapActivity implements
     	{
     		case 0:
     			if(mapFile!=null)
-       				setupMap(new File(mapFile));
+    			{
+    			    File mf = new File(mapFile);
+    			    if(mf.exists())
+    			        setupMap(mf);
+    			}
     			break;
     			
     		case 1:
-    			if(addData!=null)
-    			{
-    				Point osgb=null;
-    				String gsq="";
-    				if(this.location!=null)
-    				{
-    					
-    					osgb = this.proj.project(new Point(this.location.getLongitude(),this.location.getLatitude()));
-    					gsq = new OSRef(osgb.x,osgb.y).toSixFigureString().substring(0,2).toLowerCase();
-    				
-    					if(gsq.equals((String)addData))
-    					{
-    						mapFile=sdcard+"/opentrail/"+((String)addData)+".map";
-    						File mf = new File(mapFile);
-    						if(mf.exists())
-    							setupMap(mf);
-    					}
-    				}
-    			}
-    			break;
+    		    if(addData!=null)
+                {
+                        Point osgb=null;
+                        String gsq="";
+                        if(this.location!=null)
+                        {
+                                
+                            osgb = this.proj.project(new Point(this.location.getLongitude(),this.location.getLatitude()));
+                            gsq = new OSRef(osgb.x,osgb.y).toSixFigureString().substring(0,2).toLowerCase();
+                        
+                            if(gsq.equals((String)addData))
+                            {
+                                mapFile=sdcard+"/opentrail/"+((String)addData)+".map";
+                                File mf = new File(mapFile);
+                                if(mf.exists())
+                                    setupMap(mf);
+                            }
+                        }
+                }
+                break;
     			
     		case 2:
     			annCacheMgr.deleteCache();
@@ -525,7 +528,7 @@ public class OpenTrail extends MapActivity implements
     {
     	switch(id)
     	{
-    		case 0:
+    		case 1:
     			DialogUtils.showDialog(this, "Freemap style will not be used, using default osmarender style");
     			break;
     	}
@@ -555,20 +558,22 @@ public class OpenTrail extends MapActivity implements
 		downloadMapFile(gridsq, "");
     }
     
-    public void downloadMapFile(String gridsq, String addMsg)
+    public void downloadMapFile(String mapName, String addMsg)
     {		
     	dfTask = new DownloadBinaryFilesTask(this,  new String[] 
-                    { "http://www.free-map.org.uk/data/android/"+gridsq+".map" }, 
-                    	new String[] { sdcard+"/opentrail/"+gridsq+".map" }, 
-                    	addMsg + "Download "+gridsq+".map? Warning: 10-20 MB file!", this, 1);
-    	dfTask.setAdditionalData(gridsq);
+                    { "http://www.free-map.org.uk/data/android/"+mapName+".map" }, 
+                    	new String[] { sdcard+"/opentrail/"+mapName+".map" }, 
+                    	addMsg + "Download "+mapName+".map? Warning: 150-300+MB file if downloading all of England " +
+                    	            "or Wales; wifi extremely strongly advised!", this, 1);
+    	dfTask.setAdditionalData(mapName);
     	dfTask.setDialogDetails("Downloading...","Downloading map file...");
     	dfTask.confirmAndExecute();
     }
     
     public void showMapDialog()
     {
-    	final String[] values = { "sw","sx","sy","sz","tv",
+    	final String[] values = { "england","wales",
+    	                          "sw","sx","sy","sz","tv",
     							  "ss","st","su","tq","tr",
     							  "so","sp","tl","tm",
     							  "sj","sk","tf","tg",
@@ -576,7 +581,7 @@ public class OpenTrail extends MapActivity implements
     							  "nx","ny","nz" };
     							  
     
-    	new AlertDialog.Builder(this).setTitle("Select the map to download").
+    	new AlertDialog.Builder(this).setTitle("Select the map to download.").
     		setCancelable(true).
     		setNegativeButton("Cancel",null).
     		setItems(R.array.gridsquares, new DialogInterface.OnClickListener()
@@ -618,6 +623,11 @@ public class OpenTrail extends MapActivity implements
     	{
     	    showMapDialog();
     	}
+    	else if (item.getItemId()==R.id.selectMapMenuItem)
+    	{
+    	    Intent intent = new Intent(this,FileChooser.class);
+            startActivityForResult(intent, 0);
+    	}
     	else if(!mapSetup)
     	{
     		DialogUtils.showDialog(this,"Cannot perform this action until a map is loaded.");
@@ -629,12 +639,6 @@ public class OpenTrail extends MapActivity implements
     		
     		switch(item.getItemId())
     		{
-    		
-    			case R.id.selectMapMenuItem:
-    				intent = new Intent(this,FileChooser.class);
-    				startActivityForResult(intent, 0);
-    				break;
-    			
     			case R.id.downloadLocalMapMenuItem:
     				downloadLocalMapFile();
     				break;
@@ -923,7 +927,6 @@ public class OpenTrail extends MapActivity implements
     {
     	if(this.location!=null)
     	{
-    	   
     		mapView.setCenter(this.location);
     	}
     }
@@ -1046,7 +1049,11 @@ public class OpenTrail extends MapActivity implements
 		Point osgb = this.proj.project(pt);
 		String gridsq = new OSRef(osgb.x,osgb.y).toSixFigureString().substring(0,2).toLowerCase();
 		
-		if(!curGridsq.equals(gridsq))
+		// If the current map file is a grid square map file, and we change grid square,
+		// change the map (or prompt user to download new map). This will not happen if we
+		// are using england.map or wales.map.
+		if(!curGridsq.equals(gridsq) && (mapFile==null ||
+		        mapFile.equals(sdcard+"/opentrail/"+curGridsq+".map")))
 		{
 			curGridsq = gridsq;
 			File mf = new File(sdcard+"/opentrail/"+gridsq+".map");
@@ -1274,7 +1281,7 @@ public class OpenTrail extends MapActivity implements
     
     public void about()
     {
-    	DialogUtils.showDialog(this,"OpenTrail 0.1-beta. Uses OpenStreetMap data, copyright 2012 " +
+    	DialogUtils.showDialog(this,"OpenTrail 0.1-beta, Dec 2013 update. Uses OpenStreetMap data, copyright 2013 " +
     											"OpenStreetMap contributors, Open Database Licence. Uses " +
     											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright." +
     											"Person icon taken from the osmdroid project. Annotation icon based on " +

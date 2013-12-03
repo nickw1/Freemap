@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 <array name="gridsquares">
+<item>England</item>
+<item>Wales</item>
 <item>West Cornwall (SW)</item>
 <item>South Devon and East Cornwall (SX)</item>
 <item>South Dorset (SY)</item>

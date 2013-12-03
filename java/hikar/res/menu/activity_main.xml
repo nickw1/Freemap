@@ -9,6 +9,6 @@
 	    	android:title="@string/menu_calibrate" />
 	<item android:id="@+id/menu_start"
 	    	android:title="@string/menu_start" />
-	<item android:id="@+id/menu_set_location"
-	    	android:title="@string/menu_set_location" />
+	<item android:id="@+id/menu_location"
+	    	android:title="@string/menu_location" />
 </menu>

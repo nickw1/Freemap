@@ -70,7 +70,7 @@ public class Hikar extends Activity
                 item.setTitle(start ? "Stop" : "Start");
                 break;
                 
-            case R.id.menu_set_location:
+            case R.id.menu_location:
                 LocationManager mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
                 if(!mgr.isProviderEnabled(LocationManager.GPS_PROVIDER))
                 {
