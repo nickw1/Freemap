@@ -20,12 +20,15 @@ function Dialog(parentId,callbacks,style)
 	{
 		for(k in this.callbacks)
 		{
-        	var btn = document.createElement("input");
-        	btn.value=k;
-        	btn.type="button";
-        	btn.id = this.div.id + "_"+k;
-        	btn.onclick = this.callbacks[k];
-        	actionsContainer.appendChild(btn);
+			if(k!="create") 
+			{
+        		var btn = document.createElement("input");
+        		btn.value=k;
+        		btn.type="button";
+        		btn.id = this.div.id + "_"+k;
+        		btn.onclick = this.callbacks[k];
+        		actionsContainer.appendChild(btn);
+			}
 		}
     }
     this.div.appendChild(actionsContainer);

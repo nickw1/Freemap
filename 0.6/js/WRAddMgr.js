@@ -76,8 +76,8 @@ function WRAddMgr(wrLayer,divId)
             borderRadius: '15px' }
         );
 
-    this.sendDlg.setPosition(200,200);
-    this.wptDlg.setPosition(200,200);
+    this.sendDlg.setPosition("200px","200px");
+    this.wptDlg.setPosition("200px","200px");
     this.points=new Array();
 }
 

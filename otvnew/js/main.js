@@ -18,7 +18,7 @@ function OTV(contid, switcherid, logindivid, freemapRoot)
     this.pDiv = document.createElement("div");
     this.pDiv.setAttribute("style",
     "position:absolute;top:0px;left:0px;width:100%; height:100%; z-index:1");
-	this.pDiv.setAttribute("id","panodiv");
+    this.pDiv.setAttribute("id","panodiv");
 
     this.switcher.addEventListener("click",this.switchMode.bind(this,true) , 
                                         false);
@@ -215,7 +215,7 @@ OTV.prototype.switchMode = function (doFindNearest)
             (this.mDiv, this.pDiv);
         document.getElementById("commands").style.left="50px";
         this.switcher.innerHTML = "pano view";
-		this.photosphere.dataURL = null;
+        this.photosphere.dataURL = null;
         this.mode = 0;
         if(!this.map)
             this.loadMap();
@@ -262,7 +262,11 @@ OTV.prototype.loadPhotosphereById = function(id)
 OTV.prototype.loadPhotosphere = function(file)
 {
     if(!this.photosphere)
+    {
         this.photosphere = new Photosphere(file);
+		var self=this;
+    	window.addEventListener( 'resize', function(event){self.photosphere.onWindowResize(self.photosphere); }, false );
+    }
     else
         this.photosphere.image = file;
     this.photosphere.loadPhotosphere(this.pDiv);

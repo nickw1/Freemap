@@ -10,7 +10,7 @@ function WRViewMgr(app)
             height: '300px',
             borderRadius: '15px' }
             );
-    this.myRoutesDlg.setPosition(100,100);
+    this.myRoutesDlg.setPosition("100px","100px");
     this.ajax=new Ajax();
     this.app=app;
 }

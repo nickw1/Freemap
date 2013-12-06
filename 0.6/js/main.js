@@ -196,7 +196,7 @@ function Freemap(lat,lon,zoom)
             opacity: '0.5',
             borderRadius: '15px' }
             );
-    this.walkroutesDlg.setPosition(100,100);
+    this.walkroutesDlg.setPosition("100px","100px");
     this.mode = 0;
 
     //this.curWalkroute=new Array();
@@ -340,7 +340,8 @@ Freemap.prototype.onMapClick = function(e)
         case 0:
             if(this.loggedIn===true)
             {
-                this.dlg.setPosition((p.x<500 ? p.x:500),(p.y<500 ? p.y:500));
+                this.dlg.setPosition((p.x<500 ? p.x:500)+"px",
+										(p.y<500 ? p.y:500)+"px");
                 if(!this.dlg.isVisible())
                 {
                     this.dlg.show();
