@@ -53,7 +53,7 @@ public class ViewFragment extends Fragment
         setRetainInstance(true);
         sensorInput = new SensorInput(this);
         demType = OsmDemIntegrator.HGT_OSGB_LFP;
-        trans = new TileDisplayProjectionTransformation ( null, null, 1.0 );
+        trans = new TileDisplayProjectionTransformation ( null, null );
         lfpUrl = "http://www.free-map.org.uk/downloads/lfp/";
         srtmUrl = "http://www.free-map.org.uk/ws/";
         osmUrl = "http://www.free-map.org.uk/0.6/ws/";
@@ -257,10 +257,7 @@ public class ViewFragment extends Fragment
         if(proj!=null)
         {
            
-            trans.setDisplayProj(proj);
-            trans.setMultiplier(displayProjectionID.equals("epsg:3857") || displayProjectionID.equals("epsg:3785") ||
-                                displayProjectionID.equals("epsg:900913") ? 0.1 : 1.0 );
-           
+            trans.setDisplayProj(proj); 
             glView.getRenderer().setProjectionTransformation (trans);  
             return true;
         }

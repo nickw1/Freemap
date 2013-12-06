@@ -51,7 +51,7 @@ public class RenderedDEM {
             
                 vertexBuffer.put( (float)p.x);
                 vertexBuffer.put( (float)p.y);
-                vertexBuffer.put( (float)(p.z-5*trans.getMultiplier()));
+                vertexBuffer.put( (float)(p.z-5));
                 
             }
         }

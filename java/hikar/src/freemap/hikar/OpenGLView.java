@@ -53,6 +53,7 @@ public class OpenGLView extends GLSurfaceView  {
         SurfaceTexture cameraFeed;
         CameraCapturer cameraCapturer;
         TileDisplayProjectionTransformation trans;
+        float nearPlane = 2.0f, farPlane = 3000.0f;
         
         public DataRenderer()
         {
@@ -84,8 +85,8 @@ public class OpenGLView extends GLSurfaceView  {
             Matrix.setIdentityM(modelviewMtx, 0);
             Matrix.setIdentityM(perspectiveMtx, 0);
             
-            trans = new TileDisplayProjectionTransformation (IdentityProjection.getInstance(), IdentityProjection.getInstance(),
-                                                                1.0);
+            trans = new TileDisplayProjectionTransformation (IdentityProjection.getInstance(), 
+                        IdentityProjection.getInstance());
         }
         
         public void onSurfaceCreated(GL10 unused,EGLConfig config)
@@ -156,8 +157,8 @@ public class OpenGLView extends GLSurfaceView  {
             Matrix.setIdentityM(perspectiveMtx, 0);
             float aspectRatio = (float)getWidth()/(float)getHeight();
             Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, 
-                                (float)(0.1f*trans.getMultiplier()), (float)(3000.0f*trans.getMultiplier()));
-       
+                                nearPlane, farPlane);
+            
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);     
             
             GLES20.glDisable(GLES20.GL_DEPTH_TEST);
@@ -198,7 +199,7 @@ public class OpenGLView extends GLSurfaceView  {
                         
                         for (HashMap.Entry<String,RenderedDEM> d: renderedDEMs.entrySet())
                         {
-                            if (d.getValue().centreDistanceTo(cameraPos) < 5000.0*trans.getMultiplier())
+                            if (d.getValue().centreDistanceTo(cameraPos) < 5000.0)
                                 d.getValue().render(gpuInterface);
                         }
                         
@@ -218,7 +219,7 @@ public class OpenGLView extends GLSurfaceView  {
                     */
                     
                     Matrix.translateM(modelviewMtx, 0, (float)-cameraPos.x, 
-                                (float)-cameraPos.y, (float)(-cameraPos.z-(zDisp*trans.getMultiplier())));
+                                (float)-cameraPos.y, (float)(-cameraPos.z-zDisp));
                    
                     gpuInterface.sendMatrix(modelviewMtx, "uMvMtx");
                     gpuInterface.sendMatrix(perspectiveMtx, "uPerspMtx");
@@ -229,7 +230,7 @@ public class OpenGLView extends GLSurfaceView  {
                         for(HashMap.Entry<Long, RenderedWay> entry: renderedWays.entrySet())
                         {          
                             rWay = entry.getValue();
-                            if(rWay.isDisplayed() && rWay.distanceTo(cameraPos) <= 3000.0f*trans.getMultiplier())
+                            if(rWay.isDisplayed() && rWay.distanceTo(cameraPos) <= farPlane)
                             {
                                 rWay.draw(gpuInterface); 
                             }       
@@ -245,8 +246,7 @@ public class OpenGLView extends GLSurfaceView  {
             GLES20.glViewport(0, 0, width, height);
             float aspectRatio = (float)width/(float)height;
             Matrix.setIdentityM(perspectiveMtx, 0);
-            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, (float)(0.1f*trans.getMultiplier()), 
-                                    (float)(3000.0f*trans.getMultiplier()));
+            Matrix.perspectiveM(perspectiveMtx, 0, hFov/aspectRatio, aspectRatio, nearPlane, farPlane);
         }
         
         public void onPause()
@@ -300,7 +300,7 @@ public class OpenGLView extends GLSurfaceView  {
                    
                                 String key = entry.getKey();
                                 
-                                if(renderedDEMs.get(key)==null && trans!=null)
+                                if(renderedDEMs.get(key)==null)
                                     renderedDEMs.put(key, new RenderedDEM(curDEM, trans));
                             }
                         }
@@ -346,7 +346,7 @@ public class OpenGLView extends GLSurfaceView  {
         {
             synchronized(renderedWays)
             {
-                if(renderedWays.get(w.getId())==null && trans!=null)
+                if(renderedWays.get(w.getId())==null )
                     renderedWays.put(w.getId(), new RenderedWay(w,2.0f,trans));
             }
             //Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));

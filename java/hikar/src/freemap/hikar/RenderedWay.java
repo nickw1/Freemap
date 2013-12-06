@@ -84,7 +84,7 @@ public class RenderedWay {
 		
 		Point thisPoint;
 	
-		width *= trans.getMultiplier();
+		
 		
 		for(int i=0; i<nPts-1; i++)
 		{
