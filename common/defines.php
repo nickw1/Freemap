@@ -11,4 +11,5 @@ define('CACHE','/home/www-data/fmapcache');
 define('HGTDIR','/var/www/data/hgt');
 define('PG_DBNAME','gis');
 define('PG_USER','gis');
+define('POPULATE_LOCK','/home/www-data/POPULATE_LOCK');
 ?>

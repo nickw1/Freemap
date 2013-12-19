@@ -18,7 +18,7 @@ all paths with public access, many of which are missing on other maps.</p>
 <li><a href='#interactive'>Using Freemap's interactive features</a> - how
 to annotate the map and create walking routes.</li>
 <li><a href='#norender'>The map isn't showing! Why?</a></li>
-<li><a href='#village'>My village isn't there!</a></li>
+<li><a href='#village'>Coverage</a></li>
 <li><a href='#technical'>History and technical details</a></li>
 <li><a href='#developer'>Developer</a></li>
 <li><a href='#source'>Source code</a></li>
@@ -108,32 +108,27 @@ features the ability to "play" these GPX files so you'll be able to see
 walk route directions presented to you on your Android phone in the field.</p>
 <h2 id='norender'>The map isn't showing! Why?</h2>
 <p>If the map doesn't show immediately, it's because the map for that
-area needs to be rendered (drawn). From version 0.6, maps are drawn in the
+area needs to be rendered (drawn). Generating the map data from the database
+takes time as this is a relatively low-spec server (sorry, given this is a
+not-for-profit project, that's just the way it is!) It may take 30 seconds
+or even more in built-up areas. However, once an area
+of map is drawn, it is cached which means that next time you visit that
+area, the map will be drawn much more quickly - a second or two.</p>
+<p>Also please note that from version 0.6, maps are drawn in the
 browser using HTML5 technology and the
-<a href='http://www.kothic.org/js/'>kothic-js</a> renderer. It might take a 
-few seconds to draw. The decision to switch to in-browser rendering has been
-made as a result of the now-excessive demands of server-side rendering due to
-the increased size of the OpenStreetMap database. kothic-js is a project
-selected for Google Summer of Code 2012, so expect improvements here!</p>
+<a href='http://www.kothic.org/js/'>kothic-js</a> renderer.
+The decision to switch to in-browser rendering has been
+made as a result of the large demands of server-side rendering due to
+the increased size of the OpenStreetMap database, and also simply because it
+is a concept that I find interesting! ;-)</p> 
 <p>The move to in-browser rendering also means that you will need an 
 up-to-date browser. Current versions of Firefox (4+, I believe), 
 Chrome and Internet Explorer (9+) will work.</p>
-<h2 id='village'>My village isn't there!</h2>
-<p>Due to server constraints, Freemap currently only covers selected areas of
-the UK:
-Hampshire, West Sussex, Surrey, Wiltshire, Somerset, Devon,
-all of Wales, Derbyshire, Lancashire, Cumbria, North Yorkshire 
-(<em>new</em>), Oxfordshire (<em>new</em>), Buckinghamshire,
-and the Isle of Wight (<em>new</em>) 
-- I am aiming to cover my local area plus
-popular walking areas in the north of England and Wales, plus 
-<a href="mailto:freemapinfo@gmail.com">any requests</a>.
-This state of affairs is likely to remain unless someone donates server
-space... this is a not-for-profit project with no money coming in so it
-has to live within a set of constraints. That said, I'm finding I'm able to
-cache data on the server
-without using up too much disc space so I can expand a bit more
-than I thought.</p>
+<h2 id='village'>Coverage</h2>
+<p>Experimentally, Freemap now covers the whole of England. This does mean
+that initial map rendering is slow (see above), 
+but due to caching, next time you visit
+an area it will be much faster.</p>
 <h2 id='technical'>History and technical details</h2>
 <h3>Freemap history</h3>
 <p>Freemap basically started up in 2004 more or less

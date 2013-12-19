@@ -2,8 +2,8 @@
 
 //define('MAX_TILE_AGE', 2592000);
 define('MAX_TILE_AGE', 86400);
+define('TILELIST', '/home/www-data/cron/tilelist.txt');
 
-require_once('TileList.php');
 
 class DataGetter
 {
@@ -399,11 +399,15 @@ class BboxGetter extends DataGetter
 				$this->getDataFromDB($options);
 				$this->cacheData($cache);	
 			}
-			/* if cached tile over 30 days old, add to tilelist */
+			/* if cached tile over 1 day old, add to tilelist */
 			elseif(time() - $result > MAX_TILE_AGE && $z >= 11)
 			{
-				$tileList = new TileList();
-				$tileList->addTile($x, $y, $z);
+				$fp = fopen (TILELIST, "a");
+				if($fp!==false)
+				{
+					fwrite($fp,"$x $y $z\n");
+					fclose($fp);
+				}
 			}
 		}
 		else

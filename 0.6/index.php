@@ -1,15 +1,17 @@
 <?php
 
 require_once('../lib/functionsnew.php');
+require_once('../common/defines.php');
+
 
 session_start();
 
 $conn=pg_connect(pgconnstring());
 
 $lat = (isset($_GET['lat'])) ? $_GET['lat']: 
-	(isset($_GET['y']) ? $_GET["y"]/1000000 : "null");
+    (isset($_GET['y']) ? $_GET["y"]/1000000 : "null");
 $lon = (isset($_GET['lon'])) ? $_GET['lon']: 
-	(isset($_GET['x']) ? $_GET["x"]/1000000 : "null");
+    (isset($_GET['x']) ? $_GET["x"]/1000000 : "null");
 $zoom = (isset($_GET['zoom'])) ? $_GET['zoom']: "null";
 $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
     
@@ -53,26 +55,41 @@ title='The Freemap blog, revisited' href='/wordpress/' />
 
 </head>
 
-<body onload='init()'>
-
-<?php write_sidebar(true); ?>
-
-<div id='main'>
-
-<div id="modebar"></div>
-
-<div id="map"></div>
-
-</div>
-
-
 <?php
+if(file_exists(POPULATE_LOCK))
+{
+    ?>
+    <body>
+    <p>The Freemap database is updated at 2am UK time every Wednesday and
+    Freemap is unavailable while the update takes place. The update is
+    taking place right now.
+    It typically takes no more than 1hr30 so should be over by 4am....
+    so please return later!</p>
+    </body>
+    <?php
+}
+else
+{
+    ?>
+    <body onload='init()'> 
+    <?php write_sidebar(true); ?>
 
+    <div id='main'>
+
+    <div id="modebar"></div>
+
+    <div id="map"></div>
+
+    </div>
+
+    </body>
+
+    <?php
+}
 pg_close($conn);
 
 ?>
 
-</body>
 </html>
 
 <?php
@@ -89,9 +106,9 @@ function write_sidebar($homepage=false)
     kothic-js client-side rendering. 
     <a href='about.html'>More...</a> </p>
 
-	<div id='appmsg'>
-	<a href='/common/opentrail.html'>Android app</a>
-	now available!</div>
+    <div id='appmsg'>
+    <a href='/common/opentrail.html'>Android app</a>
+    now available!</div>
 
 
     <?php
@@ -136,11 +153,11 @@ function write_login()
         <p>
         <a href='user.php?action=signup'>Sign up</a>
         </p>
-		<!--
-		<p><em>Please note that logging in will place a cookie on your
-		machine to identify you to the server. Please only proceed if
-		you are happy with this.</em></p>
-		-->
+        <!--
+        <p><em>Please note that logging in will place a cookie on your
+        machine to identify you to the server. Please only proceed if
+        you are happy with this.</em></p>
+        -->
         <?php
     }
     else
