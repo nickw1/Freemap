@@ -41,9 +41,9 @@ class DataGetter
                             ); 
         $this->SRID = $srid;
 
-		// 240913 if not in kothic mode we want the full ways, not just
-		// the intersection with the bbox
-		$this->dbq->setIntersection($this->kothic_gran !==null);
+	// 240913 if not in kothic mode we want the full ways, not just
+	// the intersection with the bbox
+	$this->dbq->setIntersection($this->kothic_gran !==null);
 
     }
 
@@ -122,9 +122,18 @@ class DataGetter
 
         if(count($filter) > 0)
         {
+	    $firsttag=true;
+	    $qry .= " AND (";
             foreach($filter as $tag=>$valuelist)
             {
-                $qry .= " AND (";
+		if($firsttag==true)
+		{
+                	$qry .= "(";
+			$firsttag=false;
+		}
+		else
+			$qry .=" OR (";
+
                 $values = explode(",",$valuelist);
                 $first=true;
                 foreach($values as $value)
@@ -137,7 +146,9 @@ class DataGetter
                 }
                 $qry .= ")";
             }
+	    $qry .= ")";
         }
+	//echo "query $qry";
         return $qry;
     }
 
@@ -203,6 +214,7 @@ class DataGetter
             if($wlyrs[0]!="all")
                 $wqry .= DataGetter::criteria($wlyrs);
             $wqry .= DataGetter::applyFilter("way");
+
             $wresult = pg_query($wqry);
             $first=true;
 
@@ -251,7 +263,8 @@ class DataGetter
     function getWayQuery($table)
     {
         return ($table=="polygon") ?
-            $this->dbq->getPolygonQuery(): $this->dbq->getWayQuery();
+            $this->dbq->getPolygonQuery(): 
+	    $this->dbq->getWayQuery();
     }
 
     function reprojectData($outProj)
@@ -599,9 +612,13 @@ class BboxGetter extends DataGetter
     function mkgeom()
     {
         $bbox=$this->bbox;
+	/*
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
-            $this->SRID.")";
+            $this->SRID.")";	
+	*/
+	$g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
+		$this->SRID.")";
         return $g; 
     }
 
@@ -615,9 +632,13 @@ class BboxGetter extends DataGetter
         $bbox[2] = $bbox[2] + $w*0.2; 
         $bbox[1] = $bbox[1] - $h*0.2; 
         $bbox[3] = $bbox[3] + $h*0.2;
+	/*
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
             $this->SRID.")";
+	*/
+	$g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
+		$this->SRID.")";
         return $g; 
     }
 
@@ -645,10 +666,13 @@ class BboxGetter extends DataGetter
                     // coords of (0,0) seem to  screw up rendering
                     $x=($x==0)?1:$x;
                     $y=($y==0)?1:$y;
+	
                     $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                     $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
+
                     if($x>=0 && $y>=0 && $x<=$this->kothic_gran && 
                         $y<=$this->kothic_gran)
+		    if(true)
                     {
                            $coords[] = array($x,$y);
                     }
@@ -676,6 +700,7 @@ class BboxGetter extends DataGetter
                             $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                             $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
                         }
+			
                         $coords[$i][] = array($x,$y);
 
                     }
@@ -701,6 +726,7 @@ class BboxGetter extends DataGetter
                             $this->bbox[1]) * 
                             $factor);
 
+			    // coords of (0,0) screw up rendering
                             $x=($x==0)?1:$x;
                             $y=($y==0)?1:$y;
                             $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
@@ -724,7 +750,7 @@ class BboxGetter extends DataGetter
     {
         return ($table=="polygon") ?
             $this->dbq->getBboxPolygonQuery($this->geomtxt) :
-            $this->dbq->getBboxWayQuery($this->geomtxt); 
+            $this->dbq->getBboxWayQuery($this->geomtxt);
     }
 
 	function getUniqueList($property)

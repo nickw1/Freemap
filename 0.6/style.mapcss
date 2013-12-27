@@ -12,10 +12,24 @@ area[natural=land]
 node[place]
 {
 	text-color: black;
+}
+
+node[place],node|z13-18[railway=station]
+{
 	font-weight: bold;
 	font-family: Helvetica; 
 	text: name;
 	text-allow-overlap: true;
+}
+
+node|z13-18[railway=station]
+{
+	text-color: red;
+	color: red;
+	icon-image: ../data/symbols/rsmall.png;
+	allow-overlap: true;
+	z-index: 10;
+	text-offset: 6;
 }
 
 node|z14-18[place=suburb],node[place=hamlet]
@@ -243,7 +257,7 @@ line[waterway=stream]
 	z-index: 2;
 }
 
-line[railway=rail],line[railway=preserved_rail]
+line|z14-18[railway=rail],line[railway=preserved_rail],line[railway=preserved]
 {
 	color: white; 
 	casing-color: black;
@@ -253,7 +267,17 @@ line[railway=rail],line[railway=preserved_rail]
 	width: 2;
 }
 
-line|z12-13[highway=motorway],line|z12-13[highway=motorway_link]
+line|z10-13[railway=rail],line[railway=preserved_rail],line[railway=preserved]
+{
+	color: white; 
+	casing-color: black;
+	casing-width: 0.5;
+	dashes: 4,4;
+	casing-dashes: 1,0;
+	width: 1;
+}
+
+line|z13[highway=motorway],line|z13[highway=motorway_link]
 {
 	casing-color: #506077;
 	casing-width: 1;
@@ -262,7 +286,7 @@ line|z12-13[highway=motorway],line|z12-13[highway=motorway_link]
 	z-index: 8;
 }
 
-line|z12-13[highway=trunk],line|z12-13[highway=trunk_link]
+line|z13[highway=trunk],line|z13[highway=trunk_link]
 {
 	casing-color: #477147;
 	casing-width: 1;
@@ -271,7 +295,7 @@ line|z12-13[highway=trunk],line|z12-13[highway=trunk_link]
 	z-index: 7;
 }
 
-line|z12-13[highway=primary],line|z12-13[highway=primary_link]
+line|z13[highway=primary],line|z13[highway=primary_link]
 {
 	casing-color: #8d4346;
 	casing-width: 1;
@@ -280,7 +304,7 @@ line|z12-13[highway=primary],line|z12-13[highway=primary_link]
 	z-index: 6;
 }
 
-line|z12-13[highway=secondary],line|z12-13[highway=secondary_link]
+line|z13[highway=secondary],line|z13[highway=secondary_link]
 {
 	casing-color: #a37b48;
 	casing-width: 1;
@@ -298,7 +322,7 @@ line|z12-13[highway=tertiary],line|z12-13[highway=tertiary_link]
 	z-index: 4;
 }
 
-line|z12-13[highway=unclassified],line|z12-13[highway=unclassified_link]
+line|z13[highway=unclassified],line|z13[highway=unclassified_link]
 {
 	casing-color: #999;
 	casing-width: 1;
@@ -307,7 +331,16 @@ line|z12-13[highway=unclassified],line|z12-13[highway=unclassified_link]
 	z-index: 3;
 }
 
-line|z10-11[highway=motorway],line|z10-11[highway=motorway_link]
+line|z12[highway=unclassified],line|z12[highway=unclassified_link]
+{
+	casing-color: #999;
+	casing-width: 0.5;
+	color: white;
+	width: 1;
+	z-index: 3;
+}
+
+line|z10-12[highway=motorway],line|z10-12[highway=motorway_link]
 {
 	casing-color: #506077;
 	casing-width: 2;
@@ -316,7 +349,7 @@ line|z10-11[highway=motorway],line|z10-11[highway=motorway_link]
 	z-index: 8;
 }
 
-line|z10-11[highway=trunk],line|z10-11[highway=trunk_link]
+line|z10-12[highway=trunk],line|z10-12[highway=trunk_link]
 {
 	casing-color: #477147;
 	casing-width: 1;
@@ -325,7 +358,7 @@ line|z10-11[highway=trunk],line|z10-11[highway=trunk_link]
 	z-index: 7;
 }
 
-line|z10-11[highway=primary],line|z10-11[highway=primary_link]
+line|z10-12[highway=primary],line|z10-12[highway=primary_link]
 {
 	casing-color: #8d4346;
 	casing-width: 1;
@@ -334,7 +367,7 @@ line|z10-11[highway=primary],line|z10-11[highway=primary_link]
 	z-index: 6;
 }
 
-line|z10-11[highway=secondary],line|z10-11[highway=secondary_link]
+line|z10-12[highway=secondary],line|z10-12[highway=secondary_link]
 {
 	casing-color: #a37b48;
 	casing-width: 1;

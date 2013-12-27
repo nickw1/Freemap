@@ -51,6 +51,8 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     {
         $bg->addWayFilter("highway","motorway,trunk,primary,".
                             "motorway_link,primary_link,trunk_link");
+	$bh->addWayFilter("railway","rail,preserved");
+	$bh->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city");
         $bg->includePolygons(false);
         unset($cleaned["contour"]);
@@ -60,6 +62,8 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         $bg->addWayFilter("highway","motorway,trunk,primary,secondary,".
                             "motorway_link,primary_link,secondary_link,".
                             "trunk_link");
+	$bg->addWayFilter("railway","rail,preserved");
+	$bg->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city,town");
         $bg->includePolygons(false);
         unset($cleaned["contour"]);
@@ -70,15 +74,18 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
                 "motorway,trunk,primary,secondary,tertiary,unclassified,".
                 "motorway_link,trunk_link,primary_link,secondary_link,".
                 "tertiary_link,unclassified_link");
+	$bg->addWayFilter("railway","rail,preserved");
+	$bg->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city,town,village");
-        $bg->includePolygons(false);
+	$bg->addPOIFilter("railway","station");
         unset($cleaned["contour"]);
     }
 
     $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
 						CACHE."/$kg/$z/$x/$y.json",$outProj,$x,$y,$z);
     $data["granularity"] = $kg;
-    $data["bbox"] = array($sw['lon'],$sw['lat'],$ne['lon'],$ne['lat']);
+    $data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
+			$ne['lon']+0.01,$ne['lat']+0.01);
     echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
 }
 else

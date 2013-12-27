@@ -41,7 +41,8 @@ $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '4326';
 adjustProj($inProj);
 adjustProj($outProj);
 
-if($cleaned['inUnits'] && $cleaned['inUnits']=='microdeg' && $inProj=='4326')
+if(isset($cleaned['inUnits'])
+	 && $cleaned['inUnits']=='microdeg' && $inProj=='4326')
 {
 	for($i=0; $i<4; $i++)
 		$values[$i] /= 1000000.0;

@@ -116,16 +116,17 @@ of map is drawn, it is cached which means that next time you visit that
 area, the map will be drawn much more quickly - a second or two.</p>
 <p>Also please note that from version 0.6, maps are drawn in the
 browser using HTML5 technology and the
-<a href='http://www.kothic.org/js/'>kothic-js</a> renderer.
+<a href='http://www.kothic.org/'>kothic-js</a> renderer.
 The decision to switch to in-browser rendering has been
 made as a result of the large demands of server-side rendering due to
 the increased size of the OpenStreetMap database, and also simply because it
 is a concept that I find interesting! ;-)</p> 
-<p>The move to in-browser rendering also means that you will need an 
+<p>The move to in-browser rendering also means that you will need a reasonably
 up-to-date browser. Current versions of Firefox (4+, I believe), 
 Chrome and Internet Explorer (9+) will work.</p>
 <h2 id='village'>Coverage</h2>
-<p>Experimentally, Freemap now covers the whole of England. This does mean
+<p>Experimentally, Freemap now covers the whole of England and Wales. 
+This does mean
 that initial map rendering is slow (see above), 
 but due to caching, next time you visit
 an area it will be much faster.</p>
@@ -174,11 +175,10 @@ five fairly distinct versions:
     Redesign of
     distinguish physical state of ways and access rights, as described
     above. Android client.</li>
-    <li><em>Freemap 0.6</em> is the current version, aiming to
+    <li><em>Freemap 0.6</em> (March 2012) is the current version, aiming to
     solve once and for all the server load issues by
     using kothic-js client-side rendering. 
-    Unless I get more server power, for the moment it covers only 
-    (popular) areas of southern and northern England and Wales.</li>
+    </li>
     </ul>
 
 </p>
@@ -195,7 +195,7 @@ import the whole of the UK into the database at once can be avoided, so
 thanks to Frederik for that!</li>
 <li>A web service has been written which provides tiled OSM data as
 GeoJSON (or a slightly modified version of GeoJSON, see
-<a href='http://www.kothic.org/js'>kothic-js</a>). On the client side, 
+<a href='http://www.kothic.org/'>kothic-js</a>). On the client side, 
 kothic-js parses the GeoJSON and renders it to produce a visible map, using
 the <a href='style.mapcss'>MapCSS file here</a>.</p>
 </ul>

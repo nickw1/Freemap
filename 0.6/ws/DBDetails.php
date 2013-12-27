@@ -31,7 +31,7 @@ class DBDetails
 
     public function getWayQuery()
     {
-        return ($this->wayDetails) ?
+        	return ($this->wayDetails) ?
             "SELECT *,ST_AsGeoJSON(".$this->wayDetails["col"].
             ") AS geojson FROM ".$this->wayDetails["table"]. " WHERE true" :
             null;
@@ -83,7 +83,8 @@ class DBDetails
 
     public function getBboxWayQuery($geomtxt)
     {
-        $q = ($this->intersection==true) ?
+        $q = 
+	($this->intersection==true) ?
 
         "SELECT *,ST_AsGeoJSON(ST_Intersection($geomtxt,".
             $this->wayDetails["col"].")) AS geojson ".

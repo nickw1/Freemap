@@ -16,10 +16,22 @@
 
         if (((type == 'node' && (tags.hasOwnProperty('place'))))) {
             s_default['text-color'] = 'black';
+        }
+
+        if (((type == 'node' && (tags.hasOwnProperty('place')))) || ((type == 'node' && tags['railway'] == 'station') && zoom >= 13 && zoom <= 18)) {
             s_default['font-weight'] = 'bold';
             s_default['font-family'] = 'Helvetica';
             s_default['text'] = MapCSS.e_localize(tags, 'name');
             s_default['text-allow-overlap'] = 'true';
+        }
+
+        if (((type == 'node' && tags['railway'] == 'station') && zoom >= 13 && zoom <= 18)) {
+            s_default['text-color'] = 'red';
+            s_default['color'] = 'red';
+            s_default['icon-image'] = '../data/symbols/rsmall.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['z-index'] = 10;
+            s_default['text-offset'] = 6;
         }
 
         if (((type == 'node' && tags['place'] == 'suburb') && zoom >= 14 && zoom <= 18) || ((type == 'node' && tags['place'] == 'hamlet'))) {
@@ -213,7 +225,7 @@
             s_default['z-index'] = 2;
         }
 
-        if (((selector == 'line' && tags['railway'] == 'rail')) || ((selector == 'line' && tags['railway'] == 'preserved_rail'))) {
+        if (((selector == 'line' && tags['railway'] == 'rail') && zoom >= 14 && zoom <= 18) || ((selector == 'line' && tags['railway'] == 'preserved_rail')) || ((selector == 'line' && tags['railway'] == 'preserved'))) {
             s_default['color'] = 'white';
             s_default['casing-color'] = 'black';
             s_default['casing-width'] = 1;
@@ -222,7 +234,16 @@
             s_default['width'] = 2;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'motorway') && zoom >= 12 && zoom <= 13) || ((selector == 'line' && tags['highway'] == 'motorway_link') && zoom >= 12 && zoom <= 13)) {
+        if (((selector == 'line' && tags['railway'] == 'rail') && zoom >= 10 && zoom <= 13) || ((selector == 'line' && tags['railway'] == 'preserved_rail')) || ((selector == 'line' && tags['railway'] == 'preserved'))) {
+            s_default['color'] = 'white';
+            s_default['casing-color'] = 'black';
+            s_default['casing-width'] = 0.5;
+            s_default['dashes'] = [4, 4];
+            s_default['casing-dashes'] = [1, 0];
+            s_default['width'] = 1;
+        }
+
+        if (((selector == 'line' && tags['highway'] == 'motorway') && zoom === 13) || ((selector == 'line' && tags['highway'] == 'motorway_link') && zoom === 13)) {
             s_default['casing-color'] = '#506077';
             s_default['casing-width'] = 1;
             s_default['color'] = '#809bc0';
@@ -230,7 +251,7 @@
             s_default['z-index'] = 8;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'trunk') && zoom >= 12 && zoom <= 13) || ((selector == 'line' && tags['highway'] == 'trunk_link') && zoom >= 12 && zoom <= 13)) {
+        if (((selector == 'line' && tags['highway'] == 'trunk') && zoom === 13) || ((selector == 'line' && tags['highway'] == 'trunk_link') && zoom === 13)) {
             s_default['casing-color'] = '#477147';
             s_default['casing-width'] = 1;
             s_default['color'] = '#cdeacd';
@@ -238,7 +259,7 @@
             s_default['z-index'] = 7;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'primary') && zoom >= 12 && zoom <= 13) || ((selector == 'line' && tags['highway'] == 'primary_link') && zoom >= 12 && zoom <= 13)) {
+        if (((selector == 'line' && tags['highway'] == 'primary') && zoom === 13) || ((selector == 'line' && tags['highway'] == 'primary_link') && zoom === 13)) {
             s_default['casing-color'] = '#8d4346';
             s_default['casing-width'] = 1;
             s_default['color'] = '#f4c3c4';
@@ -246,7 +267,7 @@
             s_default['z-index'] = 6;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'secondary') && zoom >= 12 && zoom <= 13) || ((selector == 'line' && tags['highway'] == 'secondary_link') && zoom >= 12 && zoom <= 13)) {
+        if (((selector == 'line' && tags['highway'] == 'secondary') && zoom === 13) || ((selector == 'line' && tags['highway'] == 'secondary_link') && zoom === 13)) {
             s_default['casing-color'] = '#a37b48';
             s_default['casing-width'] = 1;
             s_default['color'] = '#fee0b8';
@@ -262,7 +283,7 @@
             s_default['z-index'] = 4;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'unclassified') && zoom >= 12 && zoom <= 13) || ((selector == 'line' && tags['highway'] == 'unclassified_link') && zoom >= 12 && zoom <= 13)) {
+        if (((selector == 'line' && tags['highway'] == 'unclassified') && zoom === 13) || ((selector == 'line' && tags['highway'] == 'unclassified_link') && zoom === 13)) {
             s_default['casing-color'] = '#999';
             s_default['casing-width'] = 1;
             s_default['color'] = 'white';
@@ -270,7 +291,15 @@
             s_default['z-index'] = 3;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'motorway') && zoom >= 10 && zoom <= 11) || ((selector == 'line' && tags['highway'] == 'motorway_link') && zoom >= 10 && zoom <= 11)) {
+        if (((selector == 'line' && tags['highway'] == 'unclassified') && zoom === 12) || ((selector == 'line' && tags['highway'] == 'unclassified_link') && zoom === 12)) {
+            s_default['casing-color'] = '#999';
+            s_default['casing-width'] = 0.5;
+            s_default['color'] = 'white';
+            s_default['width'] = 1;
+            s_default['z-index'] = 3;
+        }
+
+        if (((selector == 'line' && tags['highway'] == 'motorway') && zoom >= 10 && zoom <= 12) || ((selector == 'line' && tags['highway'] == 'motorway_link') && zoom >= 10 && zoom <= 12)) {
             s_default['casing-color'] = '#506077';
             s_default['casing-width'] = 2;
             s_default['color'] = '#809bc0';
@@ -278,7 +307,7 @@
             s_default['z-index'] = 8;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'trunk') && zoom >= 10 && zoom <= 11) || ((selector == 'line' && tags['highway'] == 'trunk_link') && zoom >= 10 && zoom <= 11)) {
+        if (((selector == 'line' && tags['highway'] == 'trunk') && zoom >= 10 && zoom <= 12) || ((selector == 'line' && tags['highway'] == 'trunk_link') && zoom >= 10 && zoom <= 12)) {
             s_default['casing-color'] = '#477147';
             s_default['casing-width'] = 1;
             s_default['color'] = '#cdeacd';
@@ -286,7 +315,7 @@
             s_default['z-index'] = 7;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'primary') && zoom >= 10 && zoom <= 11) || ((selector == 'line' && tags['highway'] == 'primary_link') && zoom >= 10 && zoom <= 11)) {
+        if (((selector == 'line' && tags['highway'] == 'primary') && zoom >= 10 && zoom <= 12) || ((selector == 'line' && tags['highway'] == 'primary_link') && zoom >= 10 && zoom <= 12)) {
             s_default['casing-color'] = '#8d4346';
             s_default['casing-width'] = 1;
             s_default['color'] = '#f4c3c4';
@@ -294,7 +323,7 @@
             s_default['z-index'] = 6;
         }
 
-        if (((selector == 'line' && tags['highway'] == 'secondary') && zoom >= 10 && zoom <= 11) || ((selector == 'line' && tags['highway'] == 'secondary_link') && zoom >= 10 && zoom <= 11)) {
+        if (((selector == 'line' && tags['highway'] == 'secondary') && zoom >= 10 && zoom <= 12) || ((selector == 'line' && tags['highway'] == 'secondary_link') && zoom >= 10 && zoom <= 12)) {
             s_default['casing-color'] = '#a37b48';
             s_default['casing-width'] = 1;
             s_default['color'] = '#fee0b8';
@@ -336,7 +365,7 @@
     }
     
     var sprite_images = {
-    }, external_images = [], presence_tags = [], value_tags = ['highway', 'railway', 'amenity', 'contour', 'foot', 'waterway', 'name', 'natural', 'landuse', 'place', 'designation', 'bridge'];
+    }, external_images = ['../data/symbols/rsmall.png'], presence_tags = [], value_tags = ['highway', 'railway', 'amenity', 'contour', 'foot', 'waterway', 'name', 'natural', 'landuse', 'place', 'designation', 'bridge'];
 
     MapCSS.loadStyle('style', restyle, sprite_images, external_images, presence_tags, value_tags);
     MapCSS.preloadExternalImages('style');

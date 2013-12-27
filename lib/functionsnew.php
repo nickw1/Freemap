@@ -2,7 +2,7 @@
 
 require_once('/var/www/common/defines.php');
 require_once('latlong.php');
-require_once('/var/www/phpcoord/phpcoord.php');
+//require_once('/var/www/phpcoord/phpcoord.php');
 require_once('conversions.class.php');
 require_once('conversionslatlong.class.php');
 
@@ -527,7 +527,7 @@ function get_high_level ($tags)
 
     foreach ($highlevel as $h=>$t)
     {
-        if ($tags[$t[0]] && $tags[$t[0]] == $t[1])
+        if (isset($tags[$t[0]]) && $tags[$t[0]] == $t[1])
             return $h;
     }
     return "unknown"; 
