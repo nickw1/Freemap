@@ -441,7 +441,7 @@ public class OpenTrail extends MapActivity implements
     		dfTask = new DownloadTextFilesTask(this,  new String[] 
     		                                   { "http://www.free-map.org.uk/data/android/freemap.xml" }, 
     		                           new String[] { styleFile }, 
-    		                           "No Freemap style file found. Download?", this, 1);
+    		                           "No Freemap style file found. Download?", this, 0);
     		dfTask.setDialogDetails("Downloading...","Downloading style file...");
     		dfTask.confirmAndExecute();
     	}
@@ -528,7 +528,7 @@ public class OpenTrail extends MapActivity implements
     {
     	switch(id)
     	{
-    		case 1:
+    		case 0:
     			DialogUtils.showDialog(this, "Freemap style will not be used, using default osmarender style");
     			break;
     	}
@@ -628,6 +628,10 @@ public class OpenTrail extends MapActivity implements
     	    Intent intent = new Intent(this,FileChooser.class);
             startActivityForResult(intent, 0);
     	}
+    	else if (item.getItemId()==R.id.downloadLocalMapMenuItem)
+    	{
+    	    downloadLocalMapFile();
+    	}
     	else if(!mapSetup)
     	{
     		DialogUtils.showDialog(this,"Cannot perform this action until a map is loaded.");
@@ -638,12 +642,7 @@ public class OpenTrail extends MapActivity implements
     		Intent intent = null;
     		
     		switch(item.getItemId())
-    		{
-    			case R.id.downloadLocalMapMenuItem:
-    				downloadLocalMapFile();
-    				break;
-    			
-    			
+    		{	
     			case R.id.myLocationMenuItem:
     				gotoMyLocation();
     				break;
