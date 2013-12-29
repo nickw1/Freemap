@@ -1,6 +1,7 @@
-package freemap.hikar;
+package freemap.texturetest;
 
 import android.hardware.Camera;
+
 import android.graphics.SurfaceTexture;
 import java.io.IOException;
 
@@ -9,7 +10,9 @@ public class CameraCapturer implements SurfaceTexture.OnFrameAvailableListener {
     Camera camera;
     OpenGLView.DataRenderer glRenderer;
    
+    
     public CameraCapturer(OpenGLView.DataRenderer renderer)
+           
     {
         glRenderer = renderer;
     }
@@ -23,10 +26,14 @@ public class CameraCapturer implements SurfaceTexture.OnFrameAvailableListener {
         catch (Exception e) { } 
     }
     
-    public void startPreview(SurfaceTexture surfaceTexture) throws IOException
+    public void setTexture(SurfaceTexture surfaceTexture) throws IOException
     {
         camera.setPreviewTexture(surfaceTexture);
         surfaceTexture.setOnFrameAvailableListener(this);
+    }
+    
+    public void startPreview()
+    {
         camera.startPreview();
         Camera.Parameters params = camera.getParameters();
         android.util.Log.d("hikar","hfov=" + params.getHorizontalViewAngle() +
@@ -48,11 +55,15 @@ public class CameraCapturer implements SurfaceTexture.OnFrameAvailableListener {
         }
     }  
     
+    public boolean cameraSetup()
+    {
+        return camera!=null;
+    }
+    
     public void onFrameAvailable(SurfaceTexture st)
     {
-        // This appears not to be necessary; SurfaceTexture.updateTexImage() on its own will suffice
-        // the converse is not true: this without SurfaceTexture.updateTexImage() will not work
-         glRenderer.setCameraFrame(st);
+       
+        glRenderer.setUpdateSurface(true);
     }
     
     public float getHFOV()
