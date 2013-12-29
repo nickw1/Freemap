@@ -119,7 +119,8 @@ public class OpenGLView extends GLSurfaceView  {
                    "}\n";
                 
                 // from example on stackoverflow - gave same result
-                /*
+                //http://stackoverflow.com/questions/19844699/capture-frames-of-video-while-playing-over-opengls-surface-view
+               /*
                 final String mVertexShader =
                         "uniform mat4 uMVPMatrix;\n" +
                         "uniform mat4 uSTMatrix;\n" +
