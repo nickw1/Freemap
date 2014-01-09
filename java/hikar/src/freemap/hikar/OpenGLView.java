@@ -131,7 +131,7 @@ public class OpenGLView extends GLSurfaceView  {
                    "void main (void)\n" +
                    "{\n" +
                    "gl_Position = aVertex;\n" +
-                   "vTextureValue = vec2(0.5*(1.0 + aVertex.x), -0.5*(1.0+aVertex.y));\n" +
+                   "vTextureValue = vec2(0.5*(1.0 + aVertex.x), 0.5*(1.0-aVertex.y));\n" +
                    "}\n",
                    texFragmentShader =
                    "#extension GL_OES_EGL_image_external: require\n" +
