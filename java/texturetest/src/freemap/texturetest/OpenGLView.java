@@ -10,6 +10,7 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.graphics.SurfaceTexture;
 
+import android.graphics.PixelFormat;
 
 import java.io.IOException;
 import android.util.Log;
@@ -70,6 +71,10 @@ public class OpenGLView extends GLSurfaceView  {
         public void setUpdateSurface(boolean u)
         {
             updateSurface = u;
+            if(u==true)
+            {
+                OpenGLView.this.requestRender();
+            }
         }
         
         public void onSurfaceCreated(GL10 unused,EGLConfig config)
@@ -106,7 +111,7 @@ public class OpenGLView extends GLSurfaceView  {
                    "void main (void)\n" +
                    "{\n" +
                    "gl_Position = aVertex;\n" +
-                   "vTextureValue = vec2(0.5*(1.0 + aVertex.x), -0.5*(1.0+aVertex.y));\n" +
+                   "vTextureValue = vec2(0.5*(1.0 + aVertex.x), 0.5*(1.0+aVertex.y));\n" +
                    "}\n",
                    texFragmentShader =
                    "#extension GL_OES_EGL_image_external: require\n" +
@@ -185,6 +190,7 @@ public class OpenGLView extends GLSurfaceView  {
             if(cameraCapturer.isActive())
             {
                 cameraFeed.updateTexImage();
+                updateSurface=false;
                 float[] tm = new float[16];
                 cameraFeed.getTransformMatrix(tm);
             
@@ -278,6 +284,8 @@ public class OpenGLView extends GLSurfaceView  {
     {
         super(ctx);
         setEGLContextClientVersion(2);
+        setEGLConfigChooser(8,8,8,8,0,0);
+        getHolder().setFormat(PixelFormat.RGBA_8888);
         renderer=new DataRenderer();
         setRenderer(renderer);
        

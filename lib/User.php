@@ -113,25 +113,26 @@ class User
         else
         {
             $random = rand (1000000,9999999);
+		$active=1; // CHANGE!!!
             $q = ("insert into users (email,".
                     "username,password,active,k) ".
                     "values ('$email',".
                     "'$username','".
                     sha1($password).
-                    "',0,$random)");
+                    "',$active,$random)");
             pg_query($q); 
             $lastid=pg_insert_id("users");
             mail('nick_whitelegg@yahoo.co.uk',
                     'New Freemap account created', 
                     "New Freemap account created for $username ".
                     "(email $email). ".
-                    "<a href=".
-                    "\"http://www.free-map.org.uk/0.6/user.php?action=".
+                    "<a href=\"". FREEMAP_ROOT.
+                    "/0.6/user.php?action=".
                         "delete&id=$lastid\">Delete</a>");
             mail($email, 'New Freemap account created', 
                     "New Freemap account created for $username.".
                     "Please activate by visiting this address: ".
-                    "http://www.free-map.org.uk".
+			FREEMAP_ROOT.
                     "/0.6/user.php?action=activate&id=$lastid".
                 "&key=$random");
             return new User($lastid);

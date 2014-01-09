@@ -213,6 +213,16 @@
             s_default['z-index'] = 2;
         }
 
+        if (((selector == 'area' && tags['natural'] == 'heath'))) {
+            s_default['fill-color'] = '#ffffc0';
+            s_default['z-index'] = 2;
+        }
+
+        if (((selector == 'area' && tags['natural'] == 'moor'))) {
+            s_default['fill-color'] = '#ffc0ff';
+            s_default['z-index'] = 2;
+        }
+
         if (((selector == 'line' && tags['waterway'] == 'river'))) {
             s_default['color'] = 'lightblue';
             s_default['width'] = 2;

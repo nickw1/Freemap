@@ -93,7 +93,7 @@ WRViewMgr.prototype.doDisplayRoute = function(xmlHTTP)
         if(data.features[i].geometry.type=='Point')
         {
             var WpIcon = L.icon (
-            { iconUrl:'http://www.free-map.org.uk/0.6/flag.php?'
+            { iconUrl:'/0.6/flag.php?'
             +'n='+data.features[i].properties.id,
             shadowUrl:null,
             iconSize: new L.Point(32,32),

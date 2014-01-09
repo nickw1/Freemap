@@ -1,6 +1,6 @@
 <?php
 require_once('../../lib/functionsnew.php');
-require_once('../User.php');
+require_once('../../lib/User.php');
 
 session_start();
 

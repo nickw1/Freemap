@@ -4,7 +4,7 @@ function Waypoint(mLL)
         Waypoint.prototype.count = 0;
     this.id=++Waypoint.prototype.count;
     var WpIcon = L.icon (
-        { iconUrl:'http://www.free-map.org.uk/0.6/flag.php?'
+        { iconUrl:'/0.6/flag.php?'
         +'n='+this.id,
         shadowUrl:null,
         iconSize: new L.Point(32,32),

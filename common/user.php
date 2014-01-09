@@ -1,5 +1,6 @@
 <?php
 require_once('../lib/functionsnew.php');
+require_once('defines.php');
 
 session_start();
 
@@ -99,13 +100,13 @@ switch($cleaned["action"])
                     'New Freemap account created', 
                     "New Freemap account created for $cleaned[username] ".
                     "(email $cleaned[email]). ".
-                    "<a href=".
-                    "\"http://www.free-map.org.uk/common/user.php?action=".
+                    "<a href=\"". FREEMAP_ROOT .
+                    "/common/user.php?action=".
 						"delete&id=$row[lastid]\">Delete</a>");
                 mail($cleaned['email'], 'New Freemap account created', 
                     "New Freemap account created for $cleaned[username].".
                     "Please activate by visiting this address: ".
-                    "http://www.free-map.org.uk".
+                    FREEMAP_ROOT.
                     "/common/user.php?action=activate&userid=$row[lastid]".
                 "&key=$random");
                 ?>

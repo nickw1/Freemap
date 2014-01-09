@@ -79,7 +79,7 @@ function Freemap(lat,lon,zoom)
     this.map = new FreemapWidget('map',{layers:[this.geojsonLayer,
             this.walkrouteStartsLayer,this.walkrouteLayer]});
     */
-    var baseUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php';
+    var baseUrl = '/0.6/ws/tsvr.php';
 
     var tileUrl = baseUrl +  
         '?x={x}&y={y}&z={z}&way=all&poi=all&kothic=1&contour=1&coastline=1';

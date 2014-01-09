@@ -64,12 +64,14 @@ class UserView
         <h1>Signed up!</h1>
         <p>You've successfully signed up for Freemap services
 		(Freemap, FixMyPaths and OpenTrailView). 
+<!--
 		You will get an email to confirm
         your registration. 
 		<em>Please note that Gmail, and possibly other providers,
 		might put it in your spam folder. It will have a title of
 		"New Freemap account created".</em>
 		Follow the link in this email to activate your account.</p>
+-->
         <a href='index.php'>Back to main page</a></p>
         <?php
     }

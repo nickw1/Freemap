@@ -243,6 +243,18 @@ area[natural=water]
 	z-index: 2;
 }
 
+area[natural=heath]
+{
+	fill-color: #ffffc0;
+	z-index: 1;
+}
+
+area[natural=moor]
+{
+	fill-color: #ffc0ff;
+	z-index: 1;
+}
+
 line[waterway=river]
 {
 	color:lightblue;
