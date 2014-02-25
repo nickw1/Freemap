@@ -15,17 +15,21 @@ import freemap.data.Walkroute;
 public class WRUploadTask extends HTTPUploadTask {
 
     Walkroute walkroute;
+    double dpDist;
+   
     
     public WRUploadTask(Context ctx,  Walkroute walkroute, String url, 
-            String alertMsg, Callback callback, int taskId)
+            String alertMsg, Callback callback, int taskId, double dpDist)
     {
         super(ctx, url, null, alertMsg, callback, taskId);
         this.walkroute=walkroute;
+        this.dpDist=dpDist;
     }
     
     public String doInBackground (Void... unused)
     {
-        String gpx = walkroute.toXML();
+        Walkroute simplified = walkroute.simplifyDouglasPeucker(dpDist);
+        String gpx = simplified.toXML();
         ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
         postData.add(new BasicNameValuePair("action","add"));
         postData.add(new BasicNameValuePair("route", gpx));

@@ -17,6 +17,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.CheckBox;
 
 import android.net.Uri;
 import android.view.KeyEvent;
@@ -166,6 +167,7 @@ public class InputAnnotationActivity extends Activity implements InputAnnotation
 		{
 			extras.putString("ID", id);
 			extras.putString("description", ((EditText)findViewById(R.id.etAnnotation)).getText().toString());
+			extras.putBoolean("walkrouteAnnotation" ,((CheckBox)findViewById(R.id.chkbxWalkroute)).isChecked());
 			extras.putDouble("lon", lon);
 			extras.putDouble("lat", lat);
 		}

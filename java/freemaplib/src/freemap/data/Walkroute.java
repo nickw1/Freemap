@@ -42,7 +42,7 @@ public class Walkroute {
 		setTitle(title);
 		setDescription(description);
 	}
-	
+
 	public void addStage(TrackPoint start,String description)
 	{
 		stages.add(new Stage(stages.size()+1,start,description));
@@ -149,7 +149,7 @@ public class Walkroute {
 		for(int i=0; i<stages.size(); i++)
 		{
 			startAsLL=(proj==null)?stages.get(i).start:proj.unproject(stages.get(i).start);
-			dist = Point.haversineDist(lonlat.x,lonlat.y,startAsLL.x,startAsLL.y);
+			dist = Algorithms.haversineDist(lonlat.x,lonlat.y,startAsLL.x,startAsLL.y);
 			if(dist < lowestSoFar)
 			{
 				lowestSoFar = dist;
@@ -168,5 +168,22 @@ public class Walkroute {
 	{
 		points.clear();
 		stages.clear();
+	}
+	
+	public Walkroute simplifyDouglasPeucker(double distMetres)
+	{
+	    Walkroute simplified = new Walkroute (title, description);
+	    for(int i=0; i<stages.size(); i++)
+	        simplified.addStage(stages.get(i).start, stages.get(i).description);
+	    
+	    TrackPoint[] pts = new TrackPoint[points.size()];
+	    points.toArray(pts);
+	    
+	    TrackPoint[] ptsSimp = (TrackPoint[])Algorithms.douglasPeucker(pts, distMetres);
+	    
+	    for(int i=0; i<ptsSimp.length; i++)
+	        simplified.addPoint(ptsSimp[i]);
+	     
+	    return simplified;
 	}
 }

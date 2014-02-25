@@ -59,6 +59,7 @@ import freemap.data.Annotation;
 import freemap.data.POI;
 import freemap.data.Point;
 import freemap.data.Walkroute;
+import freemap.data.TrackPoint;
 import freemap.datasource.FreemapDataHandler;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.FreemapFileFormatter;
@@ -798,22 +799,35 @@ public class OpenTrail extends MapActivity implements
     				extras = i.getExtras();
     				if(extras.getBoolean("success"))
     				{
+    				    boolean isWalkrouteAnnotation = extras.getBoolean("walkrouteAnnotation");
+    				    
     					String id=extras.getString("ID"),description=extras.getString("description");
     					GeoPoint gp = new GeoPoint(extras.getDouble("lat"),extras.getDouble("lon"));
     					//Point p = this.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
-    					Point p = new Point(extras.getDouble("lon"),extras.getDouble("lat"));
+    					Point p = isWalkrouteAnnotation? new Point(extras.getDouble("lon"),extras.getDouble("lat")) :
+    					                    new TrackPoint(extras.getDouble("lon"), extras.getDouble("lat"), System.currentTimeMillis());
     					OverlayItem item = new OverlayItem(gp,(id.equals("0") ? "New annotation":
     							"Annotation #"+id),description);
-    					item.setMarker(ItemizedOverlay.boundCenterBottom(getResources().getDrawable(R.drawable.annotation)));
+    					item.setMarker(ItemizedOverlay.boundCenterBottom(getResources().getDrawable(isWalkrouteAnnotation ?
+    					            R.drawable.marker : R.drawable.annotation)));
     					dataDisplayer.addIconItem(item);
     					int idInt = id.equals("0")? -(annCacheMgr.size()+1):Integer.parseInt(id);
-    					Annotation ann=new Annotation(idInt,p.x,p.y,description);
+    				
     			
+    					
     					mapView.invalidate();
-    					if(idInt<0)
+    					
+    					Walkroute curWR ;
+                        if(isWalkrouteAnnotation && this.recordingWalkroute && (curWR=gpsService.getRecordingWalkroute())!=null)
+                        {
+                            curWR.addStage((TrackPoint)p, description);
+                        }
+    					
+                        else if(idInt<0)
     					{
     						try
     						{
+    						    Annotation ann=new Annotation(idInt,p.x,p.y,description);
     							annCacheMgr.addAnnotation(ann); // adding in wgs84 latlon
     							Shared.pois.add(ann); // this reprojects it
     						}
@@ -873,12 +887,19 @@ public class OpenTrail extends MapActivity implements
     						recordingWalkroute.setTitle(title);
     						recordingWalkroute.setDescription(description);
     						
+    					
+    						
     						AsyncTask<String,Void,Boolean> addToCacheTask = new AsyncTask<String,Void,Boolean>()
     						{
+    						    
     						    Walkroute recWR;
     						    public Boolean doInBackground(String...fname)
     						    {
-    						        recWR = gpsService.getRecordingWalkroute();
+    					            recWR = gpsService.getRecordingWalkroute();
+                                    
+                                   
+                                    
+    					
     						        try
     						        {
     						            wrCacheMgr.addWalkrouteToCache(recWR,fname[0]);
@@ -1224,10 +1245,10 @@ public class OpenTrail extends MapActivity implements
     		
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     		String username = prefs.getString("prefUsername",""), password = prefs.getString("prefPassword", "");
+    		float dpDist = prefs.getFloat("prefDPDist", 10.0f);
     		dfTask = new WRUploadTask(OpenTrail.this,walkroute,
     		           "http://www.free-map.org.uk/0.6/ws/wr.php",  
-										"Upload walk route? No simplification on track done yet, "+
-                                "tracks typically 1 kilobyte/minute.", OpenTrail.this, 3);
+										"Upload walk route?", OpenTrail.this, 3, dpDist);
     		if(!(username.equals("")) && !(password.equals("")))
     		    ((HTTPUploadTask)dfTask).setLoginDetails(username, password);
     	    dfTask.setDialogDetails("Uploading...", "Uploading walk route...");

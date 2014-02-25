@@ -7,5 +7,6 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="gps_waiting">Waiting for GPS location..</string>
+    <string name="walkroute_annotation">Walkroute annotation?</string>
 </resources>
 

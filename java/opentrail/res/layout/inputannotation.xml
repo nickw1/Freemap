@@ -25,12 +25,15 @@
  </TableRow>
 
   </TableLayout>
-
-   
+    
+   <CheckBox android:text="@string/walkroute_annotation" android:layout_width="wrap_content" android:layout_height="wrap_content"
+       android:layout_above="@+id/tlInputAnnotation" android:id="@+id/chkbxWalkroute" android:checked="false" /> 
+     
    <EditText android:layout_width="fill_parent"
   	android:layout_height="fill_parent"
+  	android:inputType="text"
   	android:id = "@+id/etAnnotation"
-  	android:layout_above="@+id/tlInputAnnotation"
+  	android:layout_above="@+id/chkbxWalkroute"
   	android:layout_alignParentTop="true"
   	 />
 

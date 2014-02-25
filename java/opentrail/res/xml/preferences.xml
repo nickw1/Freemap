@@ -32,6 +32,11 @@ android:key="prefAutoDownload" />
     android:summary="Your Freemap password - WARNING, stored in plain text on phone, at risk if your phone is stolen!"
     android:password="true"
     android:key="prefPassword" />
+<EditTextPreference
+    android:title="Track simplification distance"
+    android:defaultValue="10"
+    android:summary="Simplification distance in metres for recording GPS track"
+    android:key="prefDPDist" />
 <CheckBoxPreference
     android:title="Save annotations on the device"
     android:summary="Save annotations on the device for later upload, rather than uploading in-the-field"

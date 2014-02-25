@@ -2,6 +2,7 @@ package freemap.data;
 
 import java.util.Arrays;
 
+import java.io.*;
 
 public class Point {
 	public double x,y,z;
@@ -41,18 +42,7 @@ public class Point {
 		return Math.sqrt(dx*dx+dy*dy);
 	}
 	
-	// www.faqs.org/faqs/geography/infosystems-faq
-	public static double haversineDist(double lon1, double lat1, double lon2, double lat2)
-	{
-		double R = 6371000;
-		double dlon=(lon2-lon1)*(Math.PI / 180);
-		double dlat=(lat2-lat1)*(Math.PI / 180);
-		double slat=Math.sin(dlat/2);
-		double slon=Math.sin(dlon/2);
-		double a = slat*slat + Math.cos(lat1*(Math.PI/180))*Math.cos(lat2*(Math.PI/180))*slon*slon;
-		double c = 2 *Math.asin(Math.min(1,Math.sqrt(a)));
-		return R*c;
-	}
+	
 	
 	// from old osmeditor2 code - comments as follows:
     // find the distance from a point to a line
@@ -64,39 +54,37 @@ public class Point {
     {
         double u = ((x-p1.x)*(p2.x-p1.x)+(y-p1.y)*(p2.y-p1.y)) / (Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2));
         double xintersection = p1.x+u*(p2.x-p1.x), yintersection=p1.y+u*(p2.y-p1.y);
-        return (u>=0&&u<=1) ? haversineDist(x,y,xintersection,yintersection) : Double.MAX_VALUE;
+        return (u>=0&&u<=1) ? Algorithms.haversineDist(x,y,xintersection,yintersection) : Double.MAX_VALUE;
     }
     
     // Assumption: points are in standard wgs84 lat/lon
     
-    public static Point[] douglasPeucker (Point[] points, double distMetres)
+    
+    
+    public static void main (String[] args) throws java.io.IOException
     {
-        int index = -1;
-        double maxDist = 0;
+        String base="T040114";
+        BufferedReader r = new BufferedReader(new FileReader("/home/nick/gpx/"+base+".txt"));
+      
+        java.util.ArrayList<Point> points = new java.util.ArrayList<Point>();
+        System.out.println("Reading in...");
+        double distMetres = 5.0;
         
-        double curDist;
+        String txt;
         
-        for(int i=1; i<points.length-1; i++)
+        while((txt = r.readLine())!=null)
         {
-            curDist = points[i].haversineDistToLine(points[0], points[points.length-1]);
-            if(curDist > maxDist)
-            {
-                index = i;
-                maxDist = curDist;
-            }
+            String[] values = txt.split(",");
+            points.add(new Point(Float.parseFloat(values[0]), Float.parseFloat(values[1])));
         }
-        
-        if (maxDist > distMetres)
-        {
-            Point[] before = Arrays.copyOfRange(points, 0, index), after = Arrays.copyOfRange(points, index, points.length-1);
-            Point[] simp1 = douglasPeucker(before,distMetres), 
-                        simp2 = douglasPeucker(after,distMetres);
-            Point[] merged = new Point[simp1.length + simp2.length - 1];
-            System.arraycopy(simp1, 0, merged, 0, simp1.length);
-            System.arraycopy(simp2, 1, merged, simp1.length, simp2.length-1);
-            return merged;
-        }
-        else
-            return new Point[] { points[0], points[points.length-1] };
-    }   
+        Point[] pts =new Point[points.size()];
+        points.toArray(pts);
+        System.out.println("Doing Douglas-Peucker...");
+        Point[] simp = Algorithms.douglasPeucker(pts, distMetres);
+        System.out.println("Writing out...");
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("/home/nick/gpx/"+base+".simp."+(int)distMetres+".txt")));
+        for(int i=0; i<simp.length; i++)
+            pw.println(simp[i].x+", " + simp[i].y);
+        pw.close();
+    }
 }
