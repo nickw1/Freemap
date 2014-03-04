@@ -42,6 +42,7 @@ public class InputAnnotationActivity extends Activity implements InputAnnotation
 	InputAnnotationTask iaTask;
 	ArrayList<NameValuePair> postData;
 	Intent resultIntent;
+	boolean recordingWalkroute;
 	
 	public class OKListener implements OnClickListener
 	{
@@ -61,7 +62,8 @@ public class InputAnnotationActivity extends Activity implements InputAnnotation
 		Intent intent = this.getIntent();
 		lat=intent.getExtras().getDouble("lat",91);
 		lon=intent.getExtras().getDouble("lon",181);
-		
+		recordingWalkroute = intent.getExtras().getBoolean("recordingWalkroute", false);
+		((CheckBox)findViewById(R.id.chkbxWalkroute)).setChecked(recordingWalkroute);
 		
 		if(lat<180 && lon<90)
 		{
@@ -109,8 +111,9 @@ public class InputAnnotationActivity extends Activity implements InputAnnotation
 	public void addAnnotation()
 	{
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		if(prefs.getBoolean("prefNoUpload", false) == true)
-			done("0","Annotation will be sent to SD card.", true);
+		boolean wrAnnotation = ((CheckBox)findViewById(R.id.chkbxWalkroute)).isChecked();
+		if(wrAnnotation || prefs.getBoolean("prefNoUpload", false) == true)
+			done("0",wrAnnotation ? "Added to walk route"  :   "Annotation will be stored on device", true);
 		else
 			sendAnnotation();
 	}

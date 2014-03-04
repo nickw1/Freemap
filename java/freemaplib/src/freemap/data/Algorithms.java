@@ -17,7 +17,7 @@ public class Algorithms {
     }
     
 
-    public static Point[] douglasPeucker (Point[] points, double distMetres)
+    public static TrackPoint[] douglasPeucker (TrackPoint[] points, double distMetres)
     {
         int index = -1;
         double maxDist = 0;
@@ -36,15 +36,15 @@ public class Algorithms {
         
         if (maxDist > distMetres)
         {
-            Point[] before = Arrays.copyOfRange(points, 0, index), after = Arrays.copyOfRange(points, index, points.length-1);
-            Point[] simp1 = douglasPeucker(before,distMetres), 
+            TrackPoint[] before = Arrays.copyOfRange(points, 0, index), after = Arrays.copyOfRange(points, index, points.length-1);
+            TrackPoint[] simp1 = douglasPeucker(before,distMetres), 
                         simp2 = douglasPeucker(after,distMetres);
-            Point[] merged = new Point[simp1.length + simp2.length - 1];
+            TrackPoint[] merged = new TrackPoint[simp1.length + simp2.length - 1];
             System.arraycopy(simp1, 0, merged, 0, simp1.length);
             System.arraycopy(simp2, 1, merged, simp1.length, simp2.length-1);
             return merged;
         }
         else
-            return new Point[] { points[0], points[points.length-1] };
+            return new TrackPoint[] { points[0], points[points.length-1] };
     }   
 }

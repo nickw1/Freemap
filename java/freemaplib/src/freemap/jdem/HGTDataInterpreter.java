@@ -2,7 +2,7 @@ package freemap.jdem;
 
 import java.io.InputStream;
 import freemap.datasource.DataInterpreter;
-import freemap.datasource.TiledData;
+
 
 public class HGTDataInterpreter extends DEMSource implements DataInterpreter {
 

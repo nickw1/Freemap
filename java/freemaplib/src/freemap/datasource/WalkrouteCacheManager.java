@@ -7,6 +7,8 @@ import org.xml.sax.SAXException;
 import java.io.FileOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // manage caching walkroutes
 public class WalkrouteCacheManager {
@@ -83,5 +85,17 @@ public class WalkrouteCacheManager {
 			return wr;
 		}
 		return null;
+	}
+	
+	public boolean timestampRecordingWalkroute()
+	{
+	    File f = new File(cacheDir+"/rec/tmp.xml");
+	    if(f.exists())
+	    {
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd_HHmmss");
+	        String date = sdf.format(new Date());
+	        return f.renameTo(new File(cacheDir+"/rec/savedat_"+ date +".xml"));
+	    }
+	    return false;
 	}
 }

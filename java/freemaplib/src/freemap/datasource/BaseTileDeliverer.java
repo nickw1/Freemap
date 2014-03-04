@@ -2,20 +2,14 @@ package freemap.datasource;
 
 import java.util.HashMap;
 
-import freemap.data.GoogleProjection;
+
 import freemap.data.Point;
 import freemap.data.Projection;
 
-import freemap.jdem.HGTDataInterpreter;
-import freemap.jdem.DEMSource;
-import freemap.jdem.HGTTileDeliverer;
-import freemap.jdem.DEM;
-import java.util.Scanner;
+
 import java.util.Map;
 import java.util.Set;
 
-import java.io.IOException;
-import java.io.File;
 
 //The BaseTileDeliverer/CachedTileDeliverer system is intended to replace the plain TileDeliverer
 //to allow for loading from a database. However TileDeliverer still in use.

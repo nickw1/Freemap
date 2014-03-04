@@ -1,6 +1,6 @@
 package freemap.data;
 
-import java.util.Arrays;
+
 
 import java.io.*;
 
@@ -66,7 +66,7 @@ public class Point {
         String base="T040114";
         BufferedReader r = new BufferedReader(new FileReader("/home/nick/gpx/"+base+".txt"));
       
-        java.util.ArrayList<Point> points = new java.util.ArrayList<Point>();
+        java.util.ArrayList<TrackPoint> points = new java.util.ArrayList<TrackPoint>();
         System.out.println("Reading in...");
         double distMetres = 5.0;
         
@@ -75,9 +75,9 @@ public class Point {
         while((txt = r.readLine())!=null)
         {
             String[] values = txt.split(",");
-            points.add(new Point(Float.parseFloat(values[0]), Float.parseFloat(values[1])));
+            points.add(new TrackPoint(Float.parseFloat(values[0]), Float.parseFloat(values[1])));
         }
-        Point[] pts =new Point[points.size()];
+        TrackPoint[] pts =new TrackPoint[points.size()];
         points.toArray(pts);
         System.out.println("Doing Douglas-Peucker...");
         Point[] simp = Algorithms.douglasPeucker(pts, distMetres);

@@ -16,7 +16,10 @@ import org.mapsforge.core.GeoPoint;
 import android.app.AlertDialog;
 import java.io.IOException;
 import android.util.Log;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import java.io.FileNotFoundException;
 
@@ -303,7 +306,7 @@ public class OpenTrail extends MapActivity implements
         		
         		public void onServiceDisconnected(ComponentName n)
         		{
-        			gpsService = null;
+        		//	gpsService = null; does this cause garbage collector to clean up service?
         		}
         	};
         	
@@ -385,6 +388,7 @@ public class OpenTrail extends MapActivity implements
     	//also need the service to keep going once the activity finishes
     	Intent startServiceIntent = new Intent(this,GPSService.class);
     	startServiceIntent.putExtra("wrCacheLoc",sdcard+"/opentrail/walkroutes/");
+    	startServiceIntent.putExtra("recordingWalkroute", recordingWalkroute);
     	startService(startServiceIntent);   	
     }
     
@@ -653,7 +657,12 @@ public class OpenTrail extends MapActivity implements
     					launchInputAnnotationActivity(this.location.getLatitude(),
     						this.location.getLongitude());
     				else
+    				{
+    				    
+    				    this.location = new GeoPoint(50.9, 1.4);
+    				    
     					DialogUtils.showDialog(this,"Location not known yet");
+    				}
     			
     				break;
     			
@@ -712,6 +721,8 @@ public class OpenTrail extends MapActivity implements
     				recordingWalkroute = !recordingWalkroute;
     				item.setTitle(recordingWalkroute ? "Stop recording" : "Record walk route");
     			
+    				if(gpsService.getRecordingWalkroute()!=null)
+    				    Log.d("OpenTrail", "recording/stop recording: walkroute stage size="  + gpsService.getRecordingWalkroute().getStages().size());
     				
     				if(recordingWalkroute)
     				{
@@ -758,6 +769,7 @@ public class OpenTrail extends MapActivity implements
     		Bundle extras = new Bundle();
     		extras.putDouble("lat", lat);
     		extras.putDouble("lon", lon);
+    		extras.putBoolean("recordingWalkroute", recordingWalkroute);
     		intent.putExtras(extras);
     		startActivityForResult(intent,1);
 		}
@@ -804,8 +816,8 @@ public class OpenTrail extends MapActivity implements
     					String id=extras.getString("ID"),description=extras.getString("description");
     					GeoPoint gp = new GeoPoint(extras.getDouble("lat"),extras.getDouble("lon"));
     					//Point p = this.proj.project(new Point(extras.getDouble("lon"),extras.getDouble("lat")));
-    					Point p = isWalkrouteAnnotation? new Point(extras.getDouble("lon"),extras.getDouble("lat")) :
-    					                    new TrackPoint(extras.getDouble("lon"), extras.getDouble("lat"), System.currentTimeMillis());
+    					Point p = new Point(extras.getDouble("lon"),extras.getDouble("lat"));
+    					                 
     					OverlayItem item = new OverlayItem(gp,(id.equals("0") ? "New annotation":
     							"Annotation #"+id),description);
     					item.setMarker(ItemizedOverlay.boundCenterBottom(getResources().getDrawable(isWalkrouteAnnotation ?
@@ -817,10 +829,13 @@ public class OpenTrail extends MapActivity implements
     					
     					mapView.invalidate();
     					
-    					Walkroute curWR ;
-                        if(isWalkrouteAnnotation && this.recordingWalkroute && (curWR=gpsService.getRecordingWalkroute())!=null)
+    					Walkroute curWR = gpsService.getRecordingWalkroute();
+    					
+                        if(isWalkrouteAnnotation && this.recordingWalkroute && curWR!=null)
                         {
-                            curWR.addStage((TrackPoint)p, description);
+                            curWR.addStage(p, description);
+                            
+                            Log.d("OpenTrail", "Added walkroute annotation. Size of stages=" + curWR.getStages().size());
                         }
     					
                         else if(idInt<0)
@@ -888,7 +903,7 @@ public class OpenTrail extends MapActivity implements
     						recordingWalkroute.setDescription(description);
     						
     					
-    						
+    					
     						AsyncTask<String,Void,Boolean> addToCacheTask = new AsyncTask<String,Void,Boolean>()
     						{
     						    
@@ -1245,7 +1260,7 @@ public class OpenTrail extends MapActivity implements
     		
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     		String username = prefs.getString("prefUsername",""), password = prefs.getString("prefPassword", "");
-    		float dpDist = prefs.getFloat("prefDPDist", 10.0f);
+    		float dpDist = Float.parseFloat(prefs.getString("prefDPDist", "5.0"));
     		dfTask = new WRUploadTask(OpenTrail.this,walkroute,
     		           "http://www.free-map.org.uk/0.6/ws/wr.php",  
 										"Upload walk route?", OpenTrail.this, 3, dpDist);
@@ -1301,7 +1316,8 @@ public class OpenTrail extends MapActivity implements
     
     public void about()
     {
-    	DialogUtils.showDialog(this,"OpenTrail 0.1-beta, Dec 2013 update. Uses OpenStreetMap data, copyright 2013 " +
+      
+    	DialogUtils.showDialog(this,"OpenTrail 0.1-beta. Uses OpenStreetMap data, copyright 2013 " +
     											"OpenStreetMap contributors, Open Database Licence. Uses " +
     											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright." +
     											"Person icon taken from the osmdroid project. Annotation icon based on " +

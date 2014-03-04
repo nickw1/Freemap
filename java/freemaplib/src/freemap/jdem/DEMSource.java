@@ -63,7 +63,7 @@ public class DEMSource {
 		//System.out.println("width=" + width+ " ptWIdth=" + ptWidth+  " ptHeight=" + ptHeight+ " spacing=" + spacing);
 		byte[] d2= new byte[1024];
 		
-		int total=0, bytesRead,metreCount=0,colIdx,metresTotal;
+		int total=0, bytesRead,metreCount=0,metresTotal;
 		
 		// The input stream seems to be really eccentrically implemented.
 		// We sometimes get less than 1024 bytes sent back, and sometimes an

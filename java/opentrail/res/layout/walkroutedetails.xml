@@ -3,6 +3,7 @@
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
      android:orientation="vertical">
+     <!--  
      <TableLayout android:layout_width="fill_parent"
      android:layout_height="wrap_content"
      android:stretchColumns="*"
@@ -13,12 +14,15 @@
    <Button android:id="@+id/btnWrCancel" android:text="Cancel" />
    </TableRow>
  </TableLayout>
+ -->
+ <Button android:id="@+id/btnWrOk" android:text="@string/ok" android:layout_width="fill_parent" android:layout_height="wrap_content" 
+     android:layout_alignParentBottom="true"/>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" 
     android:id="@+id/walkrouteDetailsMain"
-    android:layout_above="@+id/walkrouteDetailsOKCancel">
+    android:layout_above="@+id/btnWrOk">
  
       
  <TextView android:layout_width="wrap_content"

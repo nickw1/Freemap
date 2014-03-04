@@ -16,9 +16,9 @@ public class WalkrouteDetailsActivity extends Activity implements View.OnClickLi
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.walkroutedetails);
 		ok = (Button)findViewById(R.id.btnWrOk);
-		cancel = (Button)findViewById(R.id.btnWrCancel);
+		//cancel = (Button)findViewById(R.id.btnWrCancel);
 		ok.setOnClickListener(this);
-		cancel.setOnClickListener(this);
+		//cancel.setOnClickListener(this);
 	}
 
 	public void onClick(View v)
@@ -36,10 +36,12 @@ public class WalkrouteDetailsActivity extends Activity implements View.OnClickLi
 			intent.putExtras(extras);
 			setResult(RESULT_OK, intent);
 		}
+		/*
 		else if (v==cancel)
 		{
 			setResult(RESULT_CANCELED, intent);
 		}
+		*/
 		
 		finish();
 	}

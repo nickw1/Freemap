@@ -17,6 +17,14 @@ import android.widget.Toast;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import freemap.datasource.WalkrouteCacheManager;
+import android.util.Log;
+
+
+import java.io.*;
+
+// 030314 long running issue of recording "dying" here was I think due to the service *and the process* dying meaning
+// the service was never re-started. Consequently the activity always sends the recordingWalkroute status to the
+// service on startup so the service immediately knows if the walk route is being recorded.
 
 
 public class GPSService extends Service implements LocationListener {
@@ -31,7 +39,9 @@ public class GPSService extends Service implements LocationListener {
 	WalkrouteCacheManager wrCacheMgr;
 	Walkroute recordingWalkroute;
 	
+	String logFile;
 	
+	PrintWriter pw;
 	
 	class SaveWalkrouteTask extends AsyncTask<Void,Void,Boolean>
 	{
@@ -40,9 +50,10 @@ public class GPSService extends Service implements LocationListener {
 			boolean retcode=true;
 			try
 			{
+			    
 				if(wrCacheMgr!=null)
 				    wrCacheMgr.addRecordingWalkroute(recordingWalkroute);
-				
+				Log.d("OpenTrail", "Saving walkroute: no. of stages=" + recordingWalkroute.getStages().size());
 			}
 			catch(java.io.IOException e)
 			{
@@ -68,15 +79,37 @@ public class GPSService extends Service implements LocationListener {
 		binder = new GPSService.Binder(); 
         firstStart=true;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        isLogging = prefs.getBoolean("gpsServiceIsLogging", false);
-	}
+        isLogging = prefs.getBoolean("recordingWalkroute", false);
+        
+        logFile = android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/opentrail.log.txt";
+        try { pw=new PrintWriter(new BufferedWriter(new FileWriter(logFile, true))); } catch(IOException e) { } 
+        
+
+        if(pw!=null)
+        {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyMMdd HHmmss");
+            String date = sdf.format(new java.util.Date());
+            pw.println("onCreate: at: " + date + " isLogging=" + isLogging);
+        }
+        
+	} 
 	
 	// called typically by an Activity's onStart()
 	// intent will be null if the service dies and is restarted
 	public int onStartCommand(Intent intent, int startFlags, int id)
 	{
+	    isLogging = (intent==null) ? isLogging:intent.getExtras().getBoolean("recordingWalkroute", false);
+	    
+	    if(pw!=null)
+	    {
+	        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyMMdd HHmmss");
+	        String date = sdf.format(new java.util.Date());
+	        pw.println("onStartCommand: starting at: " + date + " isLogging=" + isLogging +  " recordingWalkroute: " +
+	                    (intent==null ? " ***INTENT NULL*** " :intent.getExtras().getBoolean("recordingWalkroute", false)));
+	    }
 	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-	    String wrCacheLoc = prefs.getString("wrCacheLoc",null);
+	    //String wrCacheLoc = prefs.getString("wrCacheLoc",null);
+	    String wrCacheLoc = android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/walkroutes/";
 	    if(receiver==null)
 		{
 			receiver=new GPSServiceReceiver(this);
@@ -94,7 +127,7 @@ public class GPSService extends Service implements LocationListener {
 		mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		//Log.d("OpenTrail","trying to start gps updates");
 		
-		if(firstStart)
+		if(true)//firstStart) // 020314 is firstStart appropriate? not sure why this was done
 		{
 		    // To recover from the service possibly being killed - try to reload a
 		    // recording walkroute if there is one.
@@ -102,16 +135,28 @@ public class GPSService extends Service implements LocationListener {
 		    firstStart=false;
 		    try
 	        {
-		        if(wrCacheMgr!=null)
+		        if(wrCacheMgr!=null && recordingWalkroute==null) // 040314 we do not want to overwrite a currently recording walkroute
+		        {
 		            recordingWalkroute=wrCacheMgr.getRecordingWalkroute();
+		    
+		            if(recordingWalkroute!=null)
+		                Log.d("OpenTrail", "Got recordingWalkroute from wrCacheMgr: nstages=" + recordingWalkroute.getStages().size());
+		        }
+		           
 	        }
 	        catch(Exception e)
 	        { 
-	            Toast.makeText(getApplicationContext(), "Previous walk route corrupted, starting new one", Toast.LENGTH_LONG).show();
+	            Toast.makeText(getApplicationContext(), "Previous walk route corrupted, starting new one, renaming crashed walkroute with date." +
+	                                                    "Details of error: " + e, 
+	                                                Toast.LENGTH_LONG).show();
+	            wrCacheMgr.timestampRecordingWalkroute(); // save crashed route for possible recovery
 	        }
 	    
 	        if(recordingWalkroute==null)
+	        {
 	            recordingWalkroute = new Walkroute();
+	            Log.d("OpenTrail", "Creating new recording walkroute");
+	        }
 		}
 		
 	    if(!listeningForUpdates)
@@ -131,10 +176,22 @@ public class GPSService extends Service implements LocationListener {
 		super.onDestroy();
 		mgr.removeUpdates(this);
 		unregisterReceiver(receiver);
+		
+	    if(pw!=null)
+	    {
+	        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyMMdd HHmmss");
+	        String date = sdf.format(new java.util.Date());
+	        pw.println("onDestroy: at: " + date + " isLogging=" + isLogging);
+	        pw.close();
+	        pw=null;
+	    }
+		
+		/*
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putBoolean("gpsServiceIsLogging", isLogging);
 		ed.commit();
+		*/
 		receiver=null;
 	}
 	

@@ -9,11 +9,11 @@ public class Walkroute {
 	
 	public class Stage
 	{
-		public TrackPoint start;
+		public Point start;
 		public String description;
 		public int id;
 		
-		public Stage(int id, TrackPoint start, String description)
+		public Stage(int id, Point start, String description)
 		{
 			this.id=id;
 			this.start=start;
@@ -43,8 +43,9 @@ public class Walkroute {
 		setDescription(description);
 	}
 
-	public void addStage(TrackPoint start,String description)
+	public void addStage(Point start,String description)
 	{
+	
 		stages.add(new Stage(stages.size()+1,start,description));
 	}
 	
@@ -98,7 +99,10 @@ public class Walkroute {
 	{
 		DecimalFormat format=new DecimalFormat("000");
 		String desc = "<gpx><trk><name>" + title + "</name><desc>" + description + "</desc><number>"+id+
-				"</number><trkseg>";
+				"</number>";
+		
+		
+		desc += "<trkseg>";
 		for(int i=0; i<points.size(); i++)
 		{
 			desc += "<trkpt lat='" + points.get(i).y+"' lon='" + points.get(i).x+"'>";
@@ -110,8 +114,6 @@ public class Walkroute {
 		for(int i=0; i<stages.size(); i++)
 		{
 			desc += "<wpt lat='" + stages.get(i).start.y+"' lon='" + stages.get(i).start.x+"'>" +
-					(stages.get(i).start.timestamp>=0L ? 
-					"<time>" + stages.get(i).start.getGPXTimestamp()+"</time>":"")+
 					"<name>" + format.format(stages.get(i).id)+"</name><desc>"+
 					stages.get(i).description+"</desc><type>stage</type></wpt>";
 		}

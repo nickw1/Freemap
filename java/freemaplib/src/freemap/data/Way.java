@@ -90,7 +90,7 @@ public class Way extends Feature {
 	
 	public void reproject(Projection newProj)
 	{
-		Point p=null;
+	
 		for(int i=0; i<points.size(); i++)
 		{
 			points.set(i, (proj==null) ? points.get(i): proj.unproject(points.get(i)));
