@@ -16,7 +16,7 @@ public class RenderedDEM {
 
     FloatBuffer vertexBuffer;
     ShortBuffer indexBuffer;
-    float[] surfaceColour = { 0.0f, 1.0f, 0.0f, 0.1f };
+    float[] surfaceColour = { 0.0f, 1.0f, 0.0f, 0.0f };
     
     Point centrePoint;
     

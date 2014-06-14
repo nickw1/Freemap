@@ -9,6 +9,8 @@ import android.content.Context;
 import freemap.andromaps.HTTPUploadTask;
 import freemap.data.Walkroute;
 
+import android.util.Log;
+
 // need to subclass HTTPUploadTask as loading gpx from file is also a lengthy process
 // so we need to put it in the AsyncTask
 
@@ -28,13 +30,19 @@ public class WRUploadTask extends HTTPUploadTask {
     
     public String doInBackground (Void... unused)
     {
+        Log.d("OpenTrail","Walkroute details before simplification: " + walkroute.getTitle()+" npoints=" + walkroute.getPoints().size());
+        Log.d("OpenTrail", "distMetres = " + dpDist);
+        
         Walkroute simplified = walkroute.simplifyDouglasPeucker(dpDist);
+        Log.d("OpenTrail","Walkroute details after simplification: " + simplified.getTitle()+" npoints=" + simplified.getPoints().size());
         String gpx = simplified.toXML();
         ArrayList<NameValuePair> postData = new ArrayList<NameValuePair>();
         postData.add(new BasicNameValuePair("action","add"));
         postData.add(new BasicNameValuePair("route", gpx));
         postData.add(new BasicNameValuePair("format", "gpx"));
         setPostData(postData);
-        return super.doInBackground(unused);
+        String status = super.doInBackground(unused);
+        Log.d("OpenTrail","HTTP task status=" + status);
+        return status;
     }
 }

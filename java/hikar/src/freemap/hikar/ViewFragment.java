@@ -1,5 +1,6 @@
 package freemap.hikar;
 
+import freemap.andromaps.DialogUtils;
 import freemap.data.Point;
 import freemap.proj.Proj4ProjectionFactory;
 import android.app.Fragment;
@@ -45,6 +46,8 @@ public class ViewFragment extends Fragment
     GeomagneticField field;
     float orientationAdjustment;
     double lastLon, lastLat;
+   
+
     
     
     public ViewFragment()
@@ -120,9 +123,12 @@ public class ViewFragment extends Fragment
             trans.setTilingProj(fac.generate(tilingProjID));   
             integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);   
             
+            if(false)
+                setLocation (-1.3814, 50.9261, true);
+            
             // If we received a location but weren't activated, now load data from the last location
-            if(lastLon >= -180 && lastLon <= 180 && lastLat >= -90 && lastLat <= 90)
-                setLocation(lastLon, lastLat);
+            else if(lastLon >= -180 && lastLon <= 180 && lastLat >= -90 && lastLat <= 90)
+                setLocation(lastLon, lastLat, true);
         }
         else
         {
@@ -144,8 +150,12 @@ public class ViewFragment extends Fragment
     
     private void setLocation(double lon, double lat, boolean gpsLocation)
     {
-        lastLon = lon;
-        lastLat = lat;
+        if(gpsLocation)
+        {
+            lastLon = lon;
+            lastLat = lat;
+        }
+        
         if(integrator!=null)
         {
            
@@ -174,6 +184,7 @@ public class ViewFragment extends Fragment
             {
                 downloadDataTask = new DownloadDataTask(this.getActivity(), this, integrator, gpsLocation);
                 downloadDataTask.setDialogDetails("Loading...", "Loading data...");
+                downloadDataTask.setShowDialogOnFinish(true);
                 downloadDataTask.execute(p);
             }
         }
@@ -183,8 +194,16 @@ public class ViewFragment extends Fragment
     
     public void receiveData(DownloadDataTask.ReceivedData data, boolean sourceGPS)
     {
+        Log.d("hikar", "received data");
         if (data!=null && sourceGPS) // only show data if it's a gps location, not a manual entry
-            glView.getRenderer().setRenderData(data);
+        {
+            glView.getRenderer().setRenderData(data);   
+        }
+        else if (data==null)
+            DialogUtils.showDialog(this.getActivity(), "Warning - received data is null!");
+        else if (!sourceGPS)
+            DialogUtils.showDialog(this.getActivity(), "Notice - sourceGPS is false");
+        
         downloadDataTask = null;
     }
     

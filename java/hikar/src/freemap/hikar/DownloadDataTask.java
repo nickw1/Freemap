@@ -6,6 +6,8 @@ import freemap.data.Point;
 import java.util.HashMap;
 import freemap.datasource.Tile;
 
+import freemap.datasource.FreemapDataset;
+
 public class DownloadDataTask extends DataCallbackTask<Point,Void> {
 
     OsmDemIntegrator integrator;
@@ -43,32 +45,47 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
         String msg="";
         try
         {
+           // msg += " p=" + p[0].x + "," + p[0].y + " ";
            status = integrator.update(p[0]);
             if(status)
             {
+                //msg += " orig nDems=" + integrator.getCurrentDEMTiles().size()+ " " + " nOsms=" + integrator.getCurrentOSMTiles().size() + ". ";
                 ReceivedData rd = new ReceivedData(integrator.getCurrentOSMTiles(),
                             integrator.getCurrentDEMTiles());
+                
+                int i=0;
+               // msg += " rd.nDems=" + rd.dem.size()+ " " + " nOsms=" + rd.osm.size() + ". ";
+                for(HashMap.Entry<String,Tile> e: rd.osm.entrySet())
+                {
+                    FreemapDataset ds = (FreemapDataset)e.getValue().data;
+                   // msg += ((i++)+" " +ds.nWays() + "w, ");
+                }
+                msg = "Download OK";
                 setData(rd);
             }
+            else
+                   msg += " OSMDemIntegrator.update() returned false";
         }
         catch(java.io.IOException e)
         {
-            msg=e.getMessage();
-            
+            msg= e.toString();     
         }
         catch(org.xml.sax.SAXException e)
         {
-            msg= e.getMessage();
+            msg= e.toString();
         }
         catch(org.json.JSONException e)
         {
             android.util.Log.e("hikar", "JSON parsing error: " + e.getStackTrace());
+            msg="JSONException:" + e.toString();
         }
         catch(Exception e)
         {
             android.util.Log.e("hikar", "Internal error: " + e.getStackTrace());
+            msg="Internal error: " + e.toString();
         }
-        return (status) ? "Successfully downloaded" : "Error downloading: " + msg;
+        //return (status) ? msg /*"Successfully downloaded"*/ : "Error downloading: " + msg;
+        return msg;
     }
    
     

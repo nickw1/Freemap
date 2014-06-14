@@ -4,6 +4,11 @@ package freemap.data;
 
 import java.io.*;
 
+
+
+
+import java.util.Arrays;
+
 public class Point {
 	public double x,y,z;
 	
@@ -63,7 +68,7 @@ public class Point {
     
     public static void main (String[] args) throws java.io.IOException
     {
-        String base="T040114";
+        String base="150314";
         BufferedReader r = new BufferedReader(new FileReader("/home/nick/gpx/"+base+".txt"));
       
         java.util.ArrayList<TrackPoint> points = new java.util.ArrayList<TrackPoint>();
@@ -75,13 +80,14 @@ public class Point {
         while((txt = r.readLine())!=null)
         {
             String[] values = txt.split(",");
-            points.add(new TrackPoint(Float.parseFloat(values[0]), Float.parseFloat(values[1])));
+            if(!(values.length>2 && values[2].contains("WAYPOINT")))
+                points.add(new TrackPoint(Float.parseFloat(values[0]), Float.parseFloat(values[1])));
         }
         TrackPoint[] pts =new TrackPoint[points.size()];
         points.toArray(pts);
-        System.out.println("Doing Douglas-Peucker...");
-        Point[] simp = Algorithms.douglasPeucker(pts, distMetres);
-        System.out.println("Writing out...");
+        System.out.println("Doing Douglas-Peucker... in points = " + pts.length);
+        Point[] simp = Algorithms.douglasPeucker(pts, distMetres, 1, 1);
+        System.out.println("Writing out... out points=" + simp.length);
         PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("/home/nick/gpx/"+base+".simp."+(int)distMetres+".txt")));
         for(int i=0; i<simp.length; i++)
             pw.println(simp[i].x+", " + simp[i].y);

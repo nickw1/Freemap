@@ -129,6 +129,7 @@ public class OsmDemIntegrator {
 			else
 			{
 			   android.util.Log.d("hikar","osm: is cache, has dem already");
+			   return false;// NW 290514 test wasn't here already just to try and trap this condition for testing
 			}
 	    }
 			

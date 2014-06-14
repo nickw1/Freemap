@@ -43,6 +43,9 @@ public class GPSService extends Service implements LocationListener {
 	
 	PrintWriter pw;
 	
+	String date;
+	java.text.SimpleDateFormat sdf;
+	
 	class SaveWalkrouteTask extends AsyncTask<Void,Void,Boolean>
 	{
 		public Boolean  doInBackground(Void... data)
@@ -81,15 +84,16 @@ public class GPSService extends Service implements LocationListener {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         isLogging = prefs.getBoolean("recordingWalkroute", false);
         
-        logFile = android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/opentrail.log.txt";
+         sdf = new java.text.SimpleDateFormat("yyMMdd.HHmmss");
+        date = sdf.format(new java.util.Date());
+        
+        logFile = android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/opentrail.log." + date + ".txt";
         try { pw=new PrintWriter(new BufferedWriter(new FileWriter(logFile, true))); } catch(IOException e) { } 
         
 
         if(pw!=null)
         {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyMMdd HHmmss");
-            String date = sdf.format(new java.util.Date());
-            pw.println("onCreate: at: " + date + " isLogging=" + isLogging);
+            pw.println("GPSService onCreate: at: " + date + " isLogging=" + isLogging);
         }
         
 	} 
@@ -102,10 +106,9 @@ public class GPSService extends Service implements LocationListener {
 	    
 	    if(pw!=null)
 	    {
-	        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyMMdd HHmmss");
-	        String date = sdf.format(new java.util.Date());
-	        pw.println("onStartCommand: starting at: " + date + " isLogging=" + isLogging +  " recordingWalkroute: " +
-	                    (intent==null ? " ***INTENT NULL*** " :intent.getExtras().getBoolean("recordingWalkroute", false)));
+	        pw.println("onStartCommand: starting at: " + sdf.format(new java.util.Date()) +  " recordingWalkroute: " +
+	                    (intent==null ? " ***INTENT NULL*** " :intent.getExtras().getBoolean("recordingWalkroute", false)) +
+	                    " isLogging=" + isLogging );
 	    }
 	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	    //String wrCacheLoc = prefs.getString("wrCacheLoc",null);
@@ -159,6 +162,8 @@ public class GPSService extends Service implements LocationListener {
 	        }
 		}
 		
+		Location lastKnown = null;
+		
 	    if(!listeningForUpdates)
 	    {
 			//Log.d("OpenTrail","not listening so starting");
@@ -168,6 +173,18 @@ public class GPSService extends Service implements LocationListener {
 			Intent broadcast = new Intent("freemap.opentrail.startupdates");
 			this.sendBroadcast(broadcast);
 		}
+	    // 090314 if we are listening for updates, immediately send a locationchanged broadcast so we can e.g. update display.
+	    else  if ((lastKnown=mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER)) != null)
+	    {
+	       
+	        Intent broadcast = new Intent("freemap.opentrail.locationchanged");
+	        
+	        broadcast.putExtra("lat", lastKnown.getLatitude());
+	        broadcast.putExtra("lon", lastKnown.getLongitude());
+	        broadcast.putExtra("refresh", true);
+	       
+	        sendBroadcast (broadcast);
+	    }
 		return START_STICKY;
 	}
 	
@@ -179,20 +196,28 @@ public class GPSService extends Service implements LocationListener {
 		
 	    if(pw!=null)
 	    {
-	        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyMMdd HHmmss");
+	        
 	        String date = sdf.format(new java.util.Date());
-	        pw.println("onDestroy: at: " + date + " isLogging=" + isLogging);
+	        pw.println("onDestroy: at: " + date);
+	        pw.println("Saving logging status so it will be read correctly next time: " + isLogging);
 	        pw.close();
 	        pw=null;
 	    }
 		
-		/*
+		/* 230514 surely this should be in as if the service is killed when recording and the activity was never killed, we need to make sure
+		 * we save to the preferences so the service will pick them up again next time?  so uncomment */
+	
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		SharedPreferences.Editor ed = prefs.edit();
 		ed.putBoolean("gpsServiceIsLogging", isLogging);
 		ed.commit();
-		*/
+		
 		receiver=null;
+	}
+	
+	public void clearRecordingWalkroute()
+	{
+	    recordingWalkroute.clear();
 	}
 	
 	// called if user starts a recording session
@@ -229,7 +254,10 @@ public class GPSService extends Service implements LocationListener {
 			listeningForUpdates=false;
 			mgr.removeUpdates(this);
 			stopSelf();
+			pw.println("stopIfNotLogging(): not logging, so stopping");
 		}
+		else
+		    pw.println("stopIfNotLogging(): logging, so not stopping");
 	}
 	
 
@@ -245,7 +273,7 @@ public class GPSService extends Service implements LocationListener {
 		{
 			recordingWalkroute.addPoint(tp);
 			
-			if(time - lastUpdateTime > 30000 &&  isLogging)
+			if(time - lastUpdateTime > 10000 &&  isLogging)
 			{
 				new SaveWalkrouteTask().execute();
 				lastUpdateTime = time;

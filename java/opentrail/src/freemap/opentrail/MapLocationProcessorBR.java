@@ -10,9 +10,7 @@ import freemap.andromaps.MapLocationProcessor;
 
 
 
-// Role: to receive a location and manage location provider updates, show the "my location" marker,
-// manage "waiting for GPS" dialogs and forward the location on to a LocationReceiver which can do 
-// application-specific processing.
+// Broadcast receiver for gps stuff
 
 public class MapLocationProcessorBR extends BroadcastReceiver
 {

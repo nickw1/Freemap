@@ -86,7 +86,7 @@ import freemap.proj.Proj4ProjectionFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-/*
+/*df
 References to this
 mapView
 alertDisplayMgr
@@ -525,6 +525,7 @@ public class OpenTrail extends MapActivity implements
     			
     		case 3:
     			// walkroute uploaded
+    		    Log.d("OpenTrail","server sent back: " + addData);
     			break;
     	}
     }
@@ -908,21 +909,24 @@ public class OpenTrail extends MapActivity implements
     						{
     						    
     						    Walkroute recWR;
+    						    String errMsg, stat;
     						    public Boolean doInBackground(String...fname)
     						    {
     					            recWR = gpsService.getRecordingWalkroute();
                                     
-                                   
+                                   stat = "starting doInBackground";
                                     
     					
     						        try
     						        {
-    						            wrCacheMgr.addWalkrouteToCache(recWR,fname[0]);
-    						            wrCacheMgr.deleteRecordingWalkroute();
-    						            recWR.clear();
+    						            wrCacheMgr.addRecordingWalkroute(recWR);
+    						            wrCacheMgr.renameRecordingWalkroute(fname[0]);
+    						            gpsService.clearRecordingWalkroute();
+    						            stat += " done.";
     						        }
     						        catch(IOException e)
     						        {
+    						            errMsg = e.toString();
     						            return false;
     						        }
     						        return true;
@@ -931,11 +935,12 @@ public class OpenTrail extends MapActivity implements
     						    protected void onPostExecute(Boolean result)
     						    {
     						        if(!result)
-    						            DialogUtils.showDialog(OpenTrail.this, "Unable to save walk route");
+    						            DialogUtils.showDialog(OpenTrail.this, "Unable to save walk route: error=" + errMsg);
     						        else
     						        {
     						            dataDisplayer.clearWalkroute();
     		                            mapView.invalidate();
+    		                            DialogUtils.showDialog(OpenTrail.this, "Done: stat=" + stat);
     						        }
     						    }
     						};
@@ -1264,8 +1269,11 @@ public class OpenTrail extends MapActivity implements
     		dfTask = new WRUploadTask(OpenTrail.this,walkroute,
     		           "http://www.free-map.org.uk/0.6/ws/wr.php",  
 										"Upload walk route?", OpenTrail.this, 3, dpDist);
+    		
+    		
     		if(!(username.equals("")) && !(password.equals("")))
     		    ((HTTPUploadTask)dfTask).setLoginDetails(username, password);
+    		
     	    dfTask.setDialogDetails("Uploading...", "Uploading walk route...");
     		dfTask.confirmAndExecute();
     	}

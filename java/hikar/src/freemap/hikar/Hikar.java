@@ -72,6 +72,7 @@ public class Hikar extends Activity
                 
             case R.id.menu_location:
                 LocationManager mgr = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+                
                 if(!mgr.isProviderEnabled(LocationManager.GPS_PROVIDER))
                 {
                     Intent intent = new Intent(this, LocationEntryActivity.class);
@@ -118,6 +119,7 @@ public class Hikar extends Activity
                 case 0:
                     Bundle info = intent.getExtras();
                     double lon = info.getDouble("freemap.hikar.lon"), lat = info.getDouble("freemap.hikar.lat");
+                    android.util.Log.d("hikar", "setting locaton to " + lon + "," + lat);
                     viewFragment.setLocation(lon, lat);           
                     break;
             }

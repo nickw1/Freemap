@@ -29,8 +29,9 @@ public class HTTPUploadTask extends HTTPCommunicationTask {
 		}
 		try
 		{
-			communicator.post(urls[0], postData);
+			String response = communicator.postAndGetResponse(urls[0], postData);
 			setSuccess(communicator.getStatusCode()==200);
+			setAdditionalData(response);
 			return (communicator.getStatusCode()==200) ? "Successfully uploaded" : "Upload failed with HTTP code " + 
 						communicator.getStatusCode();
 		}

@@ -74,6 +74,14 @@ public class WalkrouteCacheManager {
 		return false;
 	}
 	
+	public boolean renameRecordingWalkroute(String filename)
+	{
+	    File f = new File(cacheDir+"/rec/tmp.xml");
+	    if(f.exists())
+	        return f.renameTo(new File(cacheDir+"/rec/"+filename));
+	    return false;
+	}
+	
 	private Walkroute getWalkroute(String file) throws IOException, SAXException
 	{
 		if(new File(file).exists())

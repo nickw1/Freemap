@@ -24,6 +24,13 @@ public class TrackPoint extends Point {
 		this.timestamp = timestamp;
 	}
 	
+	public TrackPoint (TrackPoint other)
+    {
+        x = other.x;
+        y = other.y;
+        timestamp = other.timestamp;
+    }
+	
 	public void setTime(long time)
 	{
 		this.timestamp=time;
@@ -36,4 +43,6 @@ public class TrackPoint extends Point {
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return sdf.format(date);
 	}
+	
+	
 }

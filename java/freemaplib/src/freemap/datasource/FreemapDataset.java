@@ -293,6 +293,16 @@ public class FreemapDataset implements TiledData
 	{
 	    return ways.keySet().iterator();
     }
+	
+	public int nPOIs()
+	{
+	    return pois.size();
+	}
+	
+	public int nWays()
+	{
+	    return ways.size();
+	}
 }
 
 

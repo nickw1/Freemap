@@ -21,9 +21,9 @@ import freemap.data.Point;
 import freemap.datasource.FreemapDataset;
 import freemap.jdem.DEM;
 import freemap.datasource.Tile;
-import freemap.data.Projection;
 import freemap.data.IdentityProjection;
 
+import java.io.*;
 
 public class OpenGLView extends GLSurfaceView  {
    
@@ -31,6 +31,8 @@ public class OpenGLView extends GLSurfaceView  {
    
    boolean loadingDEMs;
     
+   
+   
    public interface RenderedWayVisitor
    {
        public void visit(RenderedWay rw);
@@ -54,6 +56,9 @@ public class OpenGLView extends GLSurfaceView  {
         CameraCapturer cameraCapturer;
         TileDisplayProjectionTransformation trans;
         float nearPlane = 2.0f, farPlane = 3000.0f;
+        
+        PrintWriter out;
+        int nrw;
         
         public DataRenderer()
         {
@@ -87,6 +92,7 @@ public class OpenGLView extends GLSurfaceView  {
             
             trans = new TileDisplayProjectionTransformation (IdentityProjection.getInstance(), 
                         IdentityProjection.getInstance());
+           
         }
         
         public void onSurfaceCreated(GL10 unused,EGLConfig config)
@@ -286,8 +292,17 @@ public class OpenGLView extends GLSurfaceView  {
             {
                 protected Boolean doInBackground(DownloadDataTask.ReceivedData... d)
                 {
-                    
+                    int i=0;
+                    nrw=0;
                     loadingDEMs = true;
+                    
+                    
+                    try
+                    {
+                        out = new PrintWriter(new FileWriter(android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/hikar/render.log.txt"));
+                    }
+                    catch(IOException e) { }
+                    
                     if(d[0].dem != null)
                     {
                         if(renderedDEMs==null) // do not clear out when we enter a new tile!
@@ -302,36 +317,51 @@ public class OpenGLView extends GLSurfaceView  {
                                 
                                 if(renderedDEMs.get(key)==null)
                                     renderedDEMs.put(key, new RenderedDEM(curDEM, trans));
+                                
+                                i++;
+                               
                             }
                         }
-                    }
-                    
+                        if(out!=null)out.println("Wrote out " + i + " DEMs.");
+                    } 
+                    else
+                        if(out!=null)out.println("WARNING!!!! dem is null!");
                     if(renderedWays==null) // do not clear out when we enter a new tile!
                         renderedWays = new HashMap<Long,RenderedWay> ();
                     if(d[0].osm != null)
                     {
-                        
+                        i=0;
                         for(HashMap.Entry<String, Tile> entry: d[0].osm.entrySet())
                         {
                             // We don't want to have to operate on a tile we've already dealt with
                             if(receivedDatasets.get(entry.getKey())==null)
                             {
+                                if(out!=null)out.println("Doing OSM tile: " + i + " key=" + entry.getKey());
                                 FreemapDataset curOSM = (FreemapDataset)entry.getValue().data;
                                 receivedDatasets.put(entry.getKey(), curOSM);
                                 curOSM.operateOnWays(DataRenderer.this);
                             }
+                            else 
+                                if(out!=null)out.println("Already loaded in tile " + i + " key=" + entry.getKey());
                         }
+                       
                     }
+                    else
+                        if(out!=null)out.println("WARNING!!!! osm is null!");
                     
+                    if(out!=null)out.close();
                     return true;
                 }
                 
                 public void onPostExecute(Boolean result)
                 {
                     loadingDEMs = false;
+                   
+                    
                 }
             };
             setRenderDataTask.execute(data);  
+           
         }
         
         public void setCameraLocation(Point unprojected)
@@ -344,12 +374,18 @@ public class OpenGLView extends GLSurfaceView  {
         
         public void visit(Way w)
         {
+            
             synchronized(renderedWays)
             {
                 if(renderedWays.get(w.getId())==null )
                     renderedWays.put(w.getId(), new RenderedWay(w,2.0f,trans));
             }
-            //Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
+            /*
+            if((nrw++ % 10) == 0)
+                Log.d("hikar","Adding rendered way for way with ID: " + w.getValue("osm_id"));
+            if(nrw<100 && out!=null)
+                out.println("Adding rendered way for way with ID: " + w.getValue("osm_id"));
+            */
         }
         
         // setRotation() removed as duplicates setOrientMtx()
