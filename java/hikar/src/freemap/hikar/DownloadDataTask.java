@@ -60,7 +60,7 @@ public class DownloadDataTask extends DataCallbackTask<Point,Void> {
                     FreemapDataset ds = (FreemapDataset)e.getValue().data;
                    // msg += ((i++)+" " +ds.nWays() + "w, ");
                 }
-                msg = "Download OK";
+                msg = "Downloaded OK";
                 setData(rd);
             }
             else

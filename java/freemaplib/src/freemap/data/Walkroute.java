@@ -181,7 +181,7 @@ public class Walkroute {
 	    TrackPoint[] pts = new TrackPoint[points.size()];
 	    points.toArray(pts);
 	    
-	    TrackPoint[] ptsSimp = (TrackPoint[])Algorithms.douglasPeucker(pts, distMetres, 1, 1);
+	    TrackPoint[] ptsSimp = (TrackPoint[])Algorithms.douglasPeuckerNonRecursive(pts, distMetres);
 	    
 	    for(int i=0; i<ptsSimp.length; i++)
 	        simplified.addPoint(ptsSimp[i]);

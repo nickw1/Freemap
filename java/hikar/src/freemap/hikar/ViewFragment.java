@@ -122,12 +122,10 @@ public class ViewFragment extends Fragment
             Proj4ProjectionFactory fac = new Proj4ProjectionFactory();
             trans.setTilingProj(fac.generate(tilingProjID));   
             integrator = new OsmDemIntegrator(trans.getTilingProj(), demType, lfpUrl, srtmUrl, osmUrl);   
-            
-            if(false)
-                setLocation (-1.3814, 50.9261, true);
+           
             
             // If we received a location but weren't activated, now load data from the last location
-            else if(lastLon >= -180 && lastLon <= 180 && lastLat >= -90 && lastLat <= 90)
+            if(lastLon >= -180 && lastLon <= 180 && lastLat >= -90 && lastLat <= 90)
                 setLocation(lastLon, lastLat, true);
         }
         else

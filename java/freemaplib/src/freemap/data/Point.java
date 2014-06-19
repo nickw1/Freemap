@@ -59,7 +59,8 @@ public class Point {
     {
         double u = ((x-p1.x)*(p2.x-p1.x)+(y-p1.y)*(p2.y-p1.y)) / (Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2));
         double xintersection = p1.x+u*(p2.x-p1.x), yintersection=p1.y+u*(p2.y-p1.y);
-        return (u>=0&&u<=1) ? Algorithms.haversineDist(x,y,xintersection,yintersection) : Double.MAX_VALUE;
+        
+        return (u>=0&&u<=1) ? Algorithms.haversineDist(x,y,xintersection,yintersection) : -1;
     }
     
     // Assumption: points are in standard wgs84 lat/lon
@@ -68,7 +69,7 @@ public class Point {
     
     public static void main (String[] args) throws java.io.IOException
     {
-        String base="150314";
+        String base="090314";
         BufferedReader r = new BufferedReader(new FileReader("/home/nick/gpx/"+base+".txt"));
       
         java.util.ArrayList<TrackPoint> points = new java.util.ArrayList<TrackPoint>();
@@ -86,9 +87,10 @@ public class Point {
         TrackPoint[] pts =new TrackPoint[points.size()];
         points.toArray(pts);
         System.out.println("Doing Douglas-Peucker... in points = " + pts.length);
-        Point[] simp = Algorithms.douglasPeucker(pts, distMetres, 1, 1);
+       
+        Point[] simp = Algorithms.douglasPeucker(pts, distMetres);
         System.out.println("Writing out... out points=" + simp.length);
-        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("/home/nick/gpx/"+base+".simp."+(int)distMetres+".txt")));
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("/home/nick/gpx/"+base+".simp.r."+(int)distMetres+".txt")));
         for(int i=0; i<simp.length; i++)
             pw.println(simp[i].x+", " + simp[i].y);
         pw.close();
