@@ -101,8 +101,12 @@ public class Algorithms
                        ends[1] = current.get(i).length-1;
                        for (int j=0; j<2; j++)
                        {      
-                           if(furthest.maxDist < distMetres)
+                           if(furthest.maxDist > distMetres)
                            {       
+                               descendant.add(Arrays.copyOfRange(current.get(i), starts[j], ends[j]+1));            
+                           }
+                           else
+                           {   
                                IndexedTrackPoint start = current.get(i)[starts[j]], end = current.get(i)[ends[j]];
                                
                                if(finalPts[start.index]==null)
@@ -115,10 +119,6 @@ public class Algorithms
                                    selected++;
                                    finalPts[end.index] = end;
                                }
-                           }
-                           else
-                           {   
-                               descendant.add(Arrays.copyOfRange(current.get(i), starts[j], ends[j]+1));
                            }             
                        }
                    }

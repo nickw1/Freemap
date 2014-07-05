@@ -56,7 +56,7 @@ public class RenderedWay {
 		
 		ArrayList<Integer> includedPoints = new ArrayList<Integer>();
 		for(int i=0; i<w.nPoints(); i++)
-		    if(w.getPoint(i).z >= -0.9)
+		    if(true)//w.getPoint(i).z >= -0.9) NW 280614 delete this check to see if this is causing problems
 		        includedPoints.add(i);
 		    
 		

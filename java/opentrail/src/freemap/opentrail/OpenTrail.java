@@ -909,12 +909,12 @@ public class OpenTrail extends MapActivity implements
     						{
     						    
     						    Walkroute recWR;
-    						    String errMsg, stat;
+    						    String errMsg; // stat;
     						    public Boolean doInBackground(String...fname)
     						    {
     					            recWR = gpsService.getRecordingWalkroute();
                                     
-                                   stat = "starting doInBackground";
+                                   //stat = "starting doInBackground";
                                     
     					
     						        try
@@ -922,7 +922,7 @@ public class OpenTrail extends MapActivity implements
     						            wrCacheMgr.addRecordingWalkroute(recWR);
     						            wrCacheMgr.renameRecordingWalkroute(fname[0]);
     						            gpsService.clearRecordingWalkroute();
-    						            stat += " done.";
+    						            //stat += " done.";
     						        }
     						        catch(IOException e)
     						        {
@@ -940,7 +940,7 @@ public class OpenTrail extends MapActivity implements
     						        {
     						            dataDisplayer.clearWalkroute();
     		                            mapView.invalidate();
-    		                            DialogUtils.showDialog(OpenTrail.this, "Done: stat=" + stat);
+    		                            DialogUtils.showDialog(OpenTrail.this, "Successfully saved walk route.");
     						        }
     						    }
     						};

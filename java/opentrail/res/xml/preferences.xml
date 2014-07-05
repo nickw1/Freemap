@@ -34,8 +34,9 @@ android:key="prefAutoDownload" />
     android:key="prefPassword" />
 <EditTextPreference
     android:title="Track simplification distance"
-    android:defaultValue="10"
-    android:summary="Simplification distance in metres for recording GPS track"
+    android:defaultValue="20"
+    android:summary="Douglas-Peucker simplification distance in metres for GPS track, points within this distance of track are removed.
+    Larger values = more simplification."
     android:key="prefDPDist" />
 <CheckBoxPreference
     android:title="Save annotations on the device"

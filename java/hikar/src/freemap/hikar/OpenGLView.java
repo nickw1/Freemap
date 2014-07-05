@@ -377,7 +377,7 @@ public class OpenGLView extends GLSurfaceView  {
             
             synchronized(renderedWays)
             {
-                if(renderedWays.get(w.getId())==null )
+               // if(renderedWays.get(w.getId())==null ) issue at joins 030714
                     renderedWays.put(w.getId(), new RenderedWay(w,2.0f,trans));
             }
             /*
