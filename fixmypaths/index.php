@@ -1,6 +1,8 @@
 <?php
 
-require_once('../lib/User.php');
+//die("Temporarily unavailable for today 07/10/14 - try tomorrow");
+
+require_once('../lib/FreemapUserManager.php');
 
 session_start();
 
@@ -117,20 +119,19 @@ function write_login()
         </p>
         <p>
         <a href=
-		'user.php?action=signup&redirect=http://www.fixmypaths.org/index.php'>
-		Sign up</a>
+		'user.php?action=signup&redirect=http://www.fixmypaths.org/index.php'>Sign up</a>
         </p>
         <?php
     }
     else
     {
         echo "<em>Logged in as $_SESSION[gatekeeper]</em> ";
-		$conn=pg_connect("dbname=gis user=gis");
-		$u = User::getUserFromUsername($_SESSION["gatekeeper"]);
+		$conn=new PDO("pgsql:host=localhost;dbname=gis;", "gis");
+		$um = new FreemapUserManager($conn);
+		$u = $um->getUserFromUsername ($_SESSION["gatekeeper"]);
 		if($u->isAdmin())
 			echo "<a href='admin.php'>Admin</a> ";
 		echo "<a href='user.php?action=logout'>Logout</a>";
-		pg_close($conn);
     }
     echo "</div>";
 }

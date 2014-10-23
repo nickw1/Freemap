@@ -60,8 +60,6 @@ if(file_exists(POPULATE_LOCK))
 {
     ?>
     <body>
-<p><strong>Additional update currently taking place over and
-above standard Wednesday update!</strong></p>
     <p>The Freemap database is updated at 2am UK time every Wednesday and
     Freemap is unavailable while the update takes place. The update is
     taking place right now.
@@ -105,7 +103,7 @@ function write_sidebar($homepage=false)
     </div>
 
     <p>Welcome to <em>Freemap 0.6</em>, 
-    kothic-js client-side rendering. 
+    with kothic-js client-side rendering. 
     <a href='about.html'>More...</a> </p>
 
     <div id='appmsg'>

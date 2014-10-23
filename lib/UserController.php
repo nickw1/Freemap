@@ -3,42 +3,65 @@
 require_once('User.php');
 require_once('UserView.php');
 require_once('functionsnew.php');
+require_once('UserManager.php');
 
 class UserController
 {
-    private $view;
+    protected $view, $conn, $userSession, $adminSession;
 
-    function __construct($view)
+    public function __construct($view, $conn, $userSession, $adminSession)
     {
         $this->view = $view;
+        $this->conn = $conn;
+    $this->userSession = $userSession;
+    $this->adminSession = $adminSession;
     }
 
-    private function login($username,$password,$redirect)
+    public function login($username,$password,$redirect,$data)
     {
-        if(self::doLogin($username,$password)==true)
+		$qs = "";
+		$first=true;
+		foreach($data as $k=>$v)
+		{
+			if($first==false)
+				$qs.="&";
+			else
+				$first=false;
+			$qs .= "$k=$v";
+		}
+        if($this->doLogin($username,$password)==true)
         {
-            if(strpos($redirect,"?")!==false)
-            {
-                list($redirect,$redirqs) = explode("?", $redirect);
-                $qs = $redirqs."&".$qs;
-            }
             header("Location: $redirect?$qs");
         }
         else
         {
             $this->view->redirectMsg("Invalid login",
                     basename($_SERVER['PHP_SELF']) . 
-                    "?action=login&redirect=$redirect");
+                    "?$qs&action=login&redirect=$redirect");
         }
     }
     
-    private function remoteLogin($username,$password)
+
+    public  function doLogin($username,$password)
     {
-        if(self::doLogin($username,$password)==true)
+        $um = new UserManager($this->conn);
+        if($row=$um->isValidLogin($username,$password))
+        {
+            $_SESSION[$this->userSession] = $row["username"];
+            $_SESSION[$this->adminSession] = $row["isadmin"];
+            return true;
+        }
+        return false;
+    }
+
+    public function remoteLogin($username,$password)
+    {
+        if($this->doLogin($username,$password)==true)
         {
             header("Content-type: application/json");
-            $user = User::getUserFromUsername($_SESSION["gatekeeper"]);
-            $info = array ($_SESSION["gatekeeper"],
+        $um = new UserManager($this->conn);
+            $user = $um->getUserFromUsername($_SESSION[$this->userSession]);
+            $info = array ($_SESSION[$this->userSession],
                             $user->isAdmin() ? "1":"0");
             echo json_encode($info);
         }
@@ -46,112 +69,39 @@ class UserController
             header("HTTP/1.1 401 Unauthorized");
     }
 
-    private  function doLogin($username,$password)
-    {
-        if($result=User::isValidLogin($username,$password))
-        {
-            $row=pg_fetch_array($result,null,PGSQL_ASSOC);
-            $_SESSION["gatekeeper"] = $row["username"];
-            $_SESSION["level"] = $row["isadmin"];
-            return true;
-        }
-        return false;
-    }
-
-    function actionLogin($cleaned)
+    public function actionLogin($cleaned)
     {
         if(isset($cleaned["username"]) && isset($cleaned["password"]))
         {
             if(isset($cleaned["remote"]) && $cleaned["remote"])
-                self::remoteLogin 
+                $this->remoteLogin 
                     ($cleaned['username'],$cleaned['password']);
             else
             {
-                self::login
-                    ($cleaned['username'],$cleaned['password'],
-                        $cleaned['redirect']);
+				$username = $cleaned["username"];
+				$password = $cleaned["password"];
+				$redirect = isset($cleaned["redirect"]) ? 
+					$cleaned["redirect"]: "index.php";
+				unset($cleaned["username"]);
+				unset($cleaned["password"]);
+				unset($cleaned["redirect"]);
+                $this->login($username, $password, $redirect, $cleaned);
             }
         }
         else
         {
+	    	unset($cleaned["username"]);
+	    	unset($cleaned["password"]);
             $this->view->head();
-            $this->view->displayLogin($cleaned["redirect"]);
-            $this->view->closePage();
+            $this->view->displayLogin
+            (isset($cleaned["redirect"]) ?  
+                $cleaned["redirect"] :"index.php", 
+                "", $cleaned); 
+           $this->view->closePage();
         }
     }
 
-    function actionSignup($cleaned)
-    {
-        $this->view->head();
-        if(isset($cleaned["username"]) && isset($cleaned["password"]))
-        {
-            $res=User::processSignup
-                ($cleaned['username'],$cleaned['password'],$cleaned['email']);
-            if(is_int($res))
-                $this->view->displaySignupForm($res);
-            else
-                $this->view->displaySignupConfirmation();
-        }
-        else
-        {
-            $this->view->displaySignupForm();
-        }
-        $this->view->closePage();
-    }
-
-    function actionDelete($cleaned)
-    {
-        if(!isset($cleaned['id']))
-        {
-            $this->view->redirectMsg("Please specify a user ID.","index.php");
-        }
-        elseif(!isset($_SESSION['gatekeeper']))
-        {
-            $this->view->redirectMsg("Please login","index.php");
-        }
-        else if ($_SESSION['level']!=1)
-        {
-            $this->view->redirectMsg
-                ("Only the administrator can delete accounts.","index.php");
-        }
-        else 
-        {
-            $u=new User($cleaned["id"]);
-            if($u->isValid())
-            {
-                $u->remove();    
-            }
-            else
-            {
-                $this->view->redirectMsg("Invalid user ID.","index.php");
-            }
-        }
-    }
-
-    function actionActivate($cleaned)
-    {
-        if(!isset($cleaned['id']) || !isset($cleaned['key']))
-        {
-            $this->view->redirectMsg("id/key not supplied.","index.php");
-        }
-        else
-        {
-            $u=new User($cleaned['id']);
-            if($u->isValid())
-            {
-                if($u->activate($cleaned['key']))
-                    $this->view->redirectMsg("User activated.","index.php");
-                else
-                    $this->view->redirectMsg("Already activated","index.php");
-            }
-            else
-            {
-                $this->view->redirectMsg("Invalid user ID.","index.php");
-            }
-        }
-    }
-
-    function actionLogout($cleaned)
+    public function actionLogout($cleaned)
     {
         session_start();
         session_destroy();
@@ -161,49 +111,19 @@ class UserController
 
     }
 
-    function actionViewAll()
+	// WARNING should NOT be used without some form of validation of the
+	// input data!!!
+    public function execute($rawHTTPdata)
     {
-        if(isset($_SESSION['gatekeeper']) && $_SESSION['level']==1)
-        {
-            $this->view->head();
-            $this->view->displayAll();
-            $this->view->closePage();
-        }
-        else
-        {
-            $this->view->redirectMsg
-                ("Only administrators can view all users.","index.php");
-        }
-    }
-
-    function execute($rawHTTPdata)
-    {
-        $data = clean_input($rawHTTPdata, 'pgsql');
         
-        switch ($data["action"])
+        switch ($rawHTTPdata["action"])
         {
             case "login":
-                $this->actionLogin($data);
+                $this->actionLogin($rawHTTPdata);
                 break;
 
             case "logout":
-                $this->actionLogout($data);
-                break;
-
-            case "signup":
-                $this->actionSignup($data);
-                break;
-
-            case "delete":
-                $this->actionDelete($data);
-                break;
-            
-            case "activate":
-                $this->actionActivate($data);
-                break;
-
-            case "viewAll":
-                $this->actionViewAll();
+                $this->actionLogout($rawHTTPdata);
                 break;
         }
     }

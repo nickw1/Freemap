@@ -15,24 +15,27 @@ switch($cleaned["action"])
     case "add":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
+	    echo "Request method is POST ";
             $userid=0;
             if(isset($_SERVER['PHP_AUTH_USER']) &&
                 isset($_SERVER['PHP_AUTH_PW']))
             {
-				$userid=-1;
-                if(($result==User::isValidLogin
+		$userid=-1;
+                if(($result=User::isValidLogin
                         ($_SERVER['PHP_AUTH_USER'],
                         $_SERVER['PHP_AUTH_PW']))!==null)
                 {
                     $row=pg_fetch_array($result,null,PGSQL_ASSOC);
+		    print_r($row);
                     $userid=$row["id"];
                 }
+		echo " userid is now $userid ";
             }    
             elseif(isset($_SESSION["gatekeeper"]))
             {
                 $userid=get_user_id ($_SESSION['gatekeeper'],
                                 'users','username','id','pgsql');
-				$userid = ($userid>0) ? $userid: -1;
+		$userid = ($userid>0) ? $userid: -1;
             }
             if($userid<0)
             {

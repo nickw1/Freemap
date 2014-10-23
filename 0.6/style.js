@@ -34,6 +34,12 @@
             s_default['text-offset'] = 6;
         }
 
+        if (((type == 'node' && tags['man_made'] == 'mast') && zoom >= 13 && zoom <= 18)) {
+            s_default['icon-image'] = '../data/symbols/mast.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['z-index'] = 10;
+        }
+
         if (((type == 'node' && tags['place'] == 'suburb') && zoom >= 14 && zoom <= 18) || ((type == 'node' && tags['place'] == 'hamlet'))) {
             s_default['font-size'] = '10';
         }
@@ -79,12 +85,16 @@
             s_default['text-allow-overlap'] = 'true';
         }
 
-        if (((type == 'node' && tags['amenity'] == 'pub'))) {
+        if (((type == 'node' && tags['amenity'] == 'pub') && zoom >= 13 && zoom <= 18)) {
             s_default['text-color'] = 'black';
             s_default['font-weight'] = 'bold';
             s_default['font-size'] = '8';
             s_default['font-family'] = 'Helvetica';
             s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '../data/symbols/pub.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 6;
+            s_default['z-index'] = 10;
         }
 
         if (((selector == 'line' && tags['highway'] == 'motorway') && zoom >= 14 && zoom <= 18) || ((selector == 'line' && tags['highway'] == 'motorway_link') && zoom >= 14 && zoom <= 18)) {
@@ -208,19 +218,19 @@
             s_default['z-index'] = 1;
         }
 
-        if (((selector == 'area' && tags['natural'] == 'water'))) {
+        if (((selector == 'area' && tags['natural'] == 'water')) || ((selector == 'area' && tags['landuse'] == 'reservoir'))) {
             s_default['fill-color'] = 'lightblue';
             s_default['z-index'] = 2;
         }
 
         if (((selector == 'area' && tags['natural'] == 'heath'))) {
             s_default['fill-color'] = '#ffffc0';
-            s_default['z-index'] = 2;
+            s_default['z-index'] = 1;
         }
 
         if (((selector == 'area' && tags['natural'] == 'moor'))) {
             s_default['fill-color'] = '#ffc0ff';
-            s_default['z-index'] = 2;
+            s_default['z-index'] = 1;
         }
 
         if (((selector == 'line' && tags['waterway'] == 'river'))) {
@@ -375,7 +385,7 @@
     }
     
     var sprite_images = {
-    }, external_images = ['../data/symbols/rsmall.png'], presence_tags = [], value_tags = ['highway', 'railway', 'amenity', 'contour', 'foot', 'waterway', 'name', 'natural', 'landuse', 'place', 'designation', 'bridge'];
+    }, external_images = ['../data/symbols/mast.png', '../data/symbols/pub.png', '../data/symbols/rsmall.png'], presence_tags = [], value_tags = ['highway', 'railway', 'amenity', 'contour', 'man_made', 'waterway', 'name', 'natural', 'landuse', 'place', 'foot', 'designation', 'bridge'];
 
     MapCSS.loadStyle('style', restyle, sprite_images, external_images, presence_tags, value_tags);
     MapCSS.preloadExternalImages('style');

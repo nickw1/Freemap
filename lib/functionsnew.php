@@ -1,6 +1,6 @@
 <?php
 
-require_once('/var/www/common/defines.php');
+require_once('defines.php');
 require_once('latlong.php');
 //require_once('/var/www/phpcoord/phpcoord.php');
 require_once('conversions.class.php');

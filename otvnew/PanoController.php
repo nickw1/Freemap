@@ -2,14 +2,16 @@
 
 require_once('Panorama.php');
 require_once('../lib/User.php');
+require_once('../lib/UserManager.php');
 
 class PanoController
 {
-    private $view;
+    private $view, $conn;
 
-    function __construct ($view)
+    function __construct ($view, $conn)
     {
         $this->view = $view;
+	$this->conn = $conn;
     }
 
     function actionGetNearest($input)
@@ -109,11 +111,12 @@ class PanoController
         return 400;
     }
 
-    static function isAdmin()
+    function isAdmin()
     {
         if(isset($_SESSION["gatekeeper"]))
         {
-            $u = User::getUserFromUsername($_SESSION["gatekeeper"]);
+	    $um = new UserManager($this->conn);
+            $u = $um->getUserFromUsername($_SESSION["gatekeeper"]);
             return $u->isAdmin();
         }
         return false;

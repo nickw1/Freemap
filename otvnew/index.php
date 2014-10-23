@@ -5,6 +5,7 @@ $lat = isset($_GET["lat"]) ? $_GET["lat"] : 50.85;
 $lon = isset($_GET["lon"]) ? $_GET["lon"] : -1.65;
 
 require_once('../lib/User.php');
+require_once('../lib/UserManager.php');
 
 // Change on other servers
 define('FREEMAP_ROOT','http://www.free-map.org.uk');
@@ -45,16 +46,16 @@ var HttpData = {}, SessionData= {};
 HttpData.lat = <?php echo $lat; ?>;
 HttpData.lon = <?php echo $lon; ?>;
 <?php
-$conn=pg_connect("dbname=gis user=gis");
+$conn=new PDO("pgsql:host=localhost;dbname=gis", "gis");
 if(isset($_SESSION["gatekeeper"]))
 {
 	echo "SessionData.username = '$_SESSION[gatekeeper]';\n";
-	$u = User::getUserFromUsername ($_SESSION["gatekeeper"]);
+	$um = new UserManager($conn);
+	$u = $um->getUserFromUsername ($_SESSION["gatekeeper"]);
 	echo "SessionData.admin = " . ($u->isAdmin() ? 1:0) .";\n";
 }
 else
 	echo "SessionData.username = '';";
-pg_close($conn);
 ?>
 HttpData.panoId = <?php echo isset($_GET["id"]) && 
     ctype_digit($_GET["id"]) ?  $_GET["id"] : 0 ?>;

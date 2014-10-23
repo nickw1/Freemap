@@ -69,8 +69,8 @@ class DBDetails
                     $this->coastlineDetails["col"] . "&& $geomtxt" : null;
     }
 
-	// 031113 altered getAnnotationQuery() to getOverlayQuery() so that
-	// the same code can be used to load any point overlay e.g. panoramas
+    // 031113 altered getAnnotationQuery() to getOverlayQuery() so that
+    // the same code can be used to load any point overlay e.g. panoramas
     public function getOverlayQuery($geomtxt, $type)
     {
         return ($this->overlayDetails) ?

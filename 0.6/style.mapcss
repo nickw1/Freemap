@@ -32,6 +32,13 @@ node|z13-18[railway=station]
 	text-offset: 6;
 }
 
+node|z13-18[man_made=mast]
+{
+	icon-image: ../data/symbols/mast.png;
+	allow-overlap: true;
+	z-index: 10;
+}
+
 node|z14-18[place=suburb],node[place=hamlet]
 {
 	font-size: 10;
@@ -87,13 +94,17 @@ node[natural=peak]
 	text-allow-overlap: true;
 }
 
-node[amenity=pub]
+node|z13-18[amenity=pub]
 {
 	text-color: black;
 	font-weight: bold;
 	font-size: 8;
 	font-family: Helvetica; 
 	text: name;
+	icon-image: ../data/symbols/pub.png;
+	allow-overlap: true;
+	text-offset: 6;
+	z-index: 10;
 }
 
 line|z14-18[highway=motorway],line|z14-18[highway=motorway_link]
@@ -237,7 +248,7 @@ area[natural=wood],area[landuse=forest]
 	z-index: 1;
 }
 
-area[natural=water]
+area[natural=water],area[landuse=reservoir]
 {
 	fill-color:lightblue;
 	z-index: 2;

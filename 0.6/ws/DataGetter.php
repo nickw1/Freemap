@@ -23,9 +23,9 @@ class DataGetter
         $this->wayFilter=array();
         $this->doWays=true;
         $this->doPolygons=true;
-		$prefix = is_string($dbdetails) ? $dbdetails: "planet_osm";
+        $prefix = is_string($dbdetails) ? $dbdetails: "planet_osm";
         $this->dbq = is_object($dbdetails)&&get_class($dbdetails)=="DBDetails"? 
-				$dbdetails:
+                $dbdetails:
                 new DBDetails(
                     array("table"=>"${prefix}_point",
                             "col"=>"way"),
@@ -41,10 +41,11 @@ class DataGetter
                             ); 
         $this->SRID = $srid;
 
-	// 240913 if not in kothic mode we want the full ways, not just
-	// the intersection with the bbox
-	$this->dbq->setIntersection($this->kothic_gran !==null);
-
+        // 240913 if not in kothic mode we want the full ways, not just
+        // the intersection with the bbox
+        //$this->dbq->setIntersection($this->kothic_gran !==null);
+        //$this->dbq->setIntersection(is_numeric($this->kothic_gran));
+	// 280614 make it always intersect to see if it fixes hikar issues
     }
 
     function setCopyright($copyright)
@@ -122,17 +123,17 @@ class DataGetter
 
         if(count($filter) > 0)
         {
-	    $firsttag=true;
-	    $qry .= " AND (";
+        $firsttag=true;
+        $qry .= " AND (";
             foreach($filter as $tag=>$valuelist)
             {
-		if($firsttag==true)
-		{
-                	$qry .= "(";
-			$firsttag=false;
-		}
-		else
-			$qry .=" OR (";
+        if($firsttag==true)
+        {
+                    $qry .= "(";
+            $firsttag=false;
+        }
+        else
+            $qry .=" OR (";
 
                 $values = explode(",",$valuelist);
                 $first=true;
@@ -146,9 +147,9 @@ class DataGetter
                 }
                 $qry .= ")";
             }
-	    $qry .= ")";
+        $qry .= ")";
         }
-	//echo "query $qry";
+    //echo "query $qry";
         return $qry;
     }
 
@@ -264,7 +265,7 @@ class DataGetter
     {
         return ($table=="polygon") ?
             $this->dbq->getPolygonQuery(): 
-	    $this->dbq->getWayQuery();
+        $this->dbq->getWayQuery();
     }
 
     function reprojectData($outProj)
@@ -380,53 +381,53 @@ class BboxGetter extends DataGetter
         $this->bbox = $bbox;
         $this->geomtxt = $this->mkgeom();
         $this->geomtxt2 = $this->mkgeom2();
-		$this->forceCache = false;
+        $this->forceCache = false;
     }
 
-	function setForceCache($fc)
-	{
-		$this->forceCache = $fc;
-	}
+    function setForceCache($fc)
+    {
+        $this->forceCache = $fc;
+    }
 
     function getData($options, $contourCache=null, $cache=null, $outProj=null,
-						$x=null, $y=null, $z=null)
+                        $x=null, $y=null, $z=null)
     {
 
-		// Only cache if all was requested and we're in kothic mode 
-		$all = isset($options["coastline"]) && $options["coastline"]
-			&& isset($options["poi"]) && $options["poi"]=="all"
-			&& isset($options["way"]) && $options["way"]=="all"
-			&& $this->kothic_gran;
+        // Only cache if all was requested and we're in kothic mode 
+        $all = isset($options["coastline"]) && $options["coastline"]
+            && isset($options["poi"]) && $options["poi"]=="all"
+            && isset($options["way"]) && $options["way"]=="all"
+            && $this->kothic_gran;
 
-		
-		if($this->forceCache)
-		{
-			$this->getDataFromDB($options);
-			$this->cacheData($cache);	
-		}
-		elseif($cache!==null && $all)
-		{
-			$result = $this->getCachedData($cache);
-			if($result===false)
-			{
-				$this->getDataFromDB($options);
-				$this->cacheData($cache);	
-			}
-			/* if cached tile over 1 day old, add to tilelist */
-			elseif(time() - $result > MAX_TILE_AGE && $z >= 11)
-			{
-				$fp = fopen (TILELIST, "a");
-				if($fp!==false)
-				{
-					fwrite($fp,"$x $y $z\n");
-					fclose($fp);
-				}
-			}
-		}
-		else
-		{
-			$this->getDataFromDB($options);
-		}
+        
+        if($this->forceCache)
+        {
+            $this->getDataFromDB($options);
+            $this->cacheData($cache);    
+        }
+        elseif($cache!==null && $all)
+        {
+            $result = $this->getCachedData($cache);
+            if($result===false)
+            {
+                $this->getDataFromDB($options);
+                $this->cacheData($cache);    
+            }
+            /* if cached tile over 1 day old, add to tilelist */
+            elseif(time() - $result > MAX_TILE_AGE && $z >= 11)
+            {
+                $fp = fopen (TILELIST, "a");
+                if($fp!==false)
+                {
+                    fwrite($fp,"$x $y $z\n");
+                    fclose($fp);
+                }
+            }
+        }
+        else
+        {
+            $this->getDataFromDB($options);
+        }
 
         if(isset($options["contour"]) && $options["contour"])
             $this->getContourData($contourCache);
@@ -437,9 +438,9 @@ class BboxGetter extends DataGetter
         return $this->data;
     }
 
-	function getDataFromDB($options)
-	{
-		
+    function getDataFromDB($options)
+    {
+        
         parent::doGetData($options);
         
         if(isset($options["coastline"]) && $options["coastline"])
@@ -451,34 +452,34 @@ class BboxGetter extends DataGetter
         {
             $this->getAnnotationData();
         }
-		elseif(isset($options["overlay"]))
-		{
-			$this->getOverlayData($options["overlay"]);
-		}
-	}
+        elseif(isset($options["overlay"]))
+        {
+            $this->getOverlayData($options["overlay"]);
+        }
+    }
 
-	function cacheData($cache)
-	{
-		file_put_contents($cache,json_encode($this->data["features"]));
-	}
+    function cacheData($cache)
+    {
+        file_put_contents($cache,json_encode($this->data["features"]));
+    }
 
-	function getCachedData($cache)
-	{
+    function getCachedData($cache)
+    {
         if($this->kothic_gran!==null && $cache!==null)
         {
             if(!file_exists($cache))
             {
-				return false;
+                return false;
             }
             else
             {
                 $txt=file_get_contents($cache);
                 $this->data["features"]=json_decode($txt,true);
-				return filemtime($cache); 
+                return filemtime($cache); 
             }
         }
-		return false;
-	}
+        return false;
+    }
 
     function getContourData($contourCache=null)
     {
@@ -535,7 +536,7 @@ class BboxGetter extends DataGetter
                     $features[] = $feature;
             }
         }
-		pg_free_result($result);
+        pg_free_result($result);
         return $features;
     }
 
@@ -573,16 +574,16 @@ class BboxGetter extends DataGetter
                     $this->data["features"][] = $feature;
             }
         } 
-		pg_free_result($result);
+        pg_free_result($result);
     }
     
     function getAnnotationData()
     {
-		self::getOverlayData("annotation");
-	}
+        self::getOverlayData("annotation");
+    }
 
-	function getOverlayData($type)
-	{
+    function getOverlayData($type)
+    {
         $pqry = $this->dbq->getOverlayQuery($this->geomtxt, $type); 
         if($pqry===null)
             return;
@@ -612,13 +613,13 @@ class BboxGetter extends DataGetter
     function mkgeom()
     {
         $bbox=$this->bbox;
-	/*
+    /*
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
-            $this->SRID.")";	
-	*/
-	$g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
-		$this->SRID.")";
+            $this->SRID.")";    
+    */
+    $g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
+        $this->SRID.")";
         return $g; 
     }
 
@@ -632,13 +633,13 @@ class BboxGetter extends DataGetter
         $bbox[2] = $bbox[2] + $w*0.2; 
         $bbox[1] = $bbox[1] - $h*0.2; 
         $bbox[3] = $bbox[3] + $h*0.2;
-	/*
+    /*
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
             $this->SRID.")";
-	*/
-	$g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
-		$this->SRID.")";
+    */
+    $g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
+        $this->SRID.")";
         return $g; 
     }
 
@@ -666,13 +667,13 @@ class BboxGetter extends DataGetter
                     // coords of (0,0) seem to  screw up rendering
                     $x=($x==0)?1:$x;
                     $y=($y==0)?1:$y;
-	
+    
                     $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                     $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
 
                     if($x>=0 && $y>=0 && $x<=$this->kothic_gran && 
                         $y<=$this->kothic_gran)
-		    if(true)
+            if(true)
                     {
                            $coords[] = array($x,$y);
                     }
@@ -700,7 +701,7 @@ class BboxGetter extends DataGetter
                             $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                             $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
                         }
-			
+            
                         $coords[$i][] = array($x,$y);
 
                     }
@@ -726,7 +727,7 @@ class BboxGetter extends DataGetter
                             $this->bbox[1]) * 
                             $factor);
 
-			    // coords of (0,0) screw up rendering
+                // coords of (0,0) screw up rendering
                             $x=($x==0)?1:$x;
                             $y=($y==0)?1:$y;
                             $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
@@ -753,23 +754,23 @@ class BboxGetter extends DataGetter
             $this->dbq->getBboxWayQuery($this->geomtxt);
     }
 
-	function getUniqueList($property)
-	{
-		$values = array();
-		foreach($this->data["features"] as $f)
-		{
-			if(!in_array($f["properties"][$property],$values))
-			{
-				$values[] = $f["properties"][$property];
-			}
-		}
-		return $values;
-	}
+    function getUniqueList($property)
+    {
+        $values = array();
+        foreach($this->data["features"] as $f)
+        {
+            if(!in_array($f["properties"][$property],$values))
+            {
+                $values[] = $f["properties"][$property];
+            }
+        }
+        return $values;
+    }
 
-	function simpleGetData()
-	{
-		return $this->data;
-	}
+    function simpleGetData()
+    {
+        return $this->data;
+    }
 }
 
 ?>
