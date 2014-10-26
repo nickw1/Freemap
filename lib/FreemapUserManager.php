@@ -4,24 +4,27 @@ require_once("UserManager.php");
 
 class FreemapUserManager extends UserManager
 {
-	public function __construct ($conn)
-	{
-		parent::__construct ($conn);
-	}
+    public function __construct ($conn)
+    {
+        parent::__construct ($conn);
+    }
 
     function isValidLogin($username,$password)
     {
-        $q="select * from users where username='$username' ".
-              "and password='".sha1($password)."' and active=1";
-        $result=$this->conn->query($q);
-        return $result->fetch();
+        $stmt=$this->conn->prepare
+        ("select * from users where username=? and password=? and active=1");
+        $stmt->bindParam (1, $username);
+        $stmt->bindParam (2, sha1($password));
+        $stmt->execute();
+        return $stmt->fetch();
     }
 
     function processSignup($username,$password,$email)
     {
-        $result=$this->conn->query
-        ("SELECT * FROM users WHERE username='$username'"); 
-        if($row = $result->fetch())
+        $stmt=$this->conn->prepare("SELECT * FROM users WHERE username=?");
+        $stmt->bindParam (1, $username);
+        $stmt->execute();
+        if($row = $stmt->fetch())
         {
             return 1;    
         }
@@ -37,19 +40,21 @@ class FreemapUserManager extends UserManager
         {
             $random = rand (1000000,9999999);
             $active=1; // CHANGE!!!
-            $q = ("insert into users (email,".
+            $stmt = $conn->prepare ("insert into users (email,".
                     "username,password,active,k) ".
-                    "values ('$email',".
-                    "'$username','".
-                    sha1($password).
-                    "',$active,$random)");
-            $this->conn->query($q); 
+                    "values (?,?,?,?,?)");
+            $stmt->bindParam (1,$email);
+            $stmt->bindParam (2, $username);
+            $stmt->bindParam (3, sha1($password));
+            $stmt->bindParam (4, $active);
+            $stmt->bindParam (5, $random);
+            $stmt->execute();
 
-  	    // doesn't work in postgresql...  annoying
+          // doesn't work in postgresql...  annoying
             //$lastid=$this->conn->lastInsertId();
-     	    $result=$this->conn->query("SELECT currval('users_id_seq') AS id");
+             $result=$this->conn->query("SELECT currval('users_id_seq') AS id");
             $row=$result->fetch();
-	    $lastid = $row["id"]; 
+            $lastid = $row["id"]; 
 
             mail('nick_whitelegg@yahoo.co.uk',
                     'New Freemap account created', 

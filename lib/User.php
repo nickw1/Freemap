@@ -6,12 +6,14 @@ class User
 
     function __construct($id, $conn, $table="users")
     {
-        $this->id=$id;
+        $this->id=(ctype_digit($id) ? $id: 0);
         $this->conn = $conn;
-        $this->table = $table;
-        $result=$this->conn->query
-        ("SELECT COUNT(*) AS count FROM {$this->table} WHERE id=$id");
-        $this->valid=$result->fetch() != false;
+        $this->table = ctype_alnum($table) ? $table: "users";
+        $stmt=$this->conn->prepare
+        ("SELECT COUNT(*) AS count FROM {$this->table} WHERE id=?");
+        $stmt->bindParam (1, $this->id);
+        $stmt->execute();
+        $this->valid=$stmt->fetch() != false;
     }
 
     function isValid()
@@ -19,15 +21,17 @@ class User
         return $this->valid;
     }
 
-
     function remove()
     {
-        $result=$this->conn->query("SELECT * FROM {$this->table} WHERE id=".
-                                    $this->id);
-        if($row=$result->fetch())
+        $stmt=$this->conn->prepare("SELECT * FROM {$this->table} WHERE id=?");
+        $stmt->bindParam (1, $this->id);
+        $stmt->execute();
+        if($row=$stmt->fetch())
         {
-            $this->conn->query
-                 ("DELETE FROM {$this->table} WHERE id=".$this->id);
+            $stmt2=$this->conn->prepare
+                 ("DELETE FROM {$this->table} WHERE id=?");
+            $stmt2->bindParam (1, $id);
+            $stmt2->execute();
             return true;
         }
         else
@@ -43,9 +47,11 @@ class User
 
     function isAdmin()
     {
-        $result=$this->conn->query
-            ("SELECT isadmin FROM {$this->table} WHERE id=".$this->id);
-        $row=$result->fetch();
+        $stmt=$this->conn->prepare
+            ("SELECT isadmin FROM {$this->table} WHERE id=?");
+        $stmt->bindParam (1, $this->id);
+        $stmt->execute();
+        $row=$stmt->fetch();
         return $row["isadmin"]==1;
     }
 } 

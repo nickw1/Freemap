@@ -6,7 +6,6 @@ require_once('../common/defines.php');
 
 session_start();
 
-$conn=pg_connect(pgconnstring());
 
 $lat = (isset($_GET['lat'])) ? $_GET['lat']: 
     (isset($_GET['y']) ? $_GET["y"]/1000000 : "null");
@@ -86,7 +85,6 @@ else
 
     <?php
 }
-pg_close($conn);
 
 ?>
 

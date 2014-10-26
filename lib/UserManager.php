@@ -13,25 +13,38 @@ class UserManager
 
     public function __construct($conn)
     {
-	$this->conn = $conn;
+        $this->conn = $conn;
     }
 
     function isValidLogin($username,$password)
     {
-        $q="select * from users where username='$username' ".
-              "and password='".sha1($password)."'";
-        $result=$this->conn->query($q);
-        return $result->fetch();
+        if(ctype_alnum($username) && ctype_alnum($password))
+        {
+		
+            $stmt=$this->conn->prepare
+                ("select * from users where username=? and password=?");
+            $stmt->bindParam (1, $username);
+            $stmt->bindParam (2, sha1($password));
+            $stmt->execute();
+             $row = $stmt->fetch();
+			return $row;
+        }
+        return false;
     }
 
     function getUserFromUsername($user)
     {
-        $result=$this->conn->query
-            ("SELECT id FROM users WHERE username='$user'");
-        $row = $result->fetch();
-        if($row!==false)
+        if(ctype_alnum($user))
         {
-            return new User($row["id"], $this->conn);
+            $stmt=$this->conn->prepare
+            ("SELECT id FROM users WHERE username=?");
+            $stmt->bindParam (1, $user);
+            $stmt->execute();
+            $row = $stmt->fetch();
+            if($row!==false)
+            {
+                return new User($row["id"], $this->conn);
+            }
         }
         return null;
     }

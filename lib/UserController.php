@@ -35,9 +35,11 @@ class UserController
         }
         else
         {
+			/*
             $this->view->redirectMsg("Invalid login",
                     basename($_SERVER['PHP_SELF']) . 
                     "?$qs&action=login&redirect=$redirect");
+			*/
         }
     }
     
