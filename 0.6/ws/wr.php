@@ -4,32 +4,35 @@ session_start();
 require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
 require_once('../../lib/User.php');
+require_once('../../lib/UserManager.php');
 
 $pconn=pg_connect(pgconnstring());
 $cleaned=clean_input($_REQUEST,'pgsql');
 $cleaned["format"] = isset($cleaned["format"]) ? $cleaned["format"]:"geojson";
 
+// Bleuurrgh!!! Ghastly beyond words I know to have a PDO object and
+// an old-fashioned deprecated old postgres connection, but while the user 
+// stuff has been PDO-ised and the rest hasn't we have to make do with this 
+// horrible quick fix.
+$pdo = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
+$um = new UserManager($pdo);
 
 switch($cleaned["action"])
 {
     case "add":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-	    echo "Request method is POST ";
             $userid=0;
             if(isset($_SERVER['PHP_AUTH_USER']) &&
                 isset($_SERVER['PHP_AUTH_PW']))
             {
 		$userid=-1;
-                if(($result=User::isValidLogin
+                if(($row=$um->isValidLogin
                         ($_SERVER['PHP_AUTH_USER'],
                         $_SERVER['PHP_AUTH_PW']))!==null)
                 {
-                    $row=pg_fetch_array($result,null,PGSQL_ASSOC);
-		    print_r($row);
                     $userid=$row["id"];
                 }
-		echo " userid is now $userid ";
             }    
             elseif(isset($_SESSION["gatekeeper"]))
             {

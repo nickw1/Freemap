@@ -45,4 +45,10 @@ public class WRUploadTask extends HTTPUploadTask {
         Log.d("OpenTrail","HTTP task status=" + status);
         return status;
     }
+    
+    public void onPostExecute (String code)
+    {
+        super.onPostExecute(code);
+        Log.d("OpenTrail", "additional data, i.e response from server: "  + addData);
+    }
 }

@@ -340,7 +340,8 @@ class Walkroute
     {
 		$sphmerc = ll_to_sphmerc($lon,$lat);
         pg_query("INSERT INTO wr_waypoints(wrid,wpid,description,x,y) ".
-            "VALUES ($rteid,$wpid,'$wpdesc',$sphmerc[e],$sphmerc[n])");
+            "VALUES ($rteid,$wpid,'".
+				str_replace("'","",$wpdesc)."',$sphmerc[e],$sphmerc[n])");
     }
 
     private static function mkgeom(&$coords,$lonidx=0,$latidx=1)

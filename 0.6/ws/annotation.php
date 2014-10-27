@@ -1,6 +1,7 @@
 <?php
 require_once('../../lib/functionsnew.php');
 require_once('../../lib/User.php');
+require_once('../../lib/UserManager.php');
 
 session_start();
 
@@ -16,6 +17,13 @@ $expected = array ("create" => array("lon","lat","text"),
                     "move" =>array("id","lat","lon"));
 
 $userid=0; // 0=not supplied; -1=incorrect
+
+// Bleuurrgh!!! Ghastly beyond words I know to have a PDO object and
+// an old-fashioned postgres connection, but while the user stuff has been
+// PDO-ised and the rest hasn't we have to make do with this horrible
+// quick fix.
+$pdo = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
+$um = new UserManager($pdo);
 
 if(!isset($expected[$cleaned['action']]))
 {
@@ -35,11 +43,10 @@ else
 if(isset($_SERVER['PHP_AUTH_USER']) &&
         isset($_SERVER['PHP_AUTH_PW']))
 {
-	$result=User::isValidLogin($_SERVER['PHP_AUTH_USER'],
+	$row=$um->isValidLogin($_SERVER['PHP_AUTH_USER'],
 								$_SERVER['PHP_AUTH_PW']);
-    if($result!==null)
+    if($row!==false)
     {
-        $row=pg_fetch_array($result,null,PGSQL_ASSOC);
         $userid=$row["id"];
     }
 	else
