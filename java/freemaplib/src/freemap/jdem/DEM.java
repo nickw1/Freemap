@@ -71,8 +71,7 @@ public class DEM implements freemap.datasource.TiledData {
 			if(proj!=null)
 			{
 				p=proj.project(p);
-			}
-			
+			}		
 		}
 		//System.out.println("Projected point: " + p+" bottomLeft=" + bottomLeft);
 		
@@ -82,7 +81,14 @@ public class DEM implements freemap.datasource.TiledData {
 		//System.out.println("Indices: "+xIdx+" " + yIdx);
 		double x1,x2,y1,y2;
 		double h1,h2,h3,h4;
+		
+		double h = -1;
 
+		// 021114 change this so that points outside the DEM are given a height based on closest edge/corner
+		// idea being to reduce artefacts at the edges of tiles
+		// this means that a -1 return cannot now be used to detect whether a point is in the DEM or not
+		// (hopefully this is NOT being done anywhere!)
+		
 		if(xIdx>=0 && yIdx>=0 && xIdx<ptWidth-1 && yIdx<ptHeight-1)
 		{
 			h1 = heights[yIdx*ptWidth+xIdx];
@@ -93,26 +99,69 @@ public class DEM implements freemap.datasource.TiledData {
 			x1 = bottomLeft.x + xIdx*spacing;
 			x2 = x1 + spacing;
 			
-			y1 = bottomLeft.y + (ptHeight-yIdx)*spacing;
+			// 041114 I think this was wrong change from ptHeight-yIdx to ptHeight-1-yIdx
+			y1 = bottomLeft.y + (ptHeight-1-yIdx)*spacing;
 			y2 = y1 - spacing;
 			
 			//System.out.println("x,y bounds " + x1 + " " + y1+ " " +x2 + " " +y2);
 			//System.out.println("heights " + h1 + " " + h2+ " " +h3 + " " +h4);
 			
-			double propX = (p.x-x1)/(x2-x1);
+			double propX = (p.x-x1)/spacing;
 			
 			double htop = h1*(1-propX) + h2*propX,
 				hbottom = h3*(1-propX) + h4*propX;
 			
-			double propY = (p.y-y2)/(y1-y2);
+			double propY = (p.y-y2)/spacing;
 			
-			double h = hbottom*(1-propY) + htop*propY;
+			h = hbottom*(1-propY) + htop*propY;
 			
 			//System.out.println("*******************************height is: " + h);
-			return h;
+			
 		}
+		else if (yIdx<0 || yIdx>=ptHeight-1)
+		{
+		    int usedYIdx = (yIdx<0) ? 0:ptHeight-1;
+		    int yDiff = (yIdx<0) ? 1:-1;
+		    
+		    // 031114 calculate heights for off-grid points by extrapolation
+		    
+		    // corner cases
+		    if (xIdx < 0)
+		        h = heights[usedYIdx*ptWidth] - (heights[(usedYIdx+yDiff)*ptWidth + 1] - heights[usedYIdx*ptWidth]);
+		    else if (xIdx >= ptWidth-1)
+		        h = heights[usedYIdx*ptWidth + (ptWidth-1)] - ( heights[(usedYIdx+yDiff)*ptWidth + (ptWidth-2)] - heights[usedYIdx*ptWidth + (ptWidth-1)]);
+		    else
+		    {
+		        h1 = heights[usedYIdx*ptWidth+xIdx];
+		        h2 = heights[usedYIdx*ptWidth+xIdx+1];
+		        h3 = heights[(usedYIdx+yDiff)*ptWidth+xIdx];
+		        h4 = heights[(usedYIdx+yDiff)*ptWidth+xIdx+1];
+		   
+		        x1 = bottomLeft.x + xIdx*spacing;
+		        double propX = (p.x-x1) / spacing;
+		        h = h1*(1-propX) + h2*propX;
+		        h -= (h3*(1-propX)+h4*propX)-h;
+		    }
+		    
+		}
+		else if (xIdx<0 || xIdx>=ptWidth-1)
+        {
+		    int usedXIdx = (xIdx<0) ?  0:ptWidth-1;
+		    int xDiff = (xIdx<0) ? 1:-1;
+		    
+		    h1 = heights[yIdx*ptWidth+usedXIdx];
+            h2 = heights[(yIdx+1)*ptWidth+usedXIdx];
+            h3 = heights[yIdx*ptWidth+usedXIdx+xDiff];
+            h4 = heights[(yIdx+1)*ptWidth+usedXIdx+xDiff];
+           
+            y2 = bottomLeft.y + (ptHeight-2-yIdx)*spacing; 
+            
+            double propY = (p.y-y2) / spacing;
+            h = h1*(1-propY) + h2*propY;
+            h -= (h3*(1-propY)+ h4*propY)- h;
+        }
 		
-		return -1;
+		return h;
 	}
 	
 	public String toString()

@@ -88,7 +88,8 @@ public class GPSService extends Service implements LocationListener {
         date = sdf.format(new java.util.Date());
         
         logFile = android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/opentrail/opentrail.log." + date + ".txt";
-        try { pw=new PrintWriter(new BufferedWriter(new FileWriter(logFile, true))); } catch(IOException e) { } 
+        //try { pw=new PrintWriter(new BufferedWriter(new FileWriter(logFile, true))); } catch(IOException e) { } 
+        pw=null; //041114 turn off
         
 
         if(pw!=null)
@@ -254,10 +255,10 @@ public class GPSService extends Service implements LocationListener {
 			listeningForUpdates=false;
 			mgr.removeUpdates(this);
 			stopSelf();
-			pw.println("stopIfNotLogging(): not logging, so stopping");
+			if(pw!=null) pw.println("stopIfNotLogging(): not logging, so stopping");
 		}
 		else
-		    pw.println("stopIfNotLogging(): logging, so not stopping");
+		    if(pw!=null)pw.println("stopIfNotLogging(): logging, so not stopping");
 	}
 	
 
