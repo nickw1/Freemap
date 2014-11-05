@@ -49,10 +49,16 @@ if(isset($cleaned['inUnits'])
 }
 
 // Native projection of DB is 900913 (Google Mercator)
-list($sw['e'],$sw['n']) = reproject($values[0],$values[1],$inProj,'900913');
-list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'900913');
 
-$bbox = array($sw["e"],$sw["n"],$ne["e"],$ne["n"]);
+// 041114 ensure reprojected bbox completely contains original bbox by
+// taking the min and max eastings and northings of each corner
+list($sw['e'],$sw['n']) = reproject($values[0],$values[1],$inProj,'900913');
+list($nw['e'],$nw['n']) = reproject($values[0],$values[3],$inProj,'900913');
+list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'900913');
+list($se['e'],$se['n']) = reproject($values[1],$values[2],$inProj,'900913');
+
+$bbox = array(min($sw["e"],$nw["e"]),min($sw["n"],$se["n"]),
+				max($ne["e"],$se["e"]), max($ne["n"],$nw["n"]));
 
 $bg=new BboxGetter($bbox);
 $data=$bg->getData($cleaned,null,null,$outProj=='900913'?null:$outProj);

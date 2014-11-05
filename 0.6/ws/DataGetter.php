@@ -43,9 +43,12 @@ class DataGetter
 
         // 240913 if not in kothic mode we want the full ways, not just
         // the intersection with the bbox
+		
         //$this->dbq->setIntersection($this->kothic_gran !==null);
         //$this->dbq->setIntersection(is_numeric($this->kothic_gran));
 	// 280614 make it always intersect to see if it fixes hikar issues
+		// 301014 this ensures all ways are retrieved, but screws up when
+		// applying DEMs
     }
 
     function setCopyright($copyright)
