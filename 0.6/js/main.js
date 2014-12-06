@@ -455,7 +455,16 @@ Freemap.prototype.doLogin = function()
                     document.getElementById('password').value ,
                     method : 'POST',
                     callback: this.loginSuccess.bind(this),
-                    errorCallback: function(code){alert('Incorrect login'); } }
+                    errorCallback: function(code){
+						if(code==401)
+							alert('Incorrect login');
+						else if(code==503)
+							alert('Please note that you need to re-register '+
+									'for an account. This is due to the ' +
+									'login system being upgraded to reflect '+
+									'current security standards.');
+						}
+					}
                     );
 }
 

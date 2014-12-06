@@ -250,6 +250,7 @@ FixMyPaths.prototype.doSendProblem = function(gid,mp)
                                 document.getElementById('reporter_email').value,
                         callback: (function(xmlHTTP) 
                             { 
+								alert("Thanks for your report!");
                               this.loadFeatures();}).bind(this)
                         }
                     );

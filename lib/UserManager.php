@@ -6,6 +6,7 @@
 // ID.
 
 require_once('User.php');
+require_once('password.php');
 
 class UserManager
 {
@@ -18,35 +19,21 @@ class UserManager
 
     function isValidLogin($username,$password)
     {
-        if(ctype_alnum($username) && ctype_alnum($password))
-        {
 		
             $stmt=$this->conn->prepare
-                ("select * from users where username=? and password=?");
+                ("select * from users where username=?");
             $stmt->bindParam (1, $username);
-            $stmt->bindParam (2, sha1($password));
             $stmt->execute();
-             $row = $stmt->fetch();
-			return $row;
-        }
-        return false;
+            $row = $stmt->fetch();
+			
+			return ($row===false) ?  false:
+					(password_verify($password, $row["password"]) ||
+						$row["active"]==-1) ? $row: false;
     }
 
-    function deprecatedIsValidLogin($username,$password)
-    {
-        if(ctype_alnum($username) && ctype_alnum($password))
-        {
-		
-            $stmt=$this->conn->prepare
-                ("select * from users where username=? and password=?");
-            $stmt->bindParam (1, $username);
-            $stmt->bindParam (2, sha1($password));
-            $stmt->execute();
-             $row = $stmt->fetch();
-			return $row;
-        }
-        return false;
-    }
+	// 251114 this appears not to be used anywhere - so deleted
+    //function deprecatedIsValidLogin($username,$password)
+
     function getUserFromUsername($user)
     {
         if(ctype_alnum($user))
@@ -63,5 +50,28 @@ class UserManager
         }
         return null;
     }
+
+	function getUserIdFromCredentials()
+	{
+		$userid=0;
+		if(isset($_SERVER['PHP_AUTH_USER']) &&
+                isset($_SERVER['PHP_AUTH_PW']))
+		{
+			$userid=-1;
+			if(($row=$this->isValidLogin
+                        ($_SERVER['PHP_AUTH_USER'],
+                        $_SERVER['PHP_AUTH_PW']))!==false)
+			{
+				$userid=$row["id"];
+			}
+		}   	 
+		elseif(isset($_SESSION["gatekeeper"]))
+		{
+			$userid=$this->getUserFromUsername($_SESSION['gatekeeper'])->
+				getID();
+			$userid = ($userid>0) ? $userid: -1;
+		}
+		return $userid;
+	}	
 }
 ?>

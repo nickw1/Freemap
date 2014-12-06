@@ -29,17 +29,26 @@ class UserController
 				$first=false;
 			$qs .= "$k=$v";
 		}
-        if($this->doLogin($username,$password)==true)
-        {
-            header("Location: $redirect?$qs");
-        }
-        else
-        {
-			/*
+		$result = $this->doLogin($username,$password);
+		if($result===false)
+		{
             $this->view->redirectMsg("Invalid login",
                     basename($_SERVER['PHP_SELF']) . 
                     "?$qs&action=login&redirect=$redirect");
-			*/
+		}
+		else
+		{
+			if($result["active"]==-1)
+			{
+				?>
+				Please note that the login system has been update to
+				reflect current security standards. Your old login is
+				no longer valid; please 
+				<a href="user.php?action=signup">signup for a new account.</a>
+				<?php
+			}
+        	else
+            	header("Location: $redirect?$qs");
         }
     }
     
@@ -47,69 +56,78 @@ class UserController
     public  function doLogin($username,$password)
     {
         $um = new UserManager($this->conn);
-        if($row=$um->isValidLogin($username,$password))
-        {
-            $_SESSION[$this->userSession] = $row["username"];
-            $_SESSION[$this->adminSession] = $row["isadmin"];
-            return true;
-        }
-        return false;
+		$row = $um->isValidLogin($username,$password);
+		if($row!==false)
+		{
+			if($row["active"]!=-1)
+			{
+				$_SESSION[$this->userSession] = $row["username"];
+				$_SESSION[$this->adminSession] = $row["isadmin"];
+			}
+		}
+        return $row; 
     }
 
     public function remoteLogin($username,$password)
     {
-        if($this->doLogin($username,$password)==true)
-        {
-            header("Content-type: application/json");
-        $um = new UserManager($this->conn);
-            $user = $um->getUserFromUsername($_SESSION[$this->userSession]);
-            $info = array ($_SESSION[$this->userSession],
-                            $user->isAdmin() ? "1":"0");
-            echo json_encode($info);
-        }
-        else
+		$result = $this->doLogin($username, $password);
+        if($result===false)
             header("HTTP/1.1 401 Unauthorized");
+		else
+        {
+			if($result["active"]==-1)
+				header("HTTP/1.1 503 Service Unavailable");
+			else
+			{
+            	header("Content-type: application/json");
+            	$um = new UserManager($this->conn);
+            	$user = $um->getUserFromUsername($_SESSION[$this->userSession]);
+            	$info = array ($_SESSION[$this->userSession],
+                            $user->isAdmin() ? "1":"0");
+            	echo json_encode($info);
+			}
+        }
     }
 
-    public function actionLogin($cleaned)
+    public function actionLogin($httpData)
     {
-        if(isset($cleaned["username"]) && isset($cleaned["password"]))
+        if(isset($httpData["username"]) && isset($httpData["password"]))
         {
-            if(isset($cleaned["remote"]) && $cleaned["remote"])
+            if(isset($httpData["remote"]) && $httpData["remote"])
                 $this->remoteLogin 
-                    ($cleaned['username'],$cleaned['password']);
+                    ($httpData['username'],$httpData['password']);
             else
             {
-				$username = $cleaned["username"];
-				$password = $cleaned["password"];
-				$redirect = isset($cleaned["redirect"]) ? 
-					$cleaned["redirect"]: "index.php";
-				unset($cleaned["username"]);
-				unset($cleaned["password"]);
-				unset($cleaned["redirect"]);
-                $this->login($username, $password, $redirect, $cleaned);
+				$username = $httpData["username"];
+				$password = $httpData["password"];
+				$redirect = isset($httpData["redirect"]) ? 
+					$httpData["redirect"]: "index.php";
+				unset($httpData["username"]);
+				unset($httpData["password"]);
+				unset($httpData["redirect"]);
+                $this->login($username, $password, $redirect, $httpData);
             }
         }
         else
         {
-	    	unset($cleaned["username"]);
-	    	unset($cleaned["password"]);
+	    	unset($httpData["username"]);
+	    	unset($httpData["password"]);
             $this->view->head();
             $this->view->displayLogin
-            (isset($cleaned["redirect"]) ?  
-                $cleaned["redirect"] :"index.php", 
-                "", $cleaned); 
+            (isset($httpData["redirect"]) ?  
+                $httpData["redirect"] :"index.php", 
+                "", $httpData); 
            $this->view->closePage();
         }
     }
 
-    public function actionLogout($cleaned)
+    public function actionLogout($httpData)
     {
         session_start();
         session_destroy();
-        if(!isset($cleaned['redirect']))
-            $cleaned['redirect'] = 'index.php';
-        header("Location: $cleaned[redirect]");
+        if(!isset($httpData['redirect']))
+            $httpData['redirect'] = 'index.php';
+        header("Location: $httpData[redirect]");
 
     }
 

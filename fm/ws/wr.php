@@ -1,0 +1,324 @@
+<?php
+session_start();
+
+require_once('../../lib/functionsnew.php');
+require_once('Walkroute.php');
+require_once('../../lib/User.php');
+require_once('../../lib/UserManager.php');
+
+$format = isset($_REQUEST["format"]) && ctype_alpha($_REQUEST["format"])
+         ? $_REQUEST["format"]:"geojson";
+$action = isset($_REQUEST["action"]) ? $_REQUEST["action"]:"get";
+
+$conn = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
+$um = new UserManager($conn);
+
+switch($action)
+{
+    case "add":
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            $userid = $um->getUserIdFromCredentials();
+            if($userid<0)
+            {
+                header("HTTP/1.1 401 Unauthorized");
+            }
+            else if (isset($_POST["id"]) && ctype_digit($_POST["id"]))
+            {
+                $wr = new Walkroute($conn, $_POST["id"]);
+                $wr->updateRoute($_POST["route"]);
+            }
+            else
+            {
+                $j=Walkroute::addWR($conn,$_POST["route"],$userid,
+                                        $format);
+                echo $j;
+            }
+        }
+        else
+        {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Please use a POST request";
+        }
+        break;
+
+    case "addWaypoint":
+        $badreq=true;
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            $userid = $um->getUserIdFromCredentials();
+           if($userid<=0) 
+            {
+                header("HTTP/1.1 401 Unauthorized");
+				$badreq=false;
+            }
+            else if (isset($_POST["id"]) && ctype_digit($_POST["id"])
+                        && isset($_POST["data"]))
+            {
+                $f= json_decode($_POST["data"], true);
+                if(
+                    preg_match("/^-?[\d\.]+$/",
+                        $f["geometry"]["coordinates"][0]) 
+                        &&
+                    preg_match("/^-?[\d\.]+$/",
+                        $f["geometry"]["coordinates"][1]) 
+                    )
+                {    
+                    $id=Walkroute::addRouteWaypoint($conn,
+                                        $_POST["id"]
+                                            ,$f["geometry"]["coordinates"][0],
+                                            $f["geometry"]["coordinates"][1],
+                                            0, 
+                                            htmlentities
+                                            ($f["properties"]["description"]));
+					echo $id;
+					$badreq=false;
+                }
+            }
+        }
+
+		if($badreq)	
+			header("HTTP/1.1 400 Bad Request");
+       
+        break;
+
+    case "get":
+        if($_SERVER['REQUEST_METHOD']=='GET' && isset($_GET["id"]))
+        {
+          $id=$_GET["id"];
+          if(ctype_digit($id))
+          {
+            $wr=new Walkroute($conn, $id);
+            $doAnnotations = isset($_GET["ann"]) && $_GET["ann"]!=0;
+            if($wr->isValid())
+            {
+                switch($format)
+                {
+                    case "json":
+                    case "geojson":
+                        header("Content-type: application/json");
+                        echo $wr->toGeoJSON($doAnnotations);
+                        break;
+
+                    case "gpx":
+                        header("Content-type: text/xml");
+                        header("Content-Disposition: attachment; filename=".
+                                    "walkroute${id}.gpx");
+                        echo $wr->toGPX($doAnnotations);
+                        break;
+                }
+            }
+            else
+            {
+                header("HTTP/1.1 404 Not Found");
+                echo "Cannot find walkroute with that ID";
+            }
+          }
+          else
+          {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Walkroute ID should be numeric!";
+          }
+        }
+        else
+        {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Please supply a format (json, gpx) and route ID, and use GET";
+            exit;
+        }
+        break;
+                    
+    case "getByBbox":
+        if($_SERVER['REQUEST_METHOD']=='GET' && isset($_GET["bbox"])
+            && preg_match("/^(-?[\d\.]+,){3}-?[\d\.]+$/", $_GET["bbox"]))
+        {
+            $b = explode(",",$_GET["bbox"]);
+            $routes=Walkroute::getRoutesByBbox($conn,$b[0],$b[1],$b[2],$b[3]);
+            Walkroute::outputRoutes($routes,$format);
+        }
+        else
+        {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Please supply a valid bounding box and a format, and use GET";
+        }
+        break;
+    
+    case "getByRadius":
+        if($_SERVER['REQUEST_METHOD']=='GET' &&
+            isset($_GET["radius"]) && 
+            isset($_GET['lon']) && isset($_GET['lat']) &&
+            preg_match("/^[\d\.]+$/", $_GET["radius"]) &&
+            preg_match("/^-?[\d\.]+$/", $_GET["lat"]) &&
+            preg_match("/^-?[\d\.]+$/", $_GET["lon"]))
+        {
+            $routes=Walkroute::getRoutesByRadius
+                ($conn, $_GET['lon'],$_GET['lat'],$_GET["radius"]);
+            Walkroute::outputRoutes($routes,$format);
+        }
+        else
+        {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Please supply a lon, lat, radius, and use GET";
+        }
+        break;
+
+    case "getByUser":
+        if($_SERVER['REQUEST_METHOD'] != 'GET')
+        {
+            header("HTTP/1.1 400 Bad Request");
+            echo "Please use GET";
+        }
+        else
+        {
+            $userid=0;
+            if(isset($_GET["userid"]) && ctype_digit($_GET["userid"]))
+                $userid = $_GET["userid"];
+            else if(isset($_SESSION["gatekeeper"]))
+            {
+                $userid=$um->getUserFromUsername($_SESSION['gatekeeper'])
+                        ->getID();
+            }
+
+            if($userid>0)
+            {
+                $routes=Walkroute::getRoutesByUser($conn, $userid);
+                Walkroute::outputRoutes($routes,$format);
+            }
+            else
+            {
+                header("HTTP/1.1 400 Bad Request");
+            }
+        }
+        break;
+    case "edit":
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            $userid = $um->getUserIdFromCredentials();
+            if($userid<=0)
+            {
+                header("HTTP/1.1 401 Unauthorized");
+            }
+            else
+            {
+                $wr = new Walkroute($conn,$_POST["id"]);
+                $wr->updateRoute($_POST["route"],$format);
+            }
+        }
+        break;
+
+    case "delete":
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            if(ctype_digit($_POST["id"]))
+            {
+                $wr = new Walkroute($conn,$_POST["id"]);
+                $userid=$um->getUserIdFromCredentials();
+                $user = new User ($userid, $conn);
+                if($userid<=0 || 
+                    ($wr->getUserId() != $userid && !$user->isAdmin()))
+                    header("HTTP/1.1 401 Unauthorized");
+                else
+                    $wr->delete();
+            }
+            else
+                header("HTTP/1.1 400 Bad Request");
+        }
+        break;
+    
+    case "deleteMulti":
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            $userid=$um->getUserIdFromCredentials();
+            $deleted = array();
+            if($userid<=0)
+                header("HTTP/1.1 401 Unauthorized");    
+            elseif(isset($_POST["ids"]))
+            {
+                $user = new User($userid, $conn);
+                $ids = json_decode ($_POST["ids"]);
+                foreach($ids as $id)
+                {
+                    if(ctype_digit($id))
+                    {
+                        $wr = new Walkroute($conn, $id);
+                        if($userid>0 && 
+                            ($wr->getUserId()==$userid || $user->isAdmin()))
+                        {
+                            $wr->delete();
+                            $deleted[] = $id;
+                        }
+                    }        
+                }
+                header("Content-type: application/json");
+                echo json_encode($deleted);
+            }
+            else
+                header("HTTP/1.1 400 Bad Request");
+        }
+    
+        break;
+
+    case "moveWaypoint":
+        if($_SERVER['REQUEST_METHOD']=='POST' &&
+                ctype_digit($_POST["id"]) &&
+                preg_match("/^-?[\d\.]+$/", $_POST["lon"]) &&
+                preg_match("/^-?[\d\.]+$/", $_POST["lat"]))
+        {
+            $userid = $um->getUserIdFromCredentials();
+			echo "userid $userid";
+            if($userid>0)
+            {
+                $user = new User($userid, $conn);
+                $wr = Walkroute::getWalkrouteFromWaypoint($conn, $_POST["id"]);
+				echo "walkroute user id " . $wr->getUserId();
+                if($wr===null)
+                    header("HTTP/1.1 404 Not Found");
+                elseif($wr->getUserId()==$userid || $user->isAdmin())
+                    Walkroute::moveWaypoint
+                        ($conn, $_POST["id"], $_POST["lon"], $_POST["lat"]);
+                else
+                    header("HTTP/1.1 401 Unauthorized");
+            }
+            else
+                header("HTTP/1.1 401 Unauthorized");
+        }
+        else
+            header("HTTP/1.1 400 Bad Request");
+	
+		break;
+
+    case "deleteMultiWaypoints":
+        if($_SERVER['REQUEST_METHOD']=='POST')
+        {
+            $userid=$um->getUserIdFromCredentials();
+            $deleted = array();
+            if($userid<=0)
+                header("HTTP/1.1 401 Unauthorized");    
+            elseif(isset($_POST["ids"]))
+            {
+                $user = new User($userid, $conn);
+                $ids = json_decode ($_POST["ids"]);
+                foreach($ids as $id)
+                {
+                    if(ctype_digit("$id"))
+                    {
+                        $wr = Walkroute::getWalkrouteFromWaypoint($conn, $id);
+                        if($userid>0 && 
+                            ($wr->getUserId()==$userid || $user->isAdmin()))
+                        {
+                            Walkroute::deleteWaypoint($conn, $id);
+                            $deleted[] = $id;
+                        }
+                    }        
+                }
+                header("Content-type: application/json");
+                echo json_encode($deleted);
+            }
+            else
+                header("HTTP/1.1 400 Bad Request");
+        }
+    
+        break;
+}
+
+?>

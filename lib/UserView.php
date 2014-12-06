@@ -38,6 +38,15 @@ class UserView
     }
 
 
+    function outputBasicPage($heading, $msg)
+    {
+        $this->head();
+        echo "<h1>$heading</h1>";
+        echo "<p>$msg</p>";
+        $this->links();
+        $this->closePage();
+    }
+
     function redirectMsg($msg, $redirect)
     {
         js_msg($msg,$redirect);

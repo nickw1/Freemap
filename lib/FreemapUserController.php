@@ -2,29 +2,30 @@
 
 require_once('UserController.php');
 require_once('FreemapUserManager.php');
+require_once('FreemapUser.php');
 
 class FreemapUserController extends UserController
 {
 
     function __construct($view, $conn, $userSession, $adminSession)
     {
-		parent::__construct($view,$conn,$userSession,$adminSession); 
+        parent::__construct($view,$conn,$userSession,$adminSession); 
     }
 
 
-    function actionSignup($cleaned)
+    function actionSignup($httpData)
     {
         $this->view->head();
-        if(isset($cleaned["username"]) && isset($cleaned["password"]))
+        if(isset($httpData["username"]) && isset($httpData["password"]))
         {
-	    $um = new FreemapUserManager($this->conn);
+        $um = new FreemapUserManager($this->conn);
             $res=$um->processSignup
-                ($cleaned['username'],$cleaned['password'],$cleaned['email']);
+                ($httpData['username'],$httpData['password'],
+                $httpData['email']);
             if(is_int($res))
                 $this->view->displaySignupForm($res);
             else
                 $this->view->displaySignupConfirmation();
-	    echo "done";
         }
         else
         {
@@ -33,72 +34,77 @@ class FreemapUserController extends UserController
         $this->view->closePage();
     }
 
-    function actionDelete($cleaned)
+    function actionDelete($httpData)
     {
-        if(!isset($cleaned['id']))
+        if(!isset($httpData['id']))
         {
-            $this->view->redirectMsg("Please specify a user ID.","index.php");
+            $this->view->outputBasicPage("Error", "Please specify a user ID.");
         }
         elseif(!isset($_SESSION[$this->userSession]))
         {
-            $this->view->redirectMsg("Please login","index.php");
+            $this->view->redirectMsg("Please login",
+                                "user.php?action=login&redirect=/index.php");
         }
         else if ($_SESSION[$this->adminSession]!=1)
         {
-            $this->view->redirectMsg
-                ("Only the administrator can delete accounts.","index.php");
+            $this->view->outputBasicPage
+                ("Error", "Only the administrator can delete accounts.");
         }
         else 
         {
-            $u=new User($cleaned["id"], $this->conn);
+            $u=new User($httpData["id"], $this->conn);
             if($u->isValid())
             {
-                $u->remove();    
+                $status = $u->remove();
+                $msg = $status ? "Deleted successfully":
+                            "No user with that ID!";
+                $heading = $status ? "Deleted": "Error";
+                $this->view->outputBasicPage($heading, $msg);
             }
             else
             {
-                $this->view->redirectMsg("Invalid user ID.","index.php");
+                $this->view->outputBasicPage("Error", "Invalid user ID.");
             }
         }
     }
 
-    function actionActivate($cleaned)
+    function actionActivate($httpData)
     {
-        if(!isset($cleaned['id']) || !isset($cleaned['key']))
+        if(!isset($httpData['id']) || !isset($httpData['key']))
         {
-            $this->view->redirectMsg("id/key not supplied.","index.php");
+            $this->view->redirectMsg("id/key not supplied.","/index.php");
         }
         else
         {
-            $u=new User($cleaned['id'], $this->conn);
+            $u=new FreemapUser($httpData['id'], $this->conn);
             if($u->isValid())
             {
-                if($u->activate($cleaned['key']))
-                    $this->view->redirectMsg("User activated.","index.php");
+                if($u->activate($httpData['key']))
+                    $this->view->redirectMsg("User activated.","/index.php");
                 else
-                    $this->view->redirectMsg("Already activated","index.php");
+                    $this->view->redirectMsg("Already activated","/index.php");
             }
             else
             {
-                $this->view->redirectMsg("Invalid user ID.","index.php");
+                $this->view->redirectMsg("Invalid user ID.","/index.php");
             }
         }
     }
 
-    function actionLogout($cleaned)
+    function actionLogout($httpData)
     {
         session_start();
         session_destroy();
-        if(!isset($cleaned['redirect']))
-            $cleaned['redirect'] = 'index.php';
-        header("Location: $cleaned[redirect]");
+        if(!isset($httpData['redirect']))
+            $httpData['redirect'] = 'index.php';
+        header("Location: $httpData[redirect]");
 
     }
 
     function actionViewAll()
     {
         if(isset($_SESSION[$this->userSession]) && 
-			$_SESSION[$this->adminSession]==1)
+            $_SESSION[$this->adminSession]==1)
         {
             $this->view->head();
             $this->view->displayAll();
@@ -113,7 +119,7 @@ class FreemapUserController extends UserController
 
     function execute($rawHTTPdata)
     {
-        $data = clean_input($rawHTTPdata, 'pgsql');
+        $data = $rawHTTPdata; 
         
         switch ($data["action"])
         {

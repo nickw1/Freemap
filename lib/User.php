@@ -30,7 +30,7 @@ class User
         {
             $stmt2=$this->conn->prepare
                  ("DELETE FROM {$this->table} WHERE id=?");
-            $stmt2->bindParam (1, $id);
+            $stmt2->bindParam (1, $this->id);
             $stmt2->execute();
             return true;
         }

@@ -5,30 +5,34 @@ class FreemapUser extends User
 {
     function __construct($id, $conn, $table="users")
     {
-		parent::__construct ($id, $conn, $table);
+        parent::__construct ($id, $conn, $table);
     }
 
     function activate($key)
     {
         if($this->valid)
         {
-            $result=$this->conn->query
-                ("SELECT * FROM {$this->table} WHERE id=".
-            $this->id." AND active=0");
-            if($result)
+            $stmt = $this->conn->prepare
+                ("SELECT * FROM {$this->table} WHERE id=? AND active=0");
+            $stmt->bindParam (1, $this->id);
+            $stmt->execute();
+            $row = $stmt->fetch();
+            if($row)
             {
-                $row=$result->fetch();
                 if($row['k']==$key)
                 {
-                    $this->conn->query
-                        ("UPDATE {$this->table} SET active=1,k=0 WHERE id=".
-                        $this->id);
+                    $stmt = $this->conn->prepare
+                        ("UPDATE {$this->table} SET active=1,k=0 WHERE id=?");
+                    $stmt->bindParam (1, $this->id);
+                    $stmt->execute();
                     return true;
                 }
                 else
                 {
-                    $this->conn->query("DELETE FROM {$this->table} WHERE id=".
-                        $this->id);
+                    $stmt = $this->conn->prepare
+                        ("DELETE FROM {$this->table} WHERE id=?");
+                    $stmt->bindParam (1, $this->id);
+                    $stmt->execute();
                     return false;
                 }
             }

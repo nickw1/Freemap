@@ -34,24 +34,25 @@ class FreemapUserView extends UserView
     function displaySignupConfirmation()
     {
         ?>
+        <div id="content">
         <h1>Signed up!</h1>
         <p>You've successfully signed up for Freemap services
 		(Freemap, FixMyPaths and OpenTrailView). 
-<!--
 		You will get an email to confirm
         your registration. 
 		<em>Please note that Gmail, and possibly other providers,
 		might put it in your spam folder. It will have a title of
 		"New Freemap account created".</em>
 		Follow the link in this email to activate your account.</p>
--->
-        <a href='index.php'>Back to main page</a></p>
+        <p><a href='/index.php'>Back to main page</a></p>
+        </div>
         <?php
     }
 
     function displaySignupForm($error=null)
     {
         ?>
+        <div id="content">
         <h1>Sign up</h1>
 		<p>
 		Sign up for all Freemap services: 
@@ -59,6 +60,15 @@ class FreemapUserView extends UserView
 		<a href='http://www.fixmypaths.org'>FixMyPaths</a> and
 		<a href='http://www.opentrailview.org'>OpenTrailView</a>.
 		</p>
+		<p><strong>IMPORTANT!</strong> Please do NOT use the same password
+		as you use for security-critical services such as online banking,
+		social networks, email etc. Freemap does not currently use an SSL
+		server which means the security of your password cannot be
+		guaranteed. Therefore please use a UNIQUE password for Freemap.</p>
+        <p>Your email is used to send a confirmation message to you, once you
+        have signed up. This message will consist of a link,
+		to activate your account, which you should follow.
+        Your email is NOT used for marketing or other similar activities!</p>
         <?php
         if($error==1)
         {
@@ -82,10 +92,11 @@ class FreemapUserView extends UserView
         <input name="username" id="username" /> <br/>
         <label for="password">Enter a password</label> <br/>
         <input name="password" id="password" type="password" /> <br/>
-        <label for="email">Enter your email address</label> <br />
-        <input name="email" id="email" /> <br />
+        <label for="email">Enter your email</label> <br/>
+        <input name="email" id="email" /> <br/>
         <input type='submit' value='go'/>
         </form>
+        </div>
         </div>
         <?php
     }
