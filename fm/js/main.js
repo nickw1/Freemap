@@ -237,7 +237,7 @@ function init(loggedIn)
     {
         lon = (window.localStorage &&
                 window.localStorage.getItem("lon")!=null) 
-                ? window.localStorage.getItem("lon") : -fm2;
+                ? window.localStorage.getItem("lon") : -0.72;
     }
     if(zoom===null)
     {

@@ -28,6 +28,7 @@ public class FreemapDataset implements TiledData
 	
 	public interface WayVisitor 
 	{
+	    
 		public void visit(Way w);
 	}
 	
@@ -120,6 +121,7 @@ public class FreemapDataset implements TiledData
 	public void save(String filename) throws IOException
 	{
 	
+	 System.out.println("save()");
 	    PrintWriter pw = new PrintWriter(new FileWriter(filename));
 	  
 	    pw.println("<rdata>");
@@ -150,6 +152,7 @@ public class FreemapDataset implements TiledData
 	
 	public void savePOIs(PrintWriter pw)
 	{
+	    System.out.println("savePOIs");
 		Set<Map.Entry<Long, POI> > poiSet = pois.entrySet();
 		for(Map.Entry<Long,POI> p: poiSet)
 		{

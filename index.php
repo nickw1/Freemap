@@ -16,10 +16,31 @@ $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
 <link rel='stylesheet' type='text/css' href='fm/css/style.css' />
 <script type='text/javascript' 
 src='javascript/leaflet-0.7/leaflet.js'></script>
+<?php
+// Performance on Chrome of new kothic is significantly less good than old
+if(strpos($_SERVER["HTTP_USER_AGENT"], "Chrome") !== false ||
+	(isset($_GET["kv"]) && $_GET["kv"]=="11"))
+{
+?>
+<!-- old kothic-->
+<script type='text/javascript' src='../javascript/kothic/dist/kothic.js'>
+</script>
+<script type='text/javascript' 
+src='../javascript/kothic/dist/kothic-leaflet.js'></script>
+
+<?php
+}
+else
+{
+?>
+<!-- new kothic-->
 <script type='text/javascript' src='javascript/kothic-js/dist/kothic.js'>
 </script>
 <script type='text/javascript' 
 src='javascript/kothic-js/dist/kothic-leaflet.js'></script>
+<?php
+}
+?>
 <link rel='stylesheet' type='text/css' 
 href='javascript/leaflet-0.7/leaflet.css' />
 

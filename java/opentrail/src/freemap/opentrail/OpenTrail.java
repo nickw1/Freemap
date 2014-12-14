@@ -262,7 +262,7 @@ public class OpenTrail extends MapActivity implements
     		poiDeliverer=new CachedTileDeliverer("poi",ds, new XMLDataInterpreter
     				(new FreemapDataHandler()),5000,5000,this.proj,cachedir);
     		poiDeliverer.setCache(true);
-    		poiDeliverer.setReprojectCachedData(false);
+    		poiDeliverer.setReprojectCachedData(true); // aargh this was false for ages WHY?????
     		
     		
     		if (Shared.pois==null)

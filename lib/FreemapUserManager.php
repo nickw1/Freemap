@@ -62,12 +62,12 @@ class FreemapUserManager extends UserManager
                     'New Freemap account created', 
                     "New Freemap account created for $username ".
                     "Delete by following link: ". FREEMAP_ROOT.
-                    "/0.7/user.php?action=delete&id=$lastid");
+                    "/fm/user.php?action=delete&id=$lastid");
             mail($email, 'New Freemap account created', 
                     "New Freemap account created for $username.".
                     "Please activate by visiting this address: ".
                      FREEMAP_ROOT.
-                    "/0.7/user.php?action=activate&id=$lastid".
+                    "/fm/user.php?action=activate&id=$lastid".
                 "&key=$random");
 			
             return new User($lastid, $this->conn);

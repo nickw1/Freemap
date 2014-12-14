@@ -57,6 +57,7 @@ public class POI extends Feature{
 	public void save(PrintWriter pw)
 	{
 		pw.println("<poi x='" + point.x+"' y='" + point.y+"'>");
+		System.out.println("<poi x='" + point.x+"' y='" + point.y+"'>");
 		pw.println(tagsAsXML());
 		pw.println("</poi>");
 	}

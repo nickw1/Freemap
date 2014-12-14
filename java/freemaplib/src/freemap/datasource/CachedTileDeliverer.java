@@ -114,8 +114,9 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
 				// reproject on the client side. This is because it's a bit of
 				// a pain to reproject into arbitrary projections server side
 				// due to lack of a PHP Proj.4 library, whereas there is one for Java.
-				
+				System.out.println("HELLO we should be reporjecting");
 				curData.reproject(proj);
+				//System.out.println(curData);
 			}
 			
 			
@@ -139,9 +140,10 @@ public class CachedTileDeliverer extends BaseTileDeliverer {
     public void cache(TiledData data,String cachefile) throws Exception
     {
       
+        System.out.println("cache()");
         if(cachedir!=null && data!=null)
         {   
-          
+            System.out.println("caching to " + cachefile);
             data.save(cachefile);   
         }
     }
