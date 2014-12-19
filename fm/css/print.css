@@ -1,0 +1,10 @@
+/* Simple CSS rules to adapt the Freemap main view for print-friendliness */
+
+#sidebar, #leaflet-control {
+	display: none;
+}
+
+#main {
+	left: 0px;
+	width: 100%;
+}
