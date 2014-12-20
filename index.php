@@ -14,6 +14,7 @@ $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
 <head>
 <title>FREEMAP</title>
 <link rel='stylesheet' type='text/css' href='fm/css/style.css' />
+<link rel='stylesheet' type='text/css' href='fm/css/print.css' media="print" />
 <script type='text/javascript' 
 src='javascript/leaflet-0.7/leaflet.js'></script>
 <?php
