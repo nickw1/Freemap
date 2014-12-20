@@ -97,8 +97,6 @@ else
 
     <div id='main'>
 
-    <div id="modebar"></div>
-
     <div id="map"></div>
 
     </div>
@@ -117,12 +115,13 @@ function write_sidebar($homepage=false)
 {
 ?>
     <div id='sidebar'>
+	
 
-    <div class='titlebox'>
-    <img src='fm/images/freemap_small.png' alt='freemap_small' /><br/>
-    </div>
+	<!-- filled in by js using matchMedia() -->
+	<div id='title'> </div>
 
-    <p>Welcome to <em>Freemap 0.7 (preview)</em>, 
+
+    <p id='intro'>Welcome to <em>Freemap 0.7 (preview)</em>, 
     with kothic-js client-side rendering. 
     <a href='fm/about.html'>More...</a> </p>
 

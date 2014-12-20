@@ -22,6 +22,21 @@ function init(loggedIn)
                     "Kothic JS</a>" } 
             );
 
+     this.isMob=window.matchMedia("(max-device-aspect-ratio: 2/3)").matches;
+
+     var title=document.getElementById("title");
+     if(this.isMob)
+     {
+        title.innerHTML = "<h1 id='mobheading'>Freemap</h1>";
+     }
+     else
+     {
+        title.innerHTML = 
+            "<div class='titlebox' id='titlebox'>" + 
+        "<img src='fm/images/freemap_small.png' alt='freemap_small' /><br/>"+
+        "</div>";
+     }
+
     this.markersLayer = new L.GeoJSON( null,
         { 
             onEachFeature: (function (feature, layer)
@@ -80,9 +95,9 @@ function init(loggedIn)
                 {
                     layer.bindPopup('<h1>' + f.properties.title + '</h1>'+
                                     '<p>' + f.properties.description + '</p>' +
-                        			'<p><strong>Distance: </strong>' +
-                        			parseFloat(f.properties.distance).toFixed(2)
-									 + 'km ' +
+                                    '<p><strong>Distance: </strong>' +
+                                    parseFloat(f.properties.distance).toFixed(2)
+                                     + 'km ' +
                                     '<a href="#" id="_wr_togpx">GPX</a>');
                     this.walkrouteStarts[f.properties.id] = layer;
                     this.drawnItems.addLayer(layer);
@@ -255,11 +270,13 @@ function init(loggedIn)
             } ).bind(this));
 
 
-    new SearchWidget ('searchdiv',
+    if(!this.isMob)
+    {
+        new SearchWidget ('searchdiv',
                 { url: '/fm/ws/search.php',
                     callback: this.setLocation.bind(this),
                     parameters: 'poi=all&outProj=4326' } );
-
+    }
 
     this.walkroutesDlg = new Dialog ('main',
                 { ok: (function() { this.walkroutesDlg.hide(); } ).bind(this) },
@@ -332,8 +349,8 @@ function init(loggedIn)
                         (function(e)
                             {
                                 var deleted = JSON.parse(e.target.responseText);
-								var nUndeleted = this.waypoints.length-
-									deleted.length;
+                                var nUndeleted = this.waypoints.length-
+                                    deleted.length;
                                 if(nUndeleted>0)
                                 {
                                     alert(nUndeleted + " walk route waypoints "+
@@ -353,7 +370,7 @@ function init(loggedIn)
                     if(e.target.status==200)
                     {
                         var deleted = JSON.parse(e.target.responseText);
-						var nUndeleted = wrIds.length-deleted.length;
+                        var nUndeleted = wrIds.length-deleted.length;
                         if(nUndeleted>0)
                             alert(nUndeleted + ' walk routes not deleted ' +
                                     'as they are not yours!');
@@ -462,7 +479,7 @@ function init(loggedIn)
                 {
                     if(e.target.status==200)
                     {
-						alert('Moved successfully.');
+                        alert('Moved successfully.');
                     }                        
                     else
                     {
@@ -538,7 +555,7 @@ function init(loggedIn)
                                     {
                                          this.walkrouteWaypointsLayer.
                                             addLayer(wp);
-										 this.drawnItems.addLayer(wp);
+                                         this.drawnItems.addLayer(wp);
                                          wp.walkroute=nearWalkroute;
                                          this.dlg.hide();
                                     }).bind(this));

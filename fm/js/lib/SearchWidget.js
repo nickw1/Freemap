@@ -22,6 +22,7 @@ function SearchWidget(divId,options,resultsDivStyle)
     txt.id="searchterm";
     btn.type="button";
     btn.value="Go!";
+    holder.id="searchwidget";
     results.id="results";
     results.style.overflow = 'auto';
     if(resultsDivStyle)
@@ -33,7 +34,7 @@ function SearchWidget(divId,options,resultsDivStyle)
     holder.appendChild(txt);
 	if(typeof(options.heading)=="undefined" || options.heading===true)
 	{
-    	holder.appendChild(document.createElement("br"));
+//    	holder.appendChild(document.createElement("br"));
     	var heading=document.createElement("h1");
     	heading.appendChild(document.createTextNode("Search"));
     	heading.style.marginLeft='auto';
