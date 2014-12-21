@@ -39,7 +39,7 @@ public class TrackPoint extends Point {
 	public String getGPXTimestamp()
 	{
 		Date date = new Date(timestamp);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd 'T'HH:mm:ss'Z'");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return sdf.format(date);
 	}
