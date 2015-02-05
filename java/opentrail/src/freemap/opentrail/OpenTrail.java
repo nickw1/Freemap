@@ -1430,7 +1430,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     public void about()
     {
       
-    	DialogUtils.showDialog(this,"OpenTrail 0.2-buggy-pre-alpha, using Mapsforge 0.5. Uses OpenStreetMap data, copyright 2013 " +
+    	DialogUtils.showDialog(this,"OpenTrail 0.2 (beta), using Mapsforge 0.5. Uses OpenStreetMap data, copyright 2013 " +
     											"OpenStreetMap contributors, Open Database Licence. Uses " +
     											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright." +
     											"Person icon taken from the osmdroid project. Annotation icon based on " +
