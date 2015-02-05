@@ -28,6 +28,7 @@ public class Walkroute {
 
 	String title, description;
 	int id;
+	double presetDistance;
 	
 	ArrayList<TrackPoint> points = new ArrayList<TrackPoint>();
 	ArrayList<Stage> stages = new ArrayList<Stage>();
@@ -35,6 +36,7 @@ public class Walkroute {
 	public Walkroute()
 	{
 		title=description="Unknown";
+		presetDistance = -1.0;
 	}
 	
 	public Walkroute(String title, String description)
@@ -43,6 +45,11 @@ public class Walkroute {
 		setDescription(description);
 	}
 
+	public void setDistance (double d)
+	{
+		presetDistance = d;
+	}
+	
 	public void addStage(Point start,String description)
 	{
 	
@@ -99,7 +106,7 @@ public class Walkroute {
 	{
 		DecimalFormat format=new DecimalFormat("000");
 		String desc = "<gpx><trk><name>" + title + "</name><desc>" + description + "</desc><number>"+id+
-				"</number>";
+				"</number><extensions><distance>" + getDistance() + "</distance></extensions>";
 		
 		
 		desc += "<trkseg>";
@@ -187,5 +194,27 @@ public class Walkroute {
 	        simplified.addPoint(ptsSimp[i]);
 	     
 	    return simplified;
+	}
+	
+	public double getDistance()
+	{
+		// Calculate distance if there are points, otherwise return pre-loaded distance (e.g from source XML)
+		if(points.size()>1)
+		{
+			double dist = 0.0;
+			Point lastPointLL, pointLL=null;
+		
+			for(int i=1; i<points.size(); i++)
+			{
+				lastPointLL=pointLL!=null ? pointLL: (proj==null ?points.get(i-1):proj.unproject(points.get(i-1)));
+				pointLL = (proj==null) ? points.get(i): proj.unproject(points.get(i));
+				dist += Algorithms.haversineDist(lastPointLL.x, lastPointLL.y, pointLL.x, pointLL.y);
+			}
+			System.out.println("getDistance(): calculated distance: " + dist/1000);
+			return dist / 1000;
+			
+		}
+		System.out.println("getDistance(): presetDistance: " + presetDistance);
+		return presetDistance;
 	}
 }

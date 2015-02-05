@@ -8,13 +8,15 @@ import java.util.ArrayList;
 
 public class WalkroutesHandler extends XMLDataHandler{
 	ArrayList<Walkroute> routes = new ArrayList<Walkroute>();
-	String curTag, routeName,routeDescription, routeId;
-	boolean  inName, inDesc,inWpt, inId;
+	String curTag, routeName,routeDescription, routeId, strDist;
+	boolean  inName, inDesc,inWpt, inId, inExtensions, inDistance;
 	TrackPoint curPoint = new TrackPoint();
+	double curDistance;
 	
 	public void startElement(String uri,String localName, String qName,Attributes attrs)
 	{
 		curTag = (localName.equals("")) ? qName:localName;
+		System.out.println("opening tag: " +curTag);
 		if(curTag.equals("wpt"))
 		{
 			inWpt=true;
@@ -43,17 +45,28 @@ public class WalkroutesHandler extends XMLDataHandler{
 			inId = true;
 			routeId = "";
 		}
+		else if (curTag.equals("extensions"))
+		{
+			inExtensions = true;
+		}
+		else if (curTag.equals("distance") && inExtensions)
+		{
+			inDistance = true;
+			strDist = "";
+		}
 	}
 	
 	public void endElement(String uri,String localName,String qName)
 	{
 		String closingTag = (localName.equals("")) ? qName: localName;
-	
+		System.out.println("closingTag: " + closingTag);
 		if(closingTag.equals("wpt"))
 		{
 			Walkroute curRoute = new Walkroute(routeName,routeDescription);
 			curRoute.addPoint(curPoint);
 			curRoute.setId(Integer.parseInt(routeId));
+			System.out.println("Distance=" + curDistance);
+			curRoute.setDistance(curDistance);
 			routes.add(curRoute);
 			inWpt = false;
 		}
@@ -68,6 +81,16 @@ public class WalkroutesHandler extends XMLDataHandler{
 		else if(closingTag.equals("cmt"))
 		{
 			inId = false;
+		}
+		else if (closingTag.equals("extensions"))
+		{
+			inExtensions = false;
+		}
+		else if (closingTag.equals("distance"))
+		{
+			inDistance = false;
+			System.out.println("Found a closing distance tag: " + strDist);
+			curDistance = strDist.equals("")  ? -1.0 : Double.parseDouble(strDist);
 		}
 	}
 
@@ -85,6 +108,10 @@ public class WalkroutesHandler extends XMLDataHandler{
 		else if (inId)
 		{
 			routeId += text;
+		}
+		else if (inDistance)
+		{
+			strDist += text;
 		}
 	}
 	
