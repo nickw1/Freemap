@@ -22,20 +22,9 @@ function init(loggedIn)
                     "Kothic JS</a>" } 
             );
 
-     this.isMob=window.matchMedia("(max-device-aspect-ratio: 2/3)").matches;
-
-     var title=document.getElementById("title");
-     if(this.isMob)
-     {
-        title.innerHTML = "<h1 id='mobheading'>Freemap</h1>";
-     }
-     else
-     {
-        title.innerHTML = 
-            "<div class='titlebox' id='titlebox'>" + 
-        "<img src='fm/images/freemap_small.png' alt='freemap_small' /><br/>"+
-        "</div>";
-     }
+    var mql = window.matchMedia("(max-device-aspect-ratio: 2/3)");
+    mql.addListener( this.onOrientationChange.bind(this));
+    this.onOrientationChange(mql);
 
     this.markersLayer = new L.GeoJSON( null,
         { 
@@ -768,6 +757,22 @@ function init(loggedIn)
     data.append("data", JSON.stringify(wp.toGeoJSONObj()));
     data.append("action", "addWaypoint");
     xhr2.send(data);
+  },
+  
+  onOrientationChange: function(mql)
+  {
+     var title=document.getElementById("title");
+     if(mql.matches)
+     {
+        title.innerHTML = "<h1 id='mobheading'>Freemap</h1>";
+     }
+     else
+     {
+        title.innerHTML = 
+            "<div class='titlebox' id='titlebox'>" + 
+        "<img src='fm/images/freemap_small.png' alt='freemap_small' /><br/>"+
+        "</div>";
+     }
   }
  };
 

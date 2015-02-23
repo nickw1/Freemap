@@ -14,11 +14,14 @@ $inTrk =  false;
 $inWpt = false;
 $inWptName=false;
 $inTime = false;
+$inExtensions = false;
+$inDistance = false;
 $trackpoints = array();
 $curWpt = null;
 $waypoints = array();
 $curPt = null;
 $trkName = $trkDesc = "";
+$trkDistance = 0.0;
 #end globals
 
 function parseGPX($gpx)
@@ -30,8 +33,8 @@ function parseGPX($gpx)
                 "on_end_element_gpx");
     xml_set_character_data_handler($parser,"on_characters_gpx");
 
-	if(!is_array($gpx))
-		$gpx = explode("\n", $gpx);
+    if(!is_array($gpx))
+        $gpx = explode("\n", $gpx);
     foreach($gpx as $line)    
     {
         if (!xml_parse($parser,$line))
@@ -40,7 +43,8 @@ function parseGPX($gpx)
 
     xml_parser_free($parser);
     return array ("trk"=>$trackpoints, "wp"=>$waypoints,
-					"name"=>$trkName, "desc"=>$trkDesc);
+                    "name"=>$trkName, "desc"=>$trkDesc,
+                    "distance" => $trkDistance);
 }
 
 #NB the PHP expat library reads in all tags as capitals - even if they're
@@ -48,7 +52,8 @@ function parseGPX($gpx)
 function on_start_element_gpx($parser,$element,$attrs)
 {
     global $inDoc, $inTrk, $inTrkpt, $trackpoints, $inWpt, $curWpt, $inWptName,
-            $inTime, $curPt, $inTrkName, $inTrkDesc, $inWptDesc;
+            $inTime, $curPt, $inTrkName, $inTrkDesc, $inWptDesc, $inDistance,
+            $inExtensions;
 
     if($element=="GPX")
     {
@@ -63,7 +68,7 @@ function on_start_element_gpx($parser,$element,$attrs)
         elseif($element=="TRKPT" && $inTrk)
         {
             $inTrkpt=true;
-			$curPt = array();
+            $curPt = array();
             foreach($attrs as $name => $value)
             {
                 if($name=="LAT")
@@ -72,9 +77,17 @@ function on_start_element_gpx($parser,$element,$attrs)
                     $curPt["lon"] = $value; 
             }
         }
+        elseif($element=="EXTENSIONS")
+        {
+            $inExtensions=true;
+        }
         elseif($element=="TIME" && $inTrkpt)
         {
             $inTime=true;
+        }
+        elseif($element=="DISTANCE" && $inExtensions)
+        {
+            $inDistance=true;
         }
         elseif($element=="WPT")
         {
@@ -90,17 +103,17 @@ function on_start_element_gpx($parser,$element,$attrs)
         }
         elseif($element=="NAME") 
         {
-			if($inWpt)
-            	$inWptName=true;
-			elseif($inTrk)
-				$inTrkName=true;
+            if($inWpt)
+                $inWptName=true;
+            elseif($inTrk)
+                $inTrkName=true;
         }
         elseif($element=="DESC") 
         {
-			if($inWpt)
-            	$inWptDesc=true;
-			elseif($inTrk)
-				$inTrkDesc=true;
+            if($inWpt)
+                $inWptDesc=true;
+            elseif($inTrk)
+                $inTrkDesc=true;
         }
     }
 }
@@ -108,12 +121,13 @@ function on_start_element_gpx($parser,$element,$attrs)
 function on_end_element_gpx($parser,$element)
 {
     global $inDoc, $inTrk, $inTrkpt, $trackpoints, $waypoints, $curWpt, $inWpt,
-            $inWptName, $inTime, $curPt, $inWptDesc, $inTrkName, $inTrkDesc;
+            $inWptName, $inTime, $curPt, $inWptDesc, $inTrkName, $inTrkDesc,
+            $inDistance, $inExtensions;
 
     if($element=="TRKPT")
     {
         $inTrkpt=false;
-		$trackpoints[] = $curPt;
+        $trackpoints[] = $curPt;
     }
     elseif($inTrk && $element=="TRK")
     {
@@ -123,25 +137,33 @@ function on_end_element_gpx($parser,$element)
     {
         $inTime=false;
     }
+    elseif($element=="DISTANCE" && $inExtensions)
+    {
+        $inDistance=false;
+    }
+    elseif($element=="EXTENSIONS")
+    {
+        $inExtensions=false;
+    }
     elseif($inWpt && $element=="WPT")
     {
         $inWpt = false;
         $waypoints[] = $curWpt;
     }
     elseif($element=="NAME")
-	{
-		if($inWptName)
-        	$inWptName = false;
-		elseif($inTrkName)
-        	$inTrkName = false;
-	}
+    {
+        if($inWptName)
+            $inWptName = false;
+        elseif($inTrkName)
+            $inTrkName = false;
+    }
     elseif($element=="DESC")
-	{
-		if($inWptDesc)
-        	$inWptDesc = false;
-		elseif($inTrkDesc)
-        	$inTrkDesc = false;
-	}
+    {
+        if($inWptDesc)
+            $inWptDesc = false;
+        elseif($inTrkDesc)
+            $inTrkDesc = false;
+    }
     elseif($inDoc && $element=="GPX")
         $inDoc = false;
 }
@@ -149,8 +171,8 @@ function on_end_element_gpx($parser,$element)
 function on_characters_gpx($parser, $characters)
 {
     global $inWptName, $curWpt, $inTime, $curPt, $inWptDesc,
-		$inTrkName, $inTrkDesc, $trkName, $trkDesc;
-	
+        $inTrkName, $inTrkDesc, $trkName, $trkDesc, $trkDistance, $inDistance;
+    
     if($inWptName==true)
         $curWpt['name'] = $characters;
     elseif($inWptDesc==true)
@@ -159,12 +181,14 @@ function on_characters_gpx($parser, $characters)
         $trkName = $characters;
     elseif($inTrkDesc==true)
         $trkDesc = $characters;
-	elseif($inTime==true)
-	{
-		$curPt['time'] = strtotime($characters);
-		$t = date('D d M Y, H:i',$curPt['time']);
-		//echo "$t<br/>";
-	}
+    elseif($inDistance==true)
+        $trkDistance = $characters;
+    elseif($inTime==true)
+    {
+        $curPt['time'] = strtotime($characters);
+        $t = date('D d M Y, H:i',$curPt['time']);
+        //echo "$t<br/>";
+    }
 }
 //parseGPX(file("070410.gpx"));
 ?>

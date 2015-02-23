@@ -7,6 +7,11 @@
     android:summary="Height in metres of the camera above ground."
     android:inputType="numberDecimal" />
 
+<CheckBoxPreference android:key="autoStart"
+    android:defaultValue="true"
+    android:title="Automatically download data"
+    android:summary="Automatically start downloading data when application starts." />
+
 <ListPreference android:key="prefDEM"
     android:title="Height source"
     android:summary="Source of height data, OSGB or SRTM" 

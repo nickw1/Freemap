@@ -17,29 +17,30 @@ require_once('DBDetails.php');
 
 header("Access-Control-Allow-Origin: http://www.opentrailview.org");
 
+$cleaned = clean_input($_GET, null);
 
 // DBDetails: poi way poly contour coast ann
 
 
-$x = $_GET["x"];
-$y = $_GET["y"];
-$z = $_GET["z"];
+$x = $cleaned["x"];
+$y = $cleaned["y"];
+$z = $cleaned["z"];
 
-$tbl_prefix=isset($_GET["tbl_prefix"]) ? $_GET["tbl_prefix"]:"planet_osm";
+$tbl_prefix=isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"]:"planet_osm";
 
 
-$outProj = (isset($_GET['outProj'])) ? $_GET['outProj']: '900913';
+$outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '900913';
 adjustProj($outProj);
-$kg=isset($_GET["kg"]) ? $_GET["kg"]: 1000;
+$kg=isset($cleaned["kg"]) ? $cleaned["kg"]: 1000;
 
 if(!ctype_digit($x) || !ctype_digit($y) || !ctype_digit($z) ||
 		!ctype_alnum($outProj) || !preg_match("/^\w+$/", $tbl_prefix) ||
 		!ctype_digit($kg) ||
-		isset($_GET["poi"]) && !preg_match("/^(\w+,)*\w+$/", $_GET["poi"]) ||
-   		isset($_GET["way"]) && !preg_match("/^(\w+,)*\w+$/", $_GET["way"]) || 
-		isset($_GET["kothic"]) && !ctype_digit($_GET["kothic"]) ||
-		isset($_GET["contour"]) && !ctype_digit($_GET["contour"]) ||
-		isset($_GET["coastline"]) && !ctype_digit($_GET["coastline"]))
+		isset($cleaned["poi"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["poi"]) ||
+   		isset($cleaned["way"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["way"]) || 
+		isset($cleaned["kothic"]) && !ctype_digit($cleaned["kothic"]) ||
+		isset($cleaned["contour"]) && !ctype_digit($cleaned["contour"]) ||
+		isset($cleaned["coastline"]) && !ctype_digit($cleaned["coastline"]))
 {
 	header("HTTP/1.1 400 Bad Request");
 	echo "Invalid format for input data";
@@ -47,7 +48,7 @@ if(!ctype_digit($x) || !ctype_digit($y) || !ctype_digit($z) ||
 }
 	 
 $bbox = get_sphmerc_bbox($x,$y,$z);
-if(isset($_GET["kothic"]) && $_GET["kothic"])
+if(isset($cleaned["kothic"]) && $cleaned["kothic"])
 {
     $sw = sphmerc_to_ll($bbox[0],$bbox[1]);
     $ne = sphmerc_to_ll($bbox[2],$bbox[3]);
@@ -66,7 +67,7 @@ if(isset($_GET["kothic"]) && $_GET["kothic"])
 	$bh->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city");
         $bg->includePolygons(false);
-        unset($_GET["contour"]);
+        unset($cleaned["contour"]);
     }
     elseif($z<=9)
     {
@@ -77,7 +78,7 @@ if(isset($_GET["kothic"]) && $_GET["kothic"])
 	$bg->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city,town");
         $bg->includePolygons(false);
-        unset($_GET["contour"]);
+        unset($cleaned["contour"]);
     }
     elseif($z<=11)
     {
@@ -89,10 +90,10 @@ if(isset($_GET["kothic"]) && $_GET["kothic"])
 	$bg->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city,town,village");
 	$bg->addPOIFilter("railway","station");
-        unset($_GET["contour"]);
+        unset($cleaned["contour"]);
     }
 
-    $data=$bg->getData($_GET,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
+    $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
 						CACHE."/$kg/$z/$x/$y.json",$outProj,$x,$y,$z);
     $data["granularity"] = $kg;
     $data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
@@ -103,7 +104,7 @@ else
 {
     header("Content-type: application/json");
     $bg=new BboxGetter($bbox,null,$tbl_prefix);
-    $data=$bg->getData($_GET,null,null,$outProj);
+    $data=$bg->getData($cleaned,null,null,$outProj);
     echo json_encode($data);
 }
 

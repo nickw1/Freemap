@@ -111,8 +111,9 @@ function clean_input ($inp,$db='mysql')
     foreach ($inp as $k=>$v)
     {
         $cleaned[$k] = ($db=='pgsql') ?pg_escape_string($inp[$k]) :
-                mysql_real_escape_string($inp[$k]);
-        $cleaned[$k] = htmlentities($cleaned[$k]);
+                ($db==null ? $inp[$k] : mysql_real_escape_string($inp[$k]));
+        $cleaned[$k] = str_replace("<","&lt;",$cleaned[$k]);
+        $cleaned[$k] = str_replace(">","&gt;",$cleaned[$k]);
     }
     return $cleaned;
 }

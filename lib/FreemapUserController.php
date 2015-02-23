@@ -3,6 +3,7 @@
 require_once('UserController.php');
 require_once('FreemapUserManager.php');
 require_once('FreemapUser.php');
+require_once('functionsnew.php');
 
 class FreemapUserController extends UserController
 {
@@ -119,7 +120,7 @@ class FreemapUserController extends UserController
 
     function execute($rawHTTPdata)
     {
-        $data = $rawHTTPdata; 
+        $data = clean_input ($rawHTTPdata, null); 
         
         switch ($data["action"])
         {

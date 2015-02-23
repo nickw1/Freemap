@@ -22,21 +22,25 @@ header("Access-Control-Allow-Origin: http://www.opentrailview.org");
 // outProj = output projection (projection of output data)
 // format = geojson or xml
 
-$inProj = (isset($_GET['inProj'])) ? $_GET['inProj']: '4326';
-$outProj = (isset($_GET['outProj'])) ? $_GET['outProj']: '4326';
-$format = (isset($_GET["format"])) ? $_GET["format"]:"xml";
+$cleaned = clean_input ($_GET, null);
 
-if(isset($_GET["poi"]) && !preg_match("/^(\w+,)*\w+$/", $_GET["poi"]) ||
-   isset($_GET["way"]) && !preg_match("/^(\w+,)*\w+$/", $_GET["way"]) || 
-   !preg_match("/^(-?[\d\.]+,){3}-?[\d\.]+$/", $_GET["bbox"]) ||
-   !ctype_alnum($inProj) || !ctype_alnum($outProj) || !ctype_alpha($format))
+$inProj = (isset($cleaned['inProj'])) ? $cleaned['inProj']: '4326';
+$outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '4326';
+$format = (isset($cleaned["format"])) ? $cleaned["format"]:"xml";
+
+if(isset($cleaned["poi"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["poi"]) ||
+   isset($cleaned["way"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["way"]) || 
+   !preg_match("/^(-?[\d\.]+,){3}-?[\d\.]+$/", $cleaned["bbox"]) ||
+   !preg_match("/^[\w:]+$/",$inProj) || 
+   !preg_match("/^[\w:]+$/",$outProj) 
+		|| !ctype_alpha($format))
 {
 	header("HTTP/1.1 400 Bad Request");
 	echo "input data in invalid format";
 	exit;
 }
 
-$bbox = $_GET["bbox"];
+$bbox = $cleaned["bbox"];
 $values = explode(",",$bbox);
 if(count($values)!=4) 
 {
@@ -49,8 +53,8 @@ if(count($values)!=4)
 adjustProj($inProj);
 adjustProj($outProj);
 
-if(isset($_GET['inUnits'])
-	 && $_GET['inUnits']=='microdeg' && $inProj=='4326')
+if(isset($cleaned['inUnits'])
+	 && $cleaned['inUnits']=='microdeg' && $inProj=='4326')
 {
 	for($i=0; $i<4; $i++)
 		$values[$i] /= 1000000.0;
@@ -71,7 +75,7 @@ $bbox = array(min($sw["e"],$nw["e"]),min($sw["n"],$se["n"]),
 
 
 $bg=new BboxGetter($bbox);
-$data=$bg->getData($_GET,null,null,$outProj=='900913'?null:$outProj);
+$data=$bg->getData($cleaned,null,null,$outProj=='900913'?null:$outProj);
 
 switch($format)
 {

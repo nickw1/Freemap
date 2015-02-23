@@ -14,11 +14,12 @@ import android.view.KeyEvent;
 import android.location.LocationManager;
 
 
-public class Hikar extends Activity 
+public class Hikar extends Activity implements ViewFragment.HUDProvider
 {
     LocationProcessor locationProcessor;
     ViewFragment viewFragment;
     HUD hud;
+    boolean autoStart;
    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +35,9 @@ public class Hikar extends Activity
             float orientationAdjustment = prefs.getFloat("orientationAdjustment", 0.0f);
             viewFragment.changeOrientationAdjustment(orientationAdjustment);
             hud.changeOrientationAdjustment(orientationAdjustment);
+            
+            autoStart = prefs.getBoolean("autoStart", true);
+            
         }
        
     }
@@ -45,6 +49,13 @@ public class Hikar extends Activity
     // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
+    }
+    
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+    	MenuItem startMenuItem = menu.findItem(R.id.menu_start);
+    	startMenuItem.setTitle(autoStart ? "Stop":"Start");
+    	return true;
     }
     
     public boolean onOptionsItemSelected(MenuItem item)
@@ -101,13 +112,15 @@ public class Hikar extends Activity
         viewFragment.setCameraHeight(cameraHeight);
         String prefSrtmUrl=prefs.getString("prefSrtmUrl","http://www.free-map.org.uk/ws/"), 
                 prefLfpUrl=prefs.getString("prefLfpUrl", "http://www.free-map.org.uk/downloads/lfp/"), 
-                prefOsmUrl=prefs.getString("prefOsmUrl", "http://www.free-map.org.uk/0.6/ws/");
+                prefOsmUrl=prefs.getString("prefOsmUrl", "http://www.free-map.org.uk/fm/ws/");
         boolean urlchange = viewFragment.setDataUrls(prefLfpUrl, prefSrtmUrl, prefOsmUrl);
         int prefDEM = Integer.valueOf(prefs.getString("prefDEM","0"));
         viewFragment.setDEM(prefDEM);
         String prefDisplayProjectionID = "epsg:" + prefs.getString("prefDisplayProjection", "27700");
         if(!viewFragment.setDisplayProjectionID(prefDisplayProjectionID))
             DialogUtils.showDialog(this, "Invalid projection " + prefDisplayProjectionID);
+        else if (autoStart)
+        	viewFragment.setActivate(true);
     }
     
     public void onActivityResult (int requestCode, int resultCode, Intent intent)

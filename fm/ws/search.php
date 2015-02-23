@@ -7,28 +7,28 @@ require_once('xml.php');
 
 header("Access-Control-Allow-Origin: http://www.fixmypaths.org");
 
+$cleaned = clean_input($_GET, null);
 
-$tbl_prefix = isset($_GET["tbl_prefix"]) &&
-		preg_match("/^\w+$/", $_GET["tbl_prefix"])
-		? $_GET["tbl_prefix"] : "planet_osm";
+$tbl_prefix = isset($cleaned["tbl_prefix"]) &&
+		preg_match("/^\w+$/", $cleaned["tbl_prefix"])
+		? $cleaned["tbl_prefix"] : "planet_osm";
 
 
-
-if (!isset($_GET["q"]) || !preg_match("/^[\w\s-']+$/", $_GET["q"]))
+if (!isset($cleaned["q"]) || !preg_match("/^[\w\s-']+$/", $cleaned["q"]))
 {
     header("HTTP/1.1 400 Bad Request");
     echo "Please specify a valid search term.";
 }
 else
 {
-    $format=isset($_GET["format"]) && ctype_alpha($_GET["format"])
-			  ? $_GET["format"]:"xml";
-    $ns=new NameSearch($_GET["q"], $tbl_prefix);
-    if(isset($_GET["outProj"]) && ctype_alnum($_GET["outProj"]))
-        adjustProj($_GET["outProj"]);
-    $data=$ns->getData($_GET,isset($_GET['outProj'])?
-        $_GET['outProj']:null);
-    switch($_GET["format"])
+    $format=isset($cleaned["format"]) && ctype_alpha($cleaned["format"])
+			  ? $cleaned["format"]:"xml";
+    $ns=new NameSearch($cleaned["q"], $tbl_prefix);
+    if(isset($cleaned["outProj"]) && ctype_alnum($cleaned["outProj"]))
+        adjustProj($cleaned["outProj"]);
+    $data=$ns->getData($cleaned,isset($cleaned['outProj'])?
+        $cleaned['outProj']:null);
+    switch($cleaned["format"])
     {
         case "json":
         case "geojson":

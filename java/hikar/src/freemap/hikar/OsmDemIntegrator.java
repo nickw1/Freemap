@@ -1,7 +1,7 @@
 package freemap.hikar;
 
 import freemap.data.Projection;
-import freemap.datasource.CachedTileDeliverer;
+//import freemap.datasource.CachedTileDeliverer;
 import freemap.datasource.WebDataSource;
 import freemap.jdem.DEMSource;
 import freemap.jdem.HGTDataInterpreter;
@@ -13,6 +13,7 @@ import freemap.proj.LFPFileFormatter;
 import freemap.proj.Proj4ProjectionFactory;
 import freemap.datasource.FreemapDataset;
 import freemap.datasource.Tile;
+import freemap.datasource.CachedTileDeliverer;
 import freemap.andromaps.GeoJSONDataInterpreter;
 import freemap.jdem.SRTMMicrodegFileFormatter;
 import java.io.File;
@@ -35,7 +36,7 @@ public class OsmDemIntegrator {
 	public OsmDemIntegrator(Projection tilingProj)
 	{
 	    this (tilingProj, HGT_OSGB_LFP, "http://www.free-map.org.uk/downloads/lfp/",
-	            "http://www.free-map.org.uk/ws/", "http://www.free-map.org.uk/0.6/ws/");
+	            "http://www.free-map.org.uk/ws/", "http://www.free-map.org.uk/fm/ws/");
 	}
 	
 	public OsmDemIntegrator(Projection tilingProj, int demType,
@@ -81,7 +82,9 @@ public class OsmDemIntegrator {
 						tileWidths[demType], tileHeights[demType], tilingProj,ptWidths[demType],
 						ptHeights[demType],resolutions[demType],cacheDir.getAbsolutePath(),
 						multipliers[demType]);
-				
+			
+		// NW 100215 the OSM data will be sent back from server in epsg:4326 latlon - see FreemapFileFormatter
+		// is this correct? yes-it's reprojected by the TileDeliverer
 		osm = new CachedTileDeliverer("osm",osmDataSource, 
 					//new XMLDataInterpreter(new FreemapDataHandler(factory)),
 		            new GeoJSONDataInterpreter(),
@@ -89,8 +92,10 @@ public class OsmDemIntegrator {
 					tilingProj,
 					cacheDir.getAbsolutePath(), multipliers[demType]);
 		
+		// NOTE how the caching works
+		// OSM data is cached PRE-REPROJECTION and PRE-applying the dem
 		hgt.setCache(true);
-		osm.setCache(true);
+		osm.setCache(true); 
 		osm.setReprojectCachedData(true);
 	}
 	
@@ -111,7 +116,7 @@ public class OsmDemIntegrator {
 	   
 	   osmupdated = osm.doUpdateSurroundingTiles(lonLat);
 	   
-			    
+	   
 	    for(HashMap.Entry<String,Tile> e: osmupdated.entrySet())
 		{
 			if(hgtupdated.get(e.getKey()) !=null && osmupdated.get(e.getKey()) != null)
@@ -122,8 +127,10 @@ public class OsmDemIntegrator {
 	          
 			   //System.out.println("DEM for " + e.getKey() + "=" + dem);
 			   d.applyDEM(dem); 
-			  
-			   //osm.cacheByKey(d, e.getKey());
+			 
+			   // NOTE should this be commented out??? we presumably want to cache the projected, dem-applied data???
+			   // yes - this gives xml when we want json
+			  // osm.cacheByKey(d, e.getKey());
 
 			}
 			else

@@ -115,7 +115,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 	
 	boolean tracking;
 	
-	FreemapFileFormatter formatter;
+	LocalFreemapFileFormatter formatter;
 	CachedTileDeliverer poiDeliverer;
 	String cachedir;
 	boolean prefGPSTracking, prefAutoDownload, prefAnnotations, recordingWalkroute;
@@ -272,11 +272,11 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         			mapFile.substring(mapFile.length()-6, mapFile.length()-4): "";
         	Log.d("newmapsforge", "mapfile is : "+ mapFile + " Initialising curGridsq to: " + curGridsq);
     		cachedir=makeCacheDir(projString);
-    		FreemapFileFormatter formatter=new FreemapFileFormatter(this.proj.getID());
+    		LocalFreemapFileFormatter formatter=new LocalFreemapFileFormatter(this.proj.getID());
     		formatter.setScript("bsvr.php");
     		formatter.selectPOIs("place,amenity,natural");
     		formatter.selectAnnotations(true);
-    		WebDataSource ds=new WebDataSource("http://www.free-map.org.uk/fm/ws/",formatter);
+    		LocalWebDataSource ds=new LocalWebDataSource("http://www.free-map.org.uk/fm/ws/",formatter);
     		poiDeliverer=new CachedTileDeliverer("poi",ds, new XMLDataInterpreter
     				(new FreemapDataHandler()),5000,5000,this.proj,cachedir);
     		poiDeliverer.setCache(true);
@@ -1430,7 +1430,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     public void about()
     {
       
-    	DialogUtils.showDialog(this,"OpenTrail 0.2 (beta), using Mapsforge 0.5. Uses OpenStreetMap data, copyright 2013 " +
+    	DialogUtils.showDialog(this,"OpenTrail 0.2 (beta) 08/02/15, using Mapsforge 0.5. Uses OpenStreetMap data, copyright 2013 " +
     											"OpenStreetMap contributors, Open Database Licence. Uses " +
     											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright." +
     											"Person icon taken from the osmdroid project. Annotation icon based on " +

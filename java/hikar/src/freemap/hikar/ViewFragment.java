@@ -18,18 +18,43 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.util.Log;
 import android.hardware.GeomagneticField;
+import android.os.Handler;
+import android.os.Message;
 import java.util.HashMap;
 import freemap.datasource.Tile;
 import freemap.data.Projection;
+import java.lang.ref.WeakReference;
 
 
 
 public class ViewFragment extends Fragment 
     implements LocationProcessor.Receiver,DownloadDataTask.Receiver,
     OpenGLView.RenderedWayVisitor,
-    SensorInput.SensorInputReceiver, PinchListener.Handler 
+    SensorInput.SensorInputReceiver, PinchListener.Handler
 {
 
+	// http://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
+	static class HFOVHandler extends Handler
+    {
+		WeakReference<HUDProvider> hudProvider;
+		
+		public HFOVHandler(HUDProvider p)
+		{
+			hudProvider = new WeakReference<HUDProvider>(p);
+		}
+		
+    	public void handleMessage(Message msg)
+    	{
+    		Bundle data = msg.getData();
+    		float hfov = data.getFloat("hfov");
+    		if (hudProvider.get() != null)
+        	{
+        		hudProvider.get().getHUD().setHFOV(hfov);
+        		hudProvider.get().getHUD().invalidate();
+        	}
+    	}
+    }
+	
     OsmDemIntegrator integrator;
     OpenGLView glView;
     DownloadDataTask downloadDataTask;
@@ -46,8 +71,14 @@ public class ViewFragment extends Fragment
     GeomagneticField field;
     float orientationAdjustment;
     double lastLon, lastLat;
+    boolean receivedLocation;
+    HFOVHandler hfovHandler;
    
-
+    public interface HUDProvider
+    {
+    	public HUD getHUD();
+    }
+    
     
     
     public ViewFragment()
@@ -59,7 +90,7 @@ public class ViewFragment extends Fragment
         trans = new TileDisplayProjectionTransformation ( null, null );
         lfpUrl = "http://www.free-map.org.uk/downloads/lfp/";
         srtmUrl = "http://www.free-map.org.uk/ws/";
-        osmUrl = "http://www.free-map.org.uk/0.6/ws/";
+        osmUrl = "http://www.free-map.org.uk/fm/ws/";
         lastLon = -181;
         lastLat = -91;
     }
@@ -67,10 +98,11 @@ public class ViewFragment extends Fragment
     public void onAttach(Activity activity)
     {
         super.onAttach(activity);
-        
+        hfovHandler = new HFOVHandler((Hikar)activity);
         // We don't do any reprojection on RenderedWays if the display projection and tiling projection
         // are the same
-        glView = new OpenGLView(activity);
+        
+        glView = new OpenGLView(activity, hfovHandler);
         sensorInput.attach(activity);
         locationProcessor = new LocationProcessor(activity,this,5000,10);
         glView.setOnTouchListener(new PinchListener(this));
@@ -79,7 +111,7 @@ public class ViewFragment extends Fragment
         {
             HashMap<String, Tile> data = integrator.getCurrentOSMTiles();
             HashMap<String, Tile> dem = integrator.getCurrentDEMTiles();
-            setHFOV();
+            
             if(data!=null && dem!=null)
                 glView.getRenderer().setRenderData(new DownloadDataTask.ReceivedData(data, dem));
         }
@@ -88,7 +120,7 @@ public class ViewFragment extends Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
- 
+       
     }
     
     public View onCreateView(LayoutInflater inflater, ViewGroup group, Bundle savedInstanceState)
@@ -100,6 +132,7 @@ public class ViewFragment extends Fragment
         super.onResume();
         locationProcessor.startUpdates();
         glView.getRenderer().onResume();
+        
         sensorInput.start();
     }
 
@@ -125,7 +158,7 @@ public class ViewFragment extends Fragment
            
             
             // If we received a location but weren't activated, now load data from the last location
-            if(lastLon >= -180 && lastLon <= 180 && lastLat >= -90 && lastLat <= 90)
+            if(receivedLocation)
                 setLocation(lastLon, lastLat, true);
         }
         else
@@ -138,6 +171,7 @@ public class ViewFragment extends Fragment
     
     public void receiveLocation(Location loc)
     {
+    	
         setLocation(loc.getLongitude(),loc.getLatitude(), true);
     }
     
@@ -150,6 +184,7 @@ public class ViewFragment extends Fragment
     {
         if(gpsLocation)
         {
+        	receivedLocation=true;
             lastLon = lon;
             lastLat = lat;
         }
@@ -175,8 +210,8 @@ public class ViewFragment extends Fragment
         
          
        
-            ((Hikar)getActivity()).getHUD().setHeight((float)height);
-            ((Hikar)getActivity()).getHUD().invalidate();
+            ((HUDProvider)getActivity()).getHUD().setHeight((float)height);
+            ((HUDProvider)getActivity()).getHUD().invalidate();
         
             if(integrator.needNewData(p) && downloadDataTask==null)
             {
@@ -195,6 +230,7 @@ public class ViewFragment extends Fragment
         Log.d("hikar", "received data");
         if (data!=null && sourceGPS) // only show data if it's a gps location, not a manual entry
         {
+        	
             glView.getRenderer().setRenderData(data);   
         }
         else if (data==null)
@@ -203,6 +239,15 @@ public class ViewFragment extends Fragment
             DialogUtils.showDialog(this.getActivity(), "Notice - sourceGPS is false");
         
         downloadDataTask = null;
+        
+        // 180215 Now the DEM has been loaded we can get an initial height (as long as we have a location)
+        if(receivedLocation)
+    	{
+    		double height = integrator.getHeight(new Point(lastLon, lastLat));
+    		((HUDProvider)getActivity()).getHUD().setHeight((float)height);
+    		((HUDProvider)getActivity()).getHUD().invalidate();
+    		glView.getRenderer().setHeight(height);
+    	}
     }
     
     public void receiveSensorInput(float[] glR)
@@ -216,26 +261,29 @@ public class ViewFragment extends Fragment
         SensorManager.getOrientation(glR, orientation);
          
         glView.getRenderer().setOrientMtx(glR);
-        ((Hikar)getActivity()).getHUD().setOrientation(orientation);
-        ((Hikar)getActivity()).getHUD().invalidate();
+        ((HUDProvider)getActivity()).getHUD().setOrientation(orientation);
+        ((HUDProvider)getActivity()).getHUD().invalidate();
     }
     
     public void onPinchIn()
     {
         glView.getRenderer().changeHFOV(5.0f);
-        setHFOV();
+        
     }
      
     public void onPinchOut()
     {
         glView.getRenderer().changeHFOV(-5.0f);
-        setHFOV();
+        
     }
     
-    private void setHFOV()
+    public void setHFOV(float hFov)
     {
-        ((Hikar)getActivity()).getHUD().setHFOV(glView.getRenderer().getHFOV());
-        ((Hikar)getActivity()).getHUD().invalidate();
+    	if (getActivity() != null)
+    	{
+    		((HUDProvider)getActivity()).getHUD().setHFOV(hFov);
+    		((HUDProvider)getActivity()).getHUD().invalidate();
+    	}
     }
     
     public void toggleCalibrate()

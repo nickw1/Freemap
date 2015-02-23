@@ -84,6 +84,11 @@ class FreemapUserView extends UserView
             echo "<p class='error'>You've got to <em>actually provide</em> ".
             "a username and password!!!!! ;-)</p>";
         }
+        elseif($error==4)
+        {
+            echo "<p class='error'>Invalid username - letters and numbers ".
+				"only!</p>";
+        }
         ?>
         <div>
         <form method="post" action=

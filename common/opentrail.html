@@ -1,16 +1,14 @@
 <html>
 <head>
 <title>OpenTrail - Freemap for Android</title>
-<link rel='stylesheet' type='text/css' href='../0.6/css/style.css' />
+<link rel='stylesheet' type='text/css' href='../fm/css/style.css' />
 </head>
 <body> 
 <div id='content'>
 <h1>OpenTrail - Freemap for Android</h1>
 <hr />
-<p>Freemap now has a full featured Android (2.1+) app - <em>OpenTrail</em> - 
-available from <a href="../downloads/android/opentrail.apk">here</a>
-(but please <a href="../downloads/android/README_BEFORE_DOWNLOADING.txt">
-read this</a> before downloading!) It provides many of the features of a
+<p>Freemap has a full featured Android app - <em>OpenTrail</em>.
+It provides many of the features of a
 typical OSM mobile app, but with a few unique features, in particular the
 ability to report path problems and add points of interest and path directions
 in the field, as well as present these live to you in the field while you are
@@ -22,10 +20,10 @@ src="../images/opentrailscreenshot.png" alt="OpenTrail screenshot" />
 <li>View OpenStreetMap-derived 
 maps of the majority of England (Wales and Scotland not covered
 just yet) showing public rights of way in the
-<a href='/0.6/about.html#mapkey'>same colour scheme as Freemap itself</a>
+<a href='/fm/about.html#mapkey'>same colour scheme as Freemap itself</a>
 together with Ordnance Survey LandForm PANORAMA contours. The maps are
-rendered using the <a href='http://code.google.com/p/mapsforge'>Mapsforge</a>
-library and 
+rendered using the <a href='https://github.com/mapsforge/mapsforge'>
+Mapsforge</a> library and 
 initially downloaded to your device, and then stored on the device or 
 SD card.</li>
 <li>Add annotations to the map in-the-field, which can be shared
@@ -66,6 +64,20 @@ on the device, meaning that after initial network access, the app can
 be used completely offline if desired.</li>
 </ul>
 </p>
+<h2>Download</h2>
+<p>There are two versions:
+	<ul>
+	<li><a href="../downloads/android/opentrail02.apk">OpenTrail 0.2 beta</a>,
+	works on Android 4.0+. Newer, using a newer version of the underlying
+	Mapsforge (0.3 rather than 0.5) library to draw the maps, newer-style
+	user interface, but less well tested.</li>
+	<li><a href="../downloads/android/opentrail.apk">OpenTrail 0.1</a>,
+	works on Android 2.1+. Better tested but using an older version (0.3
+	rather than 0.5) of Mapsforge.</li>
+	</ul>
+</p>
+<p>Please <a href="../downloads/android/README_BEFORE_DOWNLOADING.txt">
+read this</a> before downloading!</p>
 <h2>Brief instructions</h2>
 <p><em>It is recommended you run OpenTrail for the first time in a wi-fi 
 area as map data needs to be downloaded.</em> Fire up the app. You will be
@@ -112,6 +124,6 @@ See <a href='hikar.html'>here</a>.</p>
 <p>OpenTrail is an open-source application (GPL; libraries are LGPL): see
 the <a href="https://github.com/nickw1/Freemap">Freemap github page</a>,
 OpenTrail source is in the "java" directory.</p>
-<p><a href="/0.6/index.php">Back to Freemap</a></p>
+<p><a href="/fm/index.php">Back to Freemap</a></p>
 </body>
 </html>

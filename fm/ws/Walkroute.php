@@ -233,6 +233,7 @@ class Walkroute
         $ll = sphmerc_to_ll($this->points[0][0],$this->points[0][1]);
         return "<wpt lat='$ll[lat]' lon='$ll[lon]'><name>$this->title</name>".
                 "<desc>$this->description</desc>".
+                "<extensions><distance>$this->distance</distance></extensions>".
                 "<cmt>$this->id</cmt></wpt>";
     }
 
@@ -270,7 +271,6 @@ class Walkroute
         }
     
         $sql.=" WHERE id=?";    
-        echo "SQL is : $sql ";
         $stmt=$this->conn->prepare($sql);
           $p=1; 
           if (isset($f["properties"]["title"]))
@@ -436,8 +436,7 @@ class Walkroute
        case "gpx":
         $stmt->bindParam (1, $f["name"]);
         $stmt->bindParam (2, $f["desc"]);
-        $d = 0;
-        $stmt->bindParam (3, $d);
+        $stmt->bindParam (3, $f["distance"]);
         $stmt->bindParam (4, Walkroute::mkgeom($f["trk"]));
         $stmt->bindParam (5, $f["trk"][0]["lon"]);
         $stmt->bindParam (6, $f["trk"][0]["lat"]);

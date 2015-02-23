@@ -26,6 +26,8 @@ class FreemapUserManager extends UserManager
     {
         $stmt=$this->conn->prepare("SELECT * FROM users WHERE username=?");
         $stmt->bindParam (1, $username);
+		if(!ctype_alnum($username))
+			return 4;
         $stmt->execute();
         if($row = $stmt->fetch())
         {

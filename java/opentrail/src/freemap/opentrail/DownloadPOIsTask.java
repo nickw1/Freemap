@@ -65,7 +65,7 @@ public class DownloadPOIsTask extends DataCallbackTask<Void,Void>  {
 		}
 		catch(Exception e)
 		{
-			return e.getMessage();
+			return e.toString() + " " + e.getMessage();
 		}
 	}
 	

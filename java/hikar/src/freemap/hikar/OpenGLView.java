@@ -9,12 +9,15 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.opengl.GLES20;
 import android.graphics.SurfaceTexture;
-
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 
 import java.io.IOException;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 
 import freemap.data.Way;
 import freemap.data.Point;
@@ -38,11 +41,22 @@ public class OpenGLView extends GLSurfaceView  {
        public void visit(RenderedWay rw);
    }
     
+   
     class DataRenderer implements GLSurfaceView.Renderer, FreemapDataset.WayVisitor {
         
+    	
         float hFov;
         float[] modelviewMtx, perspectiveMtx;
-        HashMap<Long,RenderedWay> renderedWays;
+        Handler hfovHandler;
+        
+        // 180215 replace HashMap of renderedWays with array list.
+        // There is now no need to index the rendered ways by id (idea was duplicate prevention), as we are
+        // using tiled FreemapDatasets in a HashMap indexed by bottom left coords and ways are split at tile boundaries.
+        // Furthermore having one HashMap spanning all FreemapDatasets (as was) will lead to the problem
+        // in which we have 2 ways (one split way) with the same ID across different tiles meaning that if
+        // we use a HashMap with the ID as the index, only one will be added
+        //HashMap<Long,RenderedWay> renderedWays;
+        ArrayList<RenderedWay> renderedWays;
         HashMap<String,RenderedDEM> renderedDEMs;
         HashMap<String,FreemapDataset> receivedDatasets;
         boolean calibrate;
@@ -60,12 +74,14 @@ public class OpenGLView extends GLSurfaceView  {
         PrintWriter out;
         int nrw;
         
-        public DataRenderer()
+        
+        public DataRenderer(Handler hfovHandler)
         {
             hFov = 40.0f;
-            renderedWays = new HashMap<Long,RenderedWay>();
+            renderedWays = new ArrayList<RenderedWay>();
             renderedDEMs = new HashMap<String,RenderedDEM>();
             receivedDatasets = new HashMap<String,FreemapDataset>();
+            this.hfovHandler = hfovHandler;
             
             zDisp = 1.4f; 
             
@@ -92,6 +108,8 @@ public class OpenGLView extends GLSurfaceView  {
             
             trans = new TileDisplayProjectionTransformation (IdentityProjection.getInstance(), 
                         IdentityProjection.getInstance());
+            
+            
            
         }
         
@@ -232,10 +250,9 @@ public class OpenGLView extends GLSurfaceView  {
                     
                     synchronized(renderedWays)
                     {
-                        RenderedWay rWay = null;
-                        for(HashMap.Entry<Long, RenderedWay> entry: renderedWays.entrySet())
+                        for(RenderedWay rWay: renderedWays)
                         {          
-                            rWay = entry.getValue();
+                         
                             if(rWay.isDisplayed() && rWay.distanceTo(cameraPos) <= farPlane)
                             {
                                 rWay.draw(gpuInterface); 
@@ -267,7 +284,14 @@ public class OpenGLView extends GLSurfaceView  {
                 cameraCapturer.openCamera();
                 float camHfov = cameraCapturer.getHFOV();
                 if(camHfov>0.0f)
-                    hFov = camHfov;
+                {
+                    setHFOV(camHfov);
+                    Message m = new Message();
+                    Bundle bundle = new Bundle();
+                    bundle.putFloat("hfov", camHfov);
+                    m.setData(bundle);
+                    hfovHandler.sendMessage(m);
+                }
                 try
                 {
                     cameraCapturer.startPreview(cameraFeed);
@@ -327,17 +351,18 @@ public class OpenGLView extends GLSurfaceView  {
                     else
                         if(out!=null)out.println("WARNING!!!! dem is null!");
                     if(renderedWays==null) // do not clear out when we enter a new tile!
-                        renderedWays = new HashMap<Long,RenderedWay> ();
+                        renderedWays = new ArrayList<RenderedWay> ();
                     if(d[0].osm != null)
                     {
                         i=0;
                         for(HashMap.Entry<String, Tile> entry: d[0].osm.entrySet())
-                        {
+                        { 	
                             // We don't want to have to operate on a tile we've already dealt with
                             if(receivedDatasets.get(entry.getKey())==null)
                             {
                                 if(out!=null)out.println("Doing OSM tile: " + i + " key=" + entry.getKey());
                                 FreemapDataset curOSM = (FreemapDataset)entry.getValue().data;
+                                //Log.d("hikar", "Rendered FreemapDataset:"  +curOSM);
                                 receivedDatasets.put(entry.getKey(), curOSM);
                                 curOSM.operateOnWays(DataRenderer.this);
                             }
@@ -356,8 +381,6 @@ public class OpenGLView extends GLSurfaceView  {
                 public void onPostExecute(Boolean result)
                 {
                     loadingDEMs = false;
-                   
-                    
                 }
             };
             setRenderDataTask.execute(data);  
@@ -370,15 +393,17 @@ public class OpenGLView extends GLSurfaceView  {
            Log.d("hikar", "****CAMERA POS : " + cameraPos + "****");
         }
         
-        
+        public void setHeight (double height)
+        {
+        	cameraPos.z = height;
+        }
         
         public void visit(Way w)
         {
             
             synchronized(renderedWays)
             {
-               // if(renderedWays.get(w.getId())==null ) issue at joins 030714
-                    renderedWays.put(w.getId(), new RenderedWay(w,2.0f,trans));
+            	renderedWays.add(new RenderedWay (w, 2.0f, trans));
             }
             /*
             if((nrw++ % 10) == 0)
@@ -393,11 +418,12 @@ public class OpenGLView extends GLSurfaceView  {
         public void setHFOV(float hFov)
         {
             this.hFov = hFov;
+            
         }
         
         public void changeHFOV(float amount)
         {
-            this.hFov += amount;
+            setHFOV(this.hFov+amount);
         }
         
         public float getHFOV()
@@ -447,8 +473,8 @@ public class OpenGLView extends GLSurfaceView  {
         
         public void operateOnRenderedWays(OpenGLView.RenderedWayVisitor visitor)
         { 
-            for(HashMap.Entry<Long,RenderedWay> entry : renderedWays.entrySet())
-                visitor.visit(entry.getValue());
+        	for (RenderedWay w: renderedWays)
+        		visitor.visit(w);
         }
         
         public void setProjectionTransformation(TileDisplayProjectionTransformation trans)
@@ -458,16 +484,18 @@ public class OpenGLView extends GLSurfaceView  {
         
         public void deactivate()
         {
-            renderedWays = new HashMap<Long, RenderedWay>();
+            renderedWays = new ArrayList<RenderedWay>();
             renderedDEMs = new HashMap<String, RenderedDEM>();
         }
+        
     }
     
-    public OpenGLView(Context ctx)
+    public OpenGLView(Context ctx, ViewFragment.HFOVHandler handler)
     {
         super(ctx);
+        
         setEGLContextClientVersion(2);
-        renderer=new DataRenderer();
+        renderer=new DataRenderer(handler);
         setRenderer(renderer);
        
     }

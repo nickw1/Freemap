@@ -5,8 +5,11 @@ require_once('../../lib/UserManager.php');
 
 session_start();
 
-$inProj = isset($_POST['inProj']) && ctype_alnum($_POST['inProj'])
-	 ? $_POST['inProj']:'4326';
+$cget = clean_input($_GET, null);
+$cpost = clean_input ($_POST, null);
+
+$inProj = isset($cpost['inProj']) && ctype_alnum($cpost['inProj'])
+	 ? $cpost['inProj']:'4326';
 adjustProj($inProj);
 
 $expected = array ("create" => array("lon","lat","text"),
@@ -19,8 +22,8 @@ $userid=0; // 0=not supplied; -1=incorrect
 
 $conn = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
 $um = new UserManager($conn);
-$action = isset($_POST["action"]) && ctype_alpha($_POST["action"]) ?
-			$_POST["action"] : "";
+$action = isset($cpost["action"]) && ctype_alpha($cpost["action"]) ?
+			$cpost["action"] : "";
 
 if(!isset($expected[$action]))
 {
@@ -30,7 +33,7 @@ if(!isset($expected[$action]))
 else
 {
     foreach($expected[$action] as $field)
-    if(!isset($_POST[$field]))
+    if(!isset($cpost[$field]))
     {
         header("HTTP/1.1 400 Bad Request");
         exit;
@@ -57,11 +60,11 @@ elseif(isset($_SESSION["gatekeeper"]))
 	$userid=($userid>0) ? $userid: -1;
 }
 
-switch($_POST['action'])
+switch($cpost['action'])
 {
     case 'create':
-		if(!preg_match("/^-?[\d\.]+$/", $_POST["lat"]) ||
-		   !preg_match("/^-?[\d\.]+$/", $_POST["lon"]))
+		if(!preg_match("/^-?[\d\.]+$/", $cpost["lat"]) ||
+		   !preg_match("/^-?[\d\.]+$/", $cpost["lon"]))
 		{
 			header("HTTP/1.1 400 Bad Request");
 			echo "Invalid format for lat/lon";
@@ -69,13 +72,13 @@ switch($_POST['action'])
 		elseif($userid>=0)
 		{
 			list($goog['e'],$goog['n']) = 
-				reproject($_POST['lon'],$_POST['lat'],$inProj,'900913');
+				reproject($cpost['lon'],$cpost['lat'],$inProj,'900913');
             $q= "INSERT INTO annotations(text,xy,dir,userid,authorised) ".
                 "VALUES (?,".
                 "PointFromText('POINT ($goog[e] $goog[n])',900913)".
                 ",0,$userid,".($userid==0 ? 0:1).")";
 			$stmt = $conn->prepare($q);
-			$stmt->bindParam (1, $_POST['text']);
+			$stmt->bindParam (1, $cpost['text']);
 			// Note you can't use prepared statements for params to the 
 			// POINT in the call to the PointFromText function as it seems to 
 			// go into an infinite loop
@@ -93,7 +96,7 @@ switch($_POST['action'])
 		if($userid>=0)
 		{
 			$valid=false;
-			$data = @simplexml_load_string(stripslashes($_POST['data']));
+			$data = @simplexml_load_string(stripslashes($cpost['data']));
 			if($data)
 			{
 				foreach($data->annotation as $annotation)
@@ -129,10 +132,10 @@ switch($_POST['action'])
     case "delete":
         if($userid>0)
         {
-			if(ctype_digit($_GET["id"]))
+			if(ctype_digit($cget["id"]))
 			{
 				$stmt=$conn->prepare("DELETE FROM annotations WHERE id=?");
-				$stmt->bindParam (1, $_GET["id"]);
+				$stmt->bindParam (1, $cget["id"]);
 				$stmt->execute();
 				if($stmt->rowCount()==0)
                 	header("HTTP/1.1 404 Not Found");
@@ -149,7 +152,7 @@ switch($_POST['action'])
 	case "deleteMulti":
 		if($userid>0) 
 		{
-			$ids = json_decode($_POST["ids"], true);
+			$ids = json_decode($cpost["ids"], true);
 			foreach($ids as $id)
 			{
 				if(ctype_digit($id))
@@ -169,16 +172,16 @@ switch($_POST['action'])
     case "move":
         if($userid>0) 
         {
-			if(ctype_digit($_POST["id"]) &&
-				preg_match("/^-?[\d\.]+$/", $_POST["lon"]) &&
-				preg_match("/^-?[\d\.]+$/", $_POST["lat"]))
+			if(ctype_digit($cpost["id"]) &&
+				preg_match("/^-?[\d\.]+$/", $cpost["lon"]) &&
+				preg_match("/^-?[\d\.]+$/", $cpost["lat"]))
 			{
-				$goog = ll_to_sphmerc($_POST['lon'],$_POST['lat']);
+				$goog = ll_to_sphmerc($cpost['lon'],$cpost['lat']);
 				$stmt=$conn->prepare
                 		("UPDATE annotations SET xy=".
                     	"PointFromText('POINT($goog[e] $goog[n])',900913) ".
                     	"WHERE id=?");
-				$stmt->bindParam (1, $_POST["id"]);
+				$stmt->bindParam (1, $cpost["id"]);
 				$stmt->execute();
 				if($stmt->rowCount()==0)
                 	header("HTTP/1.1 404 Not Found");

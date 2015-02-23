@@ -13,6 +13,9 @@ $action = isset($_REQUEST["action"]) ? $_REQUEST["action"]:"get";
 $conn = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
 $um = new UserManager($conn);
 
+$cget = clean_input($_GET, null);
+$cpost = clean_input($_POST, null);
+
 switch($action)
 {
     case "add":
@@ -23,14 +26,14 @@ switch($action)
             {
                 header("HTTP/1.1 401 Unauthorized");
             }
-            else if (isset($_POST["id"]) && ctype_digit($_POST["id"]))
+            else if (isset($cpost["id"]) && ctype_digit($cpost["id"]))
             {
-                $wr = new Walkroute($conn, $_POST["id"]);
-                $wr->updateRoute($_POST["route"]);
+                $wr = new Walkroute($conn, $cpost["id"]);
+                $wr->updateRoute($cpost["route"]);
             }
             else
             {
-                $j=Walkroute::addWR($conn,$_POST["route"],$userid,
+                $j=Walkroute::addWR($conn,$cpost["route"],$userid,
                                         $format);
                 echo $j;
             }
@@ -52,10 +55,10 @@ switch($action)
                 header("HTTP/1.1 401 Unauthorized");
 				$badreq=false;
             }
-            else if (isset($_POST["id"]) && ctype_digit($_POST["id"])
-                        && isset($_POST["data"]))
+            else if (isset($cpost["id"]) && ctype_digit($cpost["id"])
+                        && isset($cpost["data"]))
             {
-                $f= json_decode($_POST["data"], true);
+                $f= json_decode($cpost["data"], true);
                 if(
                     preg_match("/^-?[\d\.]+$/",
                         $f["geometry"]["coordinates"][0]) 
@@ -65,7 +68,7 @@ switch($action)
                     )
                 {    
                     $id=Walkroute::addRouteWaypoint($conn,
-                                        $_POST["id"]
+                                        $cpost["id"]
                                             ,$f["geometry"]["coordinates"][0],
                                             $f["geometry"]["coordinates"][1],
                                             0, 
@@ -83,13 +86,13 @@ switch($action)
         break;
 
     case "get":
-        if($_SERVER['REQUEST_METHOD']=='GET' && isset($_GET["id"]))
+        if($_SERVER['REQUEST_METHOD']=='GET' && isset($cget["id"]))
         {
-          $id=$_GET["id"];
+          $id=$cget["id"];
           if(ctype_digit($id))
           {
             $wr=new Walkroute($conn, $id);
-            $doAnnotations = isset($_GET["ann"]) && $_GET["ann"]!=0;
+            $doAnnotations = isset($cget["ann"]) && $cget["ann"]!=0;
             if($wr->isValid())
             {
                 switch($format)
@@ -129,10 +132,10 @@ switch($action)
         break;
                     
     case "getByBbox":
-        if($_SERVER['REQUEST_METHOD']=='GET' && isset($_GET["bbox"])
-            && preg_match("/^(-?[\d\.]+,){3}-?[\d\.]+$/", $_GET["bbox"]))
+        if($_SERVER['REQUEST_METHOD']=='GET' && isset($cget["bbox"])
+            && preg_match("/^(-?[\d\.]+,){3}-?[\d\.]+$/", $cget["bbox"]))
         {
-            $b = explode(",",$_GET["bbox"]);
+            $b = explode(",",$cget["bbox"]);
             $routes=Walkroute::getRoutesByBbox($conn,$b[0],$b[1],$b[2],$b[3]);
             Walkroute::outputRoutes($routes,$format);
         }
@@ -145,14 +148,14 @@ switch($action)
     
     case "getByRadius":
         if($_SERVER['REQUEST_METHOD']=='GET' &&
-            isset($_GET["radius"]) && 
-            isset($_GET['lon']) && isset($_GET['lat']) &&
-            preg_match("/^[\d\.]+$/", $_GET["radius"]) &&
-            preg_match("/^-?[\d\.]+$/", $_GET["lat"]) &&
-            preg_match("/^-?[\d\.]+$/", $_GET["lon"]))
+            isset($cget["radius"]) && 
+            isset($cget['lon']) && isset($cget['lat']) &&
+            preg_match("/^[\d\.]+$/", $cget["radius"]) &&
+            preg_match("/^-?[\d\.]+$/", $cget["lat"]) &&
+            preg_match("/^-?[\d\.]+$/", $cget["lon"]))
         {
             $routes=Walkroute::getRoutesByRadius
-                ($conn, $_GET['lon'],$_GET['lat'],$_GET["radius"]);
+                ($conn, $cget['lon'],$cget['lat'],$cget["radius"]);
             Walkroute::outputRoutes($routes,$format);
         }
         else
@@ -171,8 +174,8 @@ switch($action)
         else
         {
             $userid=0;
-            if(isset($_GET["userid"]) && ctype_digit($_GET["userid"]))
-                $userid = $_GET["userid"];
+            if(isset($cget["userid"]) && ctype_digit($cget["userid"]))
+                $userid = $cget["userid"];
             else if(isset($_SESSION["gatekeeper"]))
             {
                 $userid=$um->getUserFromUsername($_SESSION['gatekeeper'])
@@ -200,8 +203,8 @@ switch($action)
             }
             else
             {
-                $wr = new Walkroute($conn,$_POST["id"]);
-                $wr->updateRoute($_POST["route"],$format);
+                $wr = new Walkroute($conn,$cpost["id"]);
+                $wr->updateRoute($cpost["route"],$format);
             }
         }
         break;
@@ -209,9 +212,9 @@ switch($action)
     case "delete":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-            if(ctype_digit($_POST["id"]))
+            if(ctype_digit($cpost["id"]))
             {
-                $wr = new Walkroute($conn,$_POST["id"]);
+                $wr = new Walkroute($conn,$cpost["id"]);
                 $userid=$um->getUserIdFromCredentials();
                 $user = new User ($userid, $conn);
                 if($userid<=0 || 
@@ -232,10 +235,10 @@ switch($action)
             $deleted = array();
             if($userid<=0)
                 header("HTTP/1.1 401 Unauthorized");    
-            elseif(isset($_POST["ids"]))
+            elseif(isset($cpost["ids"]))
             {
                 $user = new User($userid, $conn);
-                $ids = json_decode ($_POST["ids"]);
+                $ids = json_decode ($cpost["ids"]);
                 foreach($ids as $id)
                 {
                     if(ctype_digit($id))
@@ -260,22 +263,22 @@ switch($action)
 
     case "moveWaypoint":
         if($_SERVER['REQUEST_METHOD']=='POST' &&
-                ctype_digit($_POST["id"]) &&
-                preg_match("/^-?[\d\.]+$/", $_POST["lon"]) &&
-                preg_match("/^-?[\d\.]+$/", $_POST["lat"]))
+                ctype_digit($cpost["id"]) &&
+                preg_match("/^-?[\d\.]+$/", $cpost["lon"]) &&
+                preg_match("/^-?[\d\.]+$/", $cpost["lat"]))
         {
             $userid = $um->getUserIdFromCredentials();
 			echo "userid $userid";
             if($userid>0)
             {
                 $user = new User($userid, $conn);
-                $wr = Walkroute::getWalkrouteFromWaypoint($conn, $_POST["id"]);
+                $wr = Walkroute::getWalkrouteFromWaypoint($conn, $cpost["id"]);
 				echo "walkroute user id " . $wr->getUserId();
                 if($wr===null)
                     header("HTTP/1.1 404 Not Found");
                 elseif($wr->getUserId()==$userid || $user->isAdmin())
                     Walkroute::moveWaypoint
-                        ($conn, $_POST["id"], $_POST["lon"], $_POST["lat"]);
+                        ($conn, $cpost["id"], $cpost["lon"], $cpost["lat"]);
                 else
                     header("HTTP/1.1 401 Unauthorized");
             }
@@ -294,10 +297,10 @@ switch($action)
             $deleted = array();
             if($userid<=0)
                 header("HTTP/1.1 401 Unauthorized");    
-            elseif(isset($_POST["ids"]))
+            elseif(isset($cpost["ids"]))
             {
                 $user = new User($userid, $conn);
-                $ids = json_decode ($_POST["ids"]);
+                $ids = json_decode ($cpost["ids"]);
                 foreach($ids as $id)
                 {
                     if(ctype_digit("$id"))
