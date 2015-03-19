@@ -48,6 +48,7 @@ public class OsmDemIntegrator {
                 tileHeights = { 5000, 25000 }, endianness = { DEMSource.LITTLE_ENDIAN, DEMSource.BIG_ENDIAN };
         double[] resolutions = { 50, 1 / 1200.0 };
         
+        Log.d("hikar", "HELLO");
 		WebDataSource demDataSource= demType==HGT_OSGB_LFP ?
 		        new WebDataSource(lfpUrl, 
 				new LFPFileFormatter()):
@@ -58,12 +59,14 @@ public class OsmDemIntegrator {
 		String[] tileUnits = { "metres", "microdeg" };
 		FreemapFileFormatter formatter=new FreemapFileFormatter(tilingProj.getID(), "geojson", tileWidths[demType],
 		                                                        tileHeights[demType]);
-        formatter.setScript("bsvr.php");
+        formatter.setScript("bsvr2.php");
         formatter.selectWays("highway");
         formatter.addKeyval("inUnits", tileUnits[demType]); // used to tell server that bbox is in microdeg
         
         WebDataSource osmDataSource=new WebDataSource(osmUrl,formatter);
         
+        
+        Log.d("hikar", "url=" + formatter.format(new Point(400000,100000)));
         Proj4ProjectionFactory factory=new Proj4ProjectionFactory();
 		this.tilingProj = tilingProj;
 		File cacheDir = new File(android.os.Environment.getExternalStorageDirectory().getAbsolutePath()+"/hikar/cache/" +

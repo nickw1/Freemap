@@ -1,5 +1,8 @@
 <?php
 
+// To work with the *.reprj.php code
+// NOT TESTED !!!
+
 // Tiled data server
 // Input: 
 // x,y,z - standard Google tiling system values
@@ -11,9 +14,9 @@
 
 require_once('../../lib/functionsnew.php');
 require_once('../../common/defines.php');
-require_once('DataGetter.php');
+require_once('DataGetter.reprj.php');
 require_once('xml.php');
-require_once('DBDetails.php');
+require_once('DBDetails.reprj.php');
 
 header("Access-Control-Allow-Origin: http://www.opentrailview.org");
 
@@ -57,7 +60,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     if(!file_exists(CACHE."/$kg/$z/$x"))
         mkdir(CACHE."/$kg/$z/$x",0755,true);
         
-    $bg = new BboxGetter($bbox,$kg,$tbl_prefix);
+    $bg = new BboxGetter($bbox,"900913","900913",$kg,$tbl_prefix);
 
     if($z<=7)
     {
@@ -103,7 +106,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
 else
 {
     header("Content-type: application/json");
-    $bg=new BboxGetter($bbox,null,$tbl_prefix);
+    $bg=new BboxGetter($bbox,"900913","900913",null,$tbl_prefix);
     $data=$bg->getData($cleaned,null,null,$outProj);
     echo json_encode($data);
 }

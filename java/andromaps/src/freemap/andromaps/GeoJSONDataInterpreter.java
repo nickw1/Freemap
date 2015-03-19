@@ -13,6 +13,9 @@ import freemap.data.POI;
 import freemap.data.Feature;
 import java.util.Iterator;
 import android.util.Log;
+import java.util.ArrayList;
+
+import java.io.FileInputStream;
 
 public class GeoJSONDataInterpreter implements DataInterpreter {
 
@@ -23,10 +26,13 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
         
         String json = RawDataSource.doLoad(in);
         
+
+        
         JSONObject jsonObj = new JSONObject(json);
         JSONArray coordinates;
         JSONObject properties, feature, geometry;
         Feature curFeature = null;
+        ArrayList<Way> curWays = null;
 
        
         
@@ -39,47 +45,43 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
             String type = geometry.getString("type");
             if(type.equals("Point"))
             {   
-                curFeature = makePOI(coordinates); 
+                curFeature = makePOI(coordinates);
+                properties = feature.getJSONObject("properties");      
+                addProperties (curFeature, properties); 
+                dataset.add((POI)curFeature);
             }
             else if (type.equals("LineString") || type.equals("MultiLineString") ||
-                        type.equals("Polygon"))
+                        type.equals("Polygon") || type.equals("MultiPolygon"))
             {
-                curFeature = makeWay(coordinates, type);    
-            }
-            
-            
-            if(curFeature!=null)
-            {
-                properties = feature.getJSONObject("properties");      
-                addProperties (curFeature, properties);
-                
-                if(type.equals("Point"))
-                    dataset.add((POI)curFeature);
-                else
-                    dataset.add((Way)curFeature);
-            }
+            	//Log.d("jsontest", "feature type=" + type);
+                curWays = makeWay(coordinates, type, feature.getJSONObject("properties")); 
+                //Log.d("jsontest", "NUMBER OF CURWAYS: " + curWays.size());
+                for(int j=0; j<curWays.size(); j++)
+            		dataset.add(curWays.get(j));
+            }  	
         }
         
         return dataset;
     }
     
     
-    
+    // IMPORTANT cannot deal with MultiLineStrings or MultiPolygons yet
+    // This is used from the SpatialiteTileDeliverer
     public static Feature jsonToFeature(String json) throws JSONException
     {
+    	Feature f = null;
         JSONObject jsonObj = new JSONObject(json);
         String geomType = jsonObj.getString("type");
-        Feature f = null;
         
-        if(geomType.equals("LineString") || geomType.equals("MultiLineString") ||
-                geomType.equals("Polygon"))
+        if(geomType.equals("LineString") || geomType.equals("Polygon"))
         {
-           JSONArray arr = jsonObj.getJSONArray("coordinates");
-           f = makeWay(arr, geomType);
+           JSONArray arr = jsonObj.getJSONObject("geometry").getJSONArray("coordinates"); // 130315 added geometry I presume
+           ArrayList<Way> ways = makeWay(arr, geomType, jsonObj.getJSONObject("properties"));
+           f = ways.size() >= 1 ? ways.get(0) : null;
         }  
         else if (geomType.equals("Point"))
         {
-            JSONArray arr = jsonObj.getJSONArray("coordinates");
+            JSONArray arr = jsonObj.getJSONObject("geometry").getJSONArray("coordinates");
             if(arr.length() >= 2)
             {
                 f = makePOI(arr);
@@ -88,14 +90,22 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
         return f;
     } 
     
-    private static void wayFromLinestring(Way way, JSONArray arr) throws JSONException
+    private static Way wayFromLinestring(JSONArray arr) throws JSONException
     {
+    	return wayFromLinestring(arr,null);
+    }
+    
+    private static Way wayFromLinestring( JSONArray arr, Way w) throws JSONException
+    {
+    	Way way = (w==null) ? new Way() : w;
+    	
         for(int i=0; i<arr.length(); i++)
         {
             JSONArray curCoord = arr.getJSONArray(i);
             double x = curCoord.getDouble(0), y = curCoord.getDouble(1);
             way.addPoint(x, y);
         }
+        return way;
     }
     
     private static POI makePOI(JSONArray coordinates) throws JSONException
@@ -104,25 +114,39 @@ public class GeoJSONDataInterpreter implements DataInterpreter {
             coordinates.length()==3 ? coordinates.getDouble(2): -1);
     }
     
-    private static Way makeWay(JSONArray coords, String geomType) throws JSONException
+    private static ArrayList<Way> makeWay(JSONArray coords, String geomType, JSONObject properties) throws JSONException
     {
-        Way f = new Way();
+        //Log.d("jsontest", "makeWay: geomType=" + geomType);
+        ArrayList<Way> ways = new ArrayList<Way>();
         
         if(geomType.equals("LineString"))
-            wayFromLinestring((Way)f, coords);
-     
- 
-        else if (geomType.equals("MultiLineString") || geomType.equals("Polygon"))
         {
-            
-            
-            for(int i=0; i<coords.length(); i++)
-            {
-                wayFromLinestring((Way)f, coords.getJSONArray(i));
-            }
+        	//Log.d("jsontest", "calling wayFromLinestring");
+        	Way w = wayFromLinestring(coords);
+        	//Log.d("jsontest", "done. adding properties");
+        	addProperties (w, properties);
+        	//Log.d("jsontest", "done.");
+        	ways.add(w);
         }
-        return f;
+        // We cannot deal with polygons with holes just yet, so just take the first LinearRing
+        else if (geomType.equals("Polygon"))
+        {
+        	Way polygon =  wayFromLinestring(coords.getJSONArray(0));
+            addProperties(polygon, properties);
+            ways.add(polygon);
+        }
+        else if(geomType.equals("MultiLineString") || geomType.equals("MultiPolygon"))
+		{
+			for(int i=0; i<coords.length(); i++)
+			{
+				ways.addAll(makeWay ((JSONArray)coords.get(i), geomType.substring(5), properties));
+			}
+		}
+        //Log.d("jsontest", "makeWay finished");
+        return ways;
     }
+    
+    
     
     private static void addProperties (Feature f, JSONObject properties) throws JSONException
     {

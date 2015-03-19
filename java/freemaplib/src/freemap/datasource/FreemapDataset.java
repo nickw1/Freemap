@@ -18,9 +18,17 @@ import java.io.FileWriter;
 
 import java.io.IOException;
 
+// 120315 change FreemapDataset to store Ways as an ArrayList, not a HashMap.
+// This is to account for intersections of a dataset with a bounding box producing a MultiLineString
+// of multiple segments of the same way, which on a renderer e.g. Hikar we will treat as separate ways.
+// As they will all have the same OSM ID, we can't use a HashMap unless we change the ID.
+// The only affected methods are findWayById() (becomes much slower, doesn't seem to be used anywhere
+// anyhow) and wayIterator (seems not to be used anywhere)
+
 public class FreemapDataset implements TiledData
 {
-	HashMap<Long,Way> ways;
+	//HashMap<Long,Way> ways;
+	ArrayList<Way> ways;
 	HashMap<Long,POI> pois;
 	HashMap<Integer,Annotation> annotations;
 	Projection proj;
@@ -39,7 +47,8 @@ public class FreemapDataset implements TiledData
 	
 	public FreemapDataset()
 	{
-		ways=new HashMap<Long,Way>();
+		//ways=new HashMap<Long,Way>();
+		ways = new ArrayList<Way>();
 		pois=new HashMap<Long,POI>();
 		annotations=new HashMap<Integer,Annotation>();
 	}
@@ -52,7 +61,8 @@ public class FreemapDataset implements TiledData
 	public void add(Way way)
 	{
 		way.reproject(proj);
-		ways.put(way.getId(),way);
+		//ways.put(way.getId(),way);
+		ways.add(way);
 	}
 	
 	public void add(POI poi)
@@ -69,7 +79,8 @@ public class FreemapDataset implements TiledData
 	
 	public void merge(TiledData otherData)
 	{
-		ways.putAll(((FreemapDataset)otherData).ways);
+		//ways.putAll(((FreemapDataset)otherData).ways);
+		ways.addAll(((FreemapDataset)otherData).ways);
 		pois.putAll(((FreemapDataset)otherData).pois);
 		annotations.putAll(((FreemapDataset)otherData).annotations);
 	}
@@ -82,16 +93,19 @@ public class FreemapDataset implements TiledData
 	public void applyDEM(DEM dem)
 	{
 	    
-		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
+	//	Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		Set<Map.Entry<Long, POI> > poiSet = pois.entrySet();
 		
 		
-		
+		/*
 		for(Map.Entry<Long,Way> w: waySet)
 		{
-			//System.out.println("way: " + w.getValue().getValue("osm_id"));
+			
 			w.getValue().applyDEM(dem);
 		}
+		*/
+		for(Way w: ways)
+			w.applyDEM(dem);
 		
 		for(Map.Entry<Long,POI> p: poiSet)
 		{
@@ -101,14 +115,22 @@ public class FreemapDataset implements TiledData
 	
 	public boolean isWithin(DEM dem)
 	{
-		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
+		//Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		Set<Map.Entry<Long, POI> > poiSet = pois.entrySet();
 		
+		/*
 		for(Map.Entry<Long,Way> w: waySet)
 		{
 			if (w.getValue().isWithin(dem))
 				return true;
 		}
+		*/
+		for(Way w: ways)
+		{
+			if (w.isWithin(dem))
+				return true;
+		}
+		
 		
 		for(Map.Entry<Long,POI> p: poiSet)
 		{
@@ -143,11 +165,15 @@ public class FreemapDataset implements TiledData
 	
 	public void saveWays(PrintWriter pw)
 	{
+		/*
 		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		for(Map.Entry<Long,Way> w: waySet)
 		{
 			w.getValue().save(pw);
 		}
+		*/
+		for(Way w: ways)
+			w.save(pw);
 	}
 	
 	public void savePOIs(PrintWriter pw)
@@ -171,14 +197,19 @@ public class FreemapDataset implements TiledData
 	
 	public void reproject(Projection newProj)
 	{
-		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
+		//Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		Set<Map.Entry<Long, POI> > poiSet = pois.entrySet();
 		Set<Map.Entry<Integer, Annotation> > annotationSet = annotations.entrySet();
 		
+		/*
 		for(Map.Entry<Long,Way> w: waySet)
 		{
 			ways.get(w.getKey()).reproject(newProj);
 		}
+		*/
+		for(Way w: ways)
+			w.reproject(newProj);
+		
 		for(Map.Entry<Long,POI> p: poiSet)
 		{
 			pois.get(p.getKey()).reproject(newProj);
@@ -192,10 +223,14 @@ public class FreemapDataset implements TiledData
 	
 	public void operateOnWays(WayVisitor visitor)
 	{
+		/*
 		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		
 		for(Map.Entry<Long,Way> w: waySet)
 			visitor.visit(w.getValue());
+		*/
+		for(Way w: ways)
+			visitor.visit(w);
 	}
 	
 	public void operateOnAnnotations(AnnotationVisitor visitor)
@@ -209,14 +244,22 @@ public class FreemapDataset implements TiledData
 	public void operateOnNearbyWays(WayVisitor visitor, Point point, double distance)
 	{
 		Way way;
-		Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
+		//Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		
+		/*
 		for(Map.Entry<Long,Way> w: waySet)
 		{
 			way=w.getValue();
 			if(way.distanceTo(point)<=distance)
 				visitor.visit(way);
 		}
+		*/
+		for(Way w: ways)
+		{
+			if(w.distanceTo(point)<=distance)
+				visitor.visit(w);
+		}
+		
 	}
 	
 	public ArrayList<POI> getPOIsByKey(String key)
@@ -252,9 +295,14 @@ public class FreemapDataset implements TiledData
 		return pois.get(id);
 	}
 	
+	
 	public Way getWayById(long id)
 	{
-		return ways.get(id);
+		//return ways.get(id);
+		for(Way w: ways)
+			if(w.getId()==id)
+				return w;
+		return null;
 	}
 	
 	public Annotation getAnnotationById(int id)
@@ -292,10 +340,17 @@ public class FreemapDataset implements TiledData
 	    return pois.keySet().iterator();
 	}
 	
+	/*
 	public Iterator<Long> wayIterator()
 	{
 	    return ways.keySet().iterator();
     }
+	*/
+	
+	public Iterator<Way> wayIterator()
+	{
+		return ways.iterator();
+	}
 	
 	public int nPOIs()
 	{

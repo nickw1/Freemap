@@ -22,7 +22,8 @@ class FreemapUser extends User
                 if($row['k']==$key)
                 {
                     $stmt = $this->conn->prepare
-                        ("UPDATE {$this->table} SET active=1,k=0 WHERE id=?");
+                        ("UPDATE {$this->table} SET active=1,k=0,email=null ".
+                         " WHERE id=?");
                     $stmt->bindParam (1, $this->id);
                     $stmt->execute();
                     return true;
