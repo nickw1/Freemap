@@ -58,7 +58,7 @@ int main (int argc, char *argv[])
         conn = PQconnectdb("user=gisuser dbname=gis");
     if(options.sqlstdout || options.osm || PQstatus(conn)!=CONNECTION_BAD)
     {
-        int i=0;
+        uint i=0;
         for(i=0; i<contours.size(); i++)
         {
             if(options.osm)
