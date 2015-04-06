@@ -115,7 +115,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 	
 	boolean tracking;
 	
-	LocalFreemapFileFormatter formatter;
+	FreemapFileFormatter formatter;
 	CachedTileDeliverer poiDeliverer;
 	String cachedir;
 	boolean prefGPSTracking, prefAutoDownload, prefAnnotations, recordingWalkroute;
@@ -272,11 +272,11 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         			mapFile.substring(mapFile.length()-6, mapFile.length()-4): "";
         	Log.d("newmapsforge", "mapfile is : "+ mapFile + " Initialising curGridsq to: " + curGridsq);
     		cachedir=makeCacheDir(projString);
-    		LocalFreemapFileFormatter formatter=new LocalFreemapFileFormatter(this.proj.getID());
+    		FreemapFileFormatter formatter=new FreemapFileFormatter(this.proj.getID());
     		formatter.setScript("bsvr.php");
     		formatter.selectPOIs("place,amenity,natural");
     		formatter.selectAnnotations(true);
-    		LocalWebDataSource ds=new LocalWebDataSource("http://www.free-map.org.uk/fm/ws/",formatter);
+    		WebDataSource ds=new WebDataSource("http://www.free-map.org.uk/fm/ws/",formatter);
     		poiDeliverer=new CachedTileDeliverer("poi",ds, new XMLDataInterpreter
     				(new FreemapDataHandler()),5000,5000,this.proj,cachedir);
     		poiDeliverer.setCache(true);
