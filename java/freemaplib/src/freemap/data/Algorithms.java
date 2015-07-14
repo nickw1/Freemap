@@ -14,7 +14,7 @@ public class Algorithms
             public FurthestPoint()
             {
                 index = -1;
-                maxDist = 0.0;
+                maxDist = 0.0; 
             }
         }
         

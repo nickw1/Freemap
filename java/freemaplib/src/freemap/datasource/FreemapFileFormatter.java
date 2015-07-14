@@ -76,13 +76,19 @@ public class FreemapFileFormatter extends FileFormatter{
 		tileBottomLeft.x = ( ((int)bottomLeft.x)/tileWidth ) * tileWidth;
 		tileBottomLeft.y = ( ((int)bottomLeft.y)/tileHeight ) * tileHeight;
 		String url = script+"?bbox="+tileBottomLeft.x+","+tileBottomLeft.y+","+(tileBottomLeft.x+tileWidth)+","
-		        +(tileBottomLeft.y+tileHeight)+
+		        +(tileBottomLeft.y+tileHeight)+ getFeatureTypes();
+		return url;
+	}
+	
+	public String getFeatureTypes()
+	{
+		String url = 
 			(selectedWays==null?"":"&way="+selectedWays)+
 			(selectedPOIs==null?"":"&poi="+selectedPOIs)+
 			(doAnnotations==true?"&annotation=1":"")+
 			 "&format="+format+"&inProj="+projID.replace("epsg:","")+"&outProj=epsg:4326";
 		for(java.util.Map.Entry<String,String> entry: keyvals.entrySet())
 		    url += "&" + entry.getKey() + "=" + entry.getValue();
-		return url;
+	    return url;
 	}
 }

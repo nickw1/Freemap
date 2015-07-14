@@ -6,12 +6,15 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import freemap.data.Algorithms;
 import freemap.data.POI;
 import freemap.data.Way;
 import freemap.data.Projection;
 import freemap.data.Point;
 import freemap.data.Annotation;
 import freemap.jdem.DEM;
+
+import freemap.data.*;
 
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -33,6 +36,10 @@ public class FreemapDataset implements TiledData
 	HashMap<Integer,Annotation> annotations;
 	Projection proj;
 
+	public interface POIVisitor
+	{
+		public void visit(POI p);
+	}
 	
 	public interface WayVisitor 
 	{
@@ -130,7 +137,6 @@ public class FreemapDataset implements TiledData
 			if (w.isWithin(dem))
 				return true;
 		}
-		
 		
 		for(Map.Entry<Long,POI> p: poiSet)
 		{
@@ -233,6 +239,13 @@ public class FreemapDataset implements TiledData
 			visitor.visit(w);
 	}
 	
+	public void operateOnPOIs (POIVisitor visitor)
+	{
+		Set<Map.Entry<Long, POI>> poiSet = pois.entrySet();
+		for(Map.Entry<Long, POI> p: poiSet)
+			visitor.visit(p.getValue());
+	}
+	
 	public void operateOnAnnotations(AnnotationVisitor visitor)
 	{
 		Set<Map.Entry<Integer,Annotation> > annSet = annotations.entrySet();
@@ -256,10 +269,26 @@ public class FreemapDataset implements TiledData
 		*/
 		for(Way w: ways)
 		{
-			if(w.distanceTo(point)<=distance)
+			// IMPORTANT!!! 130715 changed to haversineDistanceTo(). I don't think this breaks anything!
+			double d = w.haversineDistanceTo(point);
+		
+			if(w.haversineDistanceTo(point)<=distance)
 				visitor.visit(w);
 		}
 		
+	}
+	
+	public void operateOnNearbyPOIs (POIVisitor visitor, Point pointLL, double distanceMetres)
+	{
+		Set<Map.Entry<Long, POI>> poiSet = pois.entrySet();
+		
+		for(Map.Entry<Long, POI> p: poiSet)
+		{
+			Point unproj = (proj==null) ? p.getValue().getPoint(): proj.unproject(p.getValue().getPoint());
+		
+			if(Algorithms.haversineDist(pointLL.x, pointLL.y, unproj.x, unproj.y) <= distanceMetres)
+				visitor.visit(p.getValue());
+		}
 	}
 	
 	public ArrayList<POI> getPOIsByKey(String key)
@@ -362,5 +391,3 @@ public class FreemapDataset implements TiledData
 	    return ways.size();
 	}
 }
-
-

@@ -77,31 +77,15 @@ public class POI extends Feature{
 	// Assumption: x increases eastwards, y increases northwards	
 	public double bearingFrom(Point p)
 	{
-		double dx=point.x-p.x, dy=point.y-p.y, bearing=-((Math.atan2(dy,dx)*(180.0/Math.PI))-90);
-		return (bearing<0) ?bearing+360:bearing;
+		return point.bearingFrom(p);
+		
 	}
 
 	public String directionFrom(Point p)
 	{
-		double bearing=bearingFrom(p);
-		if(bearing<22.5||bearing>=337.5)
-			return "N";
-		else if (bearing<67.5)
-			return "NE";
-		else if (bearing<112.5)
-			return "E";
-		else if (bearing<157.5)
-			return "SE";
-		else if (bearing<202.5)
-			return "S";
-		else if (bearing<247.5)
-			return "SW";
-		else if (bearing<292.5)
-			return "W";
-		else
-			return "NW";
+		return point.directionFrom(p);
 	}
-
+	
 	public static void sortByDistanceFrom(List<POI> pois,Point p)
 	{
 		POI.DistanceComparator c=new POI.DistanceComparator(p);

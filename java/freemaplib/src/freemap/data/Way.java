@@ -33,6 +33,11 @@ public class Way extends Feature {
 		return points.get(i);
 	}
 	
+	public Point getUnprojectedPoint (int i)
+	{
+		return proj == null ? points.get(i): proj.unproject(points.get(i));
+	}
+	
 	public String toString()
 	{
 		return "Way: " + points.toString() + "\n" + super.toString();
@@ -86,6 +91,22 @@ public class Way extends Feature {
 				smallestDistance=curDist;
 		}
 		return smallestDistance;	
+	}
+	
+	// 130715 corrected to unproject way points when calculating distance
+	public double haversineDistanceTo(Point p)
+	{
+		double smallestDistance = Double.MAX_VALUE, curDist;
+		for(int i=0; i<points.size(); i++)
+		{
+	
+			Point unproj = (proj==null) ? points.get(i): proj.unproject(points.get(i));
+			curDist = Algorithms.haversineDist(p.x, p.y, unproj.x, unproj.y);
+		
+			if(curDist < smallestDistance)
+				smallestDistance = curDist;
+		}
+		return smallestDistance;
 	}
 	
 	public void reproject(Projection newProj)
