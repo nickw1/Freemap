@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$/.." external.system.id="GRADLE" external.system.module.group="Hikar" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
+<module external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$/.." external.system.id="GRADLE" external.system.module.group="Andromaps" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="android-gradle" name="Android-Gradle">
       <configuration>
-        <option name="GRADLE_PROJECT_PATH" value=":app" />
+        <option name="GRADLE_PROJECT_PATH" value=":Andromaps" />
       </configuration>
     </facet>
     <facet type="android" name="Android">
@@ -20,6 +20,7 @@
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
         <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res" />
         <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
+        <option name="LIBRARY_PROJECT" value="true" />
       </configuration>
     </facet>
   </component>
@@ -85,9 +86,12 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 15 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="Andromaps-debug-" level="project" />
-    <orderEntry type="library" exported="" name="freemaplib_proj" level="project" />
-    <orderEntry type="library" exported="" name="graphhopper-0.5-SNAPSHOT-android" level="project" />
+    <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
+    <orderEntry type="library" exported="" name="mapsforge-map-0.5.0-rc4" level="project" />
+    <orderEntry type="library" exported="" name="mapsforge-map-reader-0.5.0-rc4" level="project" />
+    <orderEntry type="library" exported="" name="freemaplib" level="project" />
+    <orderEntry type="library" exported="" name="mapsforge-map-android-0.5.0-rc4" level="project" />
+    <orderEntry type="library" exported="" name="mapsforge-core-0.5.0-rc4" level="project" />
   </component>
 </module>
 

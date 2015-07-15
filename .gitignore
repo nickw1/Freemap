@@ -4,3 +4,5 @@ gen/
 AndroidTest1/
 Test1/
 dates/
+*.jar
+*.aar
