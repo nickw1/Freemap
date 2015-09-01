@@ -1,5 +1,8 @@
 // LandForm-Panorama DXF to a PostGIS DB
 
+// g++ -std=c++11 -Wall -g -o lfp lfp.cpp Contour.cpp -lproj -lpq
+// NB need c++11 for at least std::to_string()
+
 #include "Contour.h"
 #include "Projections.h"
 #include <iostream>
@@ -24,6 +27,12 @@ struct OPTIONS
     int reproj;
     long nodeindex, wayindex;
     std::string dxffile;
+    std::string dbuser;
+    std::string dbname;
+    std::string dbtable;
+    uint dbport;
+    std::string dbway;
+    std::string dbheight;
 };
 
 void process_cmd_line(int argc, char *argv[], OPTIONS *options);
@@ -37,10 +46,16 @@ int main (int argc, char *argv[])
 
     if(options.dxffile=="")
     {
-        cerr<<"Usage: lfp [-g]  [-l] [-s] [-o] [-n nodeid] [-w wayid] "
+        cerr<<"Usage: lfp [-g] [-l] [-s] [-o] [-n nodeid] [-w wayid] [-u dbusername] [-d dbname] [-p dbport] [-t dbtable] [-y wayname -h heightname"
             << "LFPfile" << endl <<
               "    -g: Reproject to 'Google' Spherical Mercator" << endl<<
               "    -l: Reproject to WGS84 lat/lon" << endl<<
+              "    -u: PG username (otherwise defaults to 'gisuser')" << endl<<
+              "    -d: PG database name (otherwise defaults to 'gis')" << endl<<
+              "    -t: PG table name (otherwise defaults to 'contours')" << endl<<
+              "    -p: PG connection port (otherwise defaults to the system default)" << endl<<
+              "    -y: PG geometry way field name (otherwise defaults to the name 'way')" << endl<<
+              "    -h: PG height field name (otherwise defaults to the name'height')" << endl<<
               "    -o: Output OSM, not PostGIS SQL" << endl<<
               "    -s: SQL to stdout only (not to DB)" << endl;
         exit(1);
@@ -55,10 +70,20 @@ int main (int argc, char *argv[])
     int srs[] = { 27700, 900913, 4326 };
 
     if(!options.sqlstdout && !options.osm)
-        conn = PQconnectdb("user=gisuser dbname=gis");
+    {
+        // Defaults to "user=gisuser dbname=gis" if not otherwise specified
+        std::string dbuser = options.dbuser.empty() ? "gisuser" : options.dbuser;
+        std::string dbname = options.dbname.empty() ? "gis" : options.dbname;
+        std::string dbport = options.dbport ? "port=" + std::to_string(options.dbport) : "";
+        std::string connection = "user=" + dbuser + " dbname=" + dbname + dbport;
+        conn = PQconnectdb(connection.c_str());
+    }
     if(options.sqlstdout || options.osm || PQstatus(conn)!=CONNECTION_BAD)
     {
-        int i=0;
+        std::string dbtable = options.dbtable.empty() ? "contours" : options.dbtable;
+        std::string dbway = options.dbway.empty() ? "way" : options.dbway;
+        std::string dbheight = options.dbheight.empty() ? "height" : options.dbheight;
+        uint i=0;
         for(i=0; i<contours.size(); i++)
         {
             if(options.osm)
@@ -73,7 +98,7 @@ int main (int argc, char *argv[])
             {
                 string wkt=contours[i].toWKT();
                 std::stringstream ss;
-                ss << "INSERT INTO contours (height,way) VALUES ("
+                ss << "INSERT INTO " << dbtable << " (" << dbheight << "," << dbway << ") VALUES ("
                     << contours[i].getHeight() << ","
                     <<"GeomFromText('" << wkt << "', " 
                     << srs[options.reproj]<<"));";
@@ -217,6 +242,49 @@ void process_cmd_line(int argc, char *argv[], OPTIONS *options)
             argc-=2;
             argv+=2;
         }
+
+        else if(!strcmp(argv[1],"-u"))
+        {
+            options->dbuser = argv[2];
+            argc-=2;
+            argv+=2;
+        }
+
+        else if(!strcmp(argv[1],"-d"))
+        {
+            options->dbname = argv[2];
+            argc-=2;
+            argv+=2;
+        }
+
+        else if(!strcmp(argv[1],"-t"))
+        {
+            options->dbtable = argv[2];
+            argc-=2;
+            argv+=2;
+        }
+
+        else if(!strcmp(argv[1],"-p"))
+        {
+            options->dbport = atoi(argv[2]);
+            argc-=2;
+            argv+=2;
+        }
+
+        else if(!strcmp(argv[1],"-y"))
+        {
+            options->dbway = argv[2];
+            argc-=2;
+            argv+=2;
+        }
+
+        else if(!strcmp(argv[1],"-h"))
+        {
+            options->dbheight = argv[2];
+            argc-=2;
+            argv+=2;
+        }
+
         else
         {
             argc--;
