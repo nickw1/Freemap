@@ -256,7 +256,7 @@ public class FreemapDataset implements TiledData
 	
 	public void operateOnNearbyWays(WayVisitor visitor, Point point, double distance)
 	{
-		Way way;
+		
 		//Set<Map.Entry<Long,Way> > waySet = ways.entrySet();
 		
 		/*

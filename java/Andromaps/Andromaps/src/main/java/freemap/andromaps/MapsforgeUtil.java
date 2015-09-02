@@ -43,7 +43,6 @@ public class MapsforgeUtil
 			}
 			return false;
 		}
-		
 	}
 	
 	public static Marker makeMarker (Drawable drawable, LatLong latLong)

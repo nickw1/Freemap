@@ -12,6 +12,8 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.view.MapView;
 
+import freemap.data.Point;
+
 public class LocationDisplayer implements MapLocationProcessorWithListener.LocationDisplayer {
 	
 
@@ -30,10 +32,10 @@ public class LocationDisplayer implements MapLocationProcessorWithListener.Locat
 	
 	
 	
-	public void setLocationMarker(LatLong p)
+	public void setLocationMarker(Point p)
 	{
 
-		myLocOverlayItem = MapsforgeUtil.makeMarker(locationIcon, p);
+		myLocOverlayItem = MapsforgeUtil.makeMarker(locationIcon, new LatLong(p.y, p.x));
 		
 	}
 	
@@ -46,10 +48,10 @@ public class LocationDisplayer implements MapLocationProcessorWithListener.Locat
 		}
 	}
 	
-	public void moveLocationMarker(LatLong p)
+	public void moveLocationMarker(Point p)
 	{
 		if(myLocOverlayItem!=null)
-			myLocOverlayItem.setLatLong(p);
+			myLocOverlayItem.setLatLong(new LatLong(p.y, p.x));
 	}
 	
 	public void removeLocationMarker()

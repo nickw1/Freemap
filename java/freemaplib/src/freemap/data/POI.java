@@ -44,6 +44,11 @@ public class POI extends Feature{
 		return point;
 	}
 
+	public Point getUnprojectedPoint()
+	{
+		return proj==null? point:proj.unproject(point);
+	}
+	
 	public String toString()
 	{
 		return "POI: " + point.toString() + "\n" + super.toString();

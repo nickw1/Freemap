@@ -14,8 +14,10 @@ import android.util.Log;
 import android.widget.Toast;
 import android.location.LocationProvider;
 
-
-import org.mapsforge.core.model.LatLong;
+// 020915 remove mapsforge dependency
+// instead use Point to represent a lat/lon
+//import org.mapsforge.core.model.LatLong;
+import freemap.data.Point;
 
 // Role: to receive a location and manage location provider updates, show the "my location" marker
 // (using the generic interface LocationDisplayer, not tied to a particular UI),
@@ -35,9 +37,9 @@ public class MapLocationProcessor
 	
 	public interface LocationDisplayer
 	{
-		public void setLocationMarker(LatLong p);
+		public void setLocationMarker(Point p);
 		public void addLocationMarker();
-		public void moveLocationMarker(LatLong p);
+		public void moveLocationMarker(Point p);
 		public void removeLocationMarker();
 		public boolean isLocationMarker();
 	}
@@ -97,7 +99,7 @@ public class MapLocationProcessor
 	public void onLocationChanged(double lon, double lat, boolean refresh)
 	{
 		Log.d("OpenTrail", "broadcastreceiver: location=" + lon+","+lat);
-		LatLong p = new LatLong(lat,lon);
+		Point p = new Point(lon,lat);
 		
 		if(!displayer.isLocationMarker())
 			displayer.setLocationMarker(p);

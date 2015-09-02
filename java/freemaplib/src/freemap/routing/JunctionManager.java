@@ -42,6 +42,11 @@ public class JunctionManager  {
         dataset=d;
     }
 
+    public boolean hasDataset()
+    {
+    	return dataset!=null;
+    }
+    
     public boolean isJunction(Point lonLat)
     {
     	return isJunction(lonLat, false);
@@ -53,7 +58,7 @@ public class JunctionManager  {
         int nNearWays = 0, nTerminals = 0;
 
         OSMTiles.WayIterator iWay = dataset.wayIterator();
-        Way w = iWay.next();
+        Way w = (Way)iWay.next();
         double lowestSoFar;
         boolean isTerminal;
         
@@ -93,7 +98,7 @@ public class JunctionManager  {
             	if(storeWays)
             		storedWays.add(w);
             }
-            w = iWay.next();
+            w =(Way)iWay.next();
         }
         System.out.println("Found " + nNearWays + " ways with " + nTerminals + " terminals.");
         return nNearWays>=3 || (nNearWays==2 && nTerminals<2);
@@ -101,9 +106,12 @@ public class JunctionManager  {
     
     public Point getJunction (Point p)
     {
+    	// Are we near a junction?
     	if(isJunction(p, true) && storedWays.size()>=2)
     	{
+    		// If so we need to find the actual position of the junction
     		Way testWay = storedWays.get(0), otherWay = storedWays.get(1);
+    		
     		// Take the first way, and find out which point is closest to the second.
     		// We don't really need to worry about subsequent ways as the point closest to the 2nd will give us our junction.
     		//return storedWays.get(0).closestPointToUnprojected(storedWays.get(1));
@@ -132,6 +140,11 @@ public class JunctionManager  {
     	return null;
     }
     
+    public ArrayList<Way> getStoredWays()
+    {
+    	return storedWays;
+    }
+    
     public static void main (String[] args)
     {
     	// 51.0460 -0.7343 : 1263/66
@@ -142,7 +155,7 @@ public class JunctionManager  {
     	// 51.0498 -0.7143 : loop track west end
     	// 51.0495 -0.7117 : loop track east end  	
     		
-    		double lon = -0.7340, lat=51.0473;
+    		double lon = -0.7343, lat=51.0460;
     		
     		FreemapFileFormatter formatter = new FreemapFileFormatter("epsg:3857");
     		formatter.setScript("bsvr2.php");
