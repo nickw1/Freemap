@@ -1,4 +1,4 @@
-package freemap.andromaps;
+package freemap.opentrail;
 
 // General role: a displayer of overlay data
 // This or its subclasses (e.g. DataDisplayer in opentrail) would collect together all necessary overlays

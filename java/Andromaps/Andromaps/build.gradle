@@ -20,8 +20,10 @@ dependencies {
 
     compile 'com.android.support:support-v4:18.0.0'
     compile files ('libs/freemaplib.jar')
+    /*
     compile files ('libs/mapsforge-core-0.5.0-rc4.jar')
     compile files ('libs/mapsforge-map-0.5.0-rc4.jar')
     compile files ('libs/mapsforge-map-android-0.5.0-rc4.jar')
     compile files ('libs/mapsforge-map-reader-0.5.0-rc4.jar')
+    */
 }

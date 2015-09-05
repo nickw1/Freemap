@@ -1,4 +1,4 @@
-package freemap.andromaps;
+package freemap.opentrail;
 
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Color;
@@ -69,3 +69,4 @@ public class MapsforgeUtil
 		return p;
 	}
 }
+

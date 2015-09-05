@@ -91,7 +91,7 @@ import freemap.andromaps.DownloadTextFilesTask;
 import freemap.andromaps.HTTPUploadTask;
 import freemap.andromaps.HTTPCommunicationTask;
 import freemap.andromaps.DialogUtils;
-import freemap.andromaps.MapsforgeUtil;
+
 
 
 import freemap.proj.OSGBProjection;

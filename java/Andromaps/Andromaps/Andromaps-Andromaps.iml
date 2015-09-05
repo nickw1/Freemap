@@ -90,10 +90,6 @@
     <orderEntry type="jdk" jdkName="Android API 15 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
-    <orderEntry type="library" exported="" name="mapsforge-map-0.5.0-rc4" level="project" />
-    <orderEntry type="library" exported="" name="mapsforge-map-reader-0.5.0-rc4" level="project" />
     <orderEntry type="library" exported="" name="freemaplib" level="project" />
-    <orderEntry type="library" exported="" name="mapsforge-map-android-0.5.0-rc4" level="project" />
-    <orderEntry type="library" exported="" name="mapsforge-core-0.5.0-rc4" level="project" />
   </component>
 </module>

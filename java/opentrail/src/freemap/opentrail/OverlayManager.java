@@ -19,7 +19,7 @@ import freemap.data.Walkroute;
 import freemap.data.Projection;
 
 import freemap.andromaps.MapLocationProcessor;
-import freemap.andromaps.MapsforgeUtil;
+
 
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
@@ -36,7 +36,7 @@ import org.mapsforge.map.model.MapViewPosition;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-public class OverlayManager extends freemap.andromaps.LocationDisplayer implements 
+public class OverlayManager extends LocationDisplayer implements 
 	freemap.datasource.FreemapDataset.AnnotationVisitor,
 	MapLocationProcessor.LocationDisplayer
 {
