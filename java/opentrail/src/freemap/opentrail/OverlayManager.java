@@ -218,7 +218,7 @@ public class OverlayManager extends freemap.andromaps.LocationDisplayer implemen
 		removeTileRendererLayer();
 	}
 	
-	public void setLocationMarker(LatLong p)
+	public void setLocationMarker(Point p)
 	{
 		super.setLocationMarker(p);
 		if(renderLayerAdded)
