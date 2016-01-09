@@ -203,7 +203,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         {
         	sdcard = Environment.getExternalStorageDirectory().getAbsolutePath() ;
         	
-        	File opentrailDir = new File(sdcard+"/opentrail-test");
+        	File opentrailDir = new File(sdcard+"/opentrail");
         	if(!opentrailDir.exists())
         		opentrailDir.mkdir();
 
@@ -217,7 +217,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         
     		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     		SharedPreferences.Editor ed = p.edit();
-    		ed.putString("wrCacheLoc", sdcard + "/opentrail-test/walkroutes/");
+    		ed.putString("wrCacheLoc", sdcard + "/opentrail/walkroutes/");
     		ed.commit();
         	
         	walkrouteIdx = -1;
@@ -298,7 +298,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     			alertDisplayMgr.setWalkroute(Shared.walkroutes.get(walkrouteIdx));
     			overlayMgr.setWalkroute(Shared.walkroutes.get(walkrouteIdx));
     		}
-    		wrCacheMgr = new WalkrouteCacheManager(sdcard+"/opentrail-test/walkroutes/");
+    		wrCacheMgr = new WalkrouteCacheManager(sdcard+"/opentrail/walkroutes/");
     	
     		
     		mapLocationProcessor=new MapLocationProcessorBR(this,this,overlayMgr);
@@ -308,11 +308,11 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     		filter.addAction("freemap.opentrail.locationchanged");
     		
     		
-    		File wrDir = new File(sdcard+"/opentrail-test/walkroutes/");
+    		File wrDir = new File(sdcard+"/opentrail/walkroutes/");
     		if(!wrDir.exists())
     			wrDir.mkdir();
     			
-        	annCacheMgr = new AnnotationCacheManager(sdcard+"/opentrail-test/annotations/");
+        	annCacheMgr = new AnnotationCacheManager(sdcard+"/opentrail/annotations/");
         	
         	gpsServiceConn = new ServiceConnection()
         	{
@@ -401,7 +401,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 		//we need this as the activity requires data from the service, but we
 		//also need the service to keep going once the activity finishes
 		Intent startServiceIntent = new Intent(this,GPSService.class);
-		startServiceIntent.putExtra("wrCacheLoc",sdcard+"/opentrail-test/walkroutes/");
+		startServiceIntent.putExtra("wrCacheLoc",sdcard+"/opentrail/walkroutes/");
 		startServiceIntent.putExtra("recordingWalkroute", recordingWalkroute);
 		startService(startServiceIntent);
 	}
@@ -440,7 +440,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 			try
 			{
 
-				renderTheme = new ExternalRenderTheme(new File(sdcard + "/opentrail-test/freemap_v4.xml"));
+				renderTheme = new ExternalRenderTheme(new File(sdcard + "/opentrail/freemap_v4.xml"));
 				renderLayer.setXmlRenderTheme(renderTheme);
 				Log.d("OpenTrail", "set render theme " + renderTheme);
 		
@@ -570,7 +570,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     public void downloadStyleFile()
     {
 		Log.d("OpenTrail", "downloadStyleFile()");
-    	styleFile = sdcard+"/opentrail-test/freemap_v4.xml";
+    	styleFile = sdcard+"/opentrail/freemap_v4.xml";
     	File sf = new File(styleFile);
 		styleFileDownloaded = sf.exists();
     	if(!styleFileDownloaded)
@@ -674,7 +674,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 							Log.d("OpenTrail", "download map data finished: gsq=" + gsq +  " addData=" + addData);
                             if(gsq.equals((String)addData))
                             {
-                                mapFile=sdcard+"/opentrail-test/"+((String)addData)+".map";
+                                mapFile=sdcard+"/opentrail/"+((String)addData)+".map";
                                 /* 211114 call refreshDisplay() instead to delete/restore cache if needed - this will call setupMap()
                                 
                                 File mf = new File(mapFile);
@@ -743,7 +743,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     	
     	frag.setHTTPCommunicationTask(new DownloadBinaryFilesTask(this,  new String[] 
                 { "http://www.free-map.org.uk/data/android/"+mapName+".map" }, 
-            	new String[] { sdcard+"/opentrail-test/"+mapName+".map" },
+            	new String[] { sdcard+"/opentrail/"+mapName+".map" },
             	addMsg + "Download "+mapName+".map? Warning: 150-300+MB file if downloading all of England " +
             	            "or Wales; wifi extremely strongly advised!", this, 1), "Downloading...", "Downloading map file...");
     	frag.getHTTPCommunicationTask().setAdditionalData(mapName);
@@ -974,7 +974,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     				Bundle extras = i.getExtras();
     	
     				
-    				mapFile = sdcard+"/opentrail-test/"+extras.getString("mapFile");
+    				mapFile = sdcard+"/opentrail/"+extras.getString("mapFile");
     				
     				File mf=new File(mapFile);
     				if(mf.exists())
@@ -1180,7 +1180,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     
     private String makeCacheDir(String projID)
     {
-    	String cachedir = sdcard+"/opentrail-test/cache/" + projID.toLowerCase().replace("epsg:", "")+"/";
+    	String cachedir = sdcard+"/opentrail/cache/" + projID.toLowerCase().replace("epsg:", "")+"/";
     	File dir = new File(cachedir);
     	if(!dir.exists())
     		dir.mkdirs();
@@ -1255,14 +1255,14 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 		Log.d("OpenTrail", "curGridsq=" + curGridsq + " loc gridsq=" + gridsq + " mapFile=" + mapFile);
 
 		if(!curGridsq.equals(gridsq) && (mapFile==null ||
-		        mapFile.equals(sdcard+"/opentrail-test/"+curGridsq+".map")))
+		        mapFile.equals(sdcard+"/opentrail/"+curGridsq+".map")))
 		{
 		
 			curGridsq = gridsq;
 			updateMapFile = true;
 			
 			
-			File mf = new File(sdcard+"/opentrail-test/"+gridsq+".map");
+			File mf = new File(sdcard+"/opentrail/"+gridsq+".map");
 			if(!mf.exists())
 			{
 				Log.d("OpenTrail", "Downloading " + mf.getName());
