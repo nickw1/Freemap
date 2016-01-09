@@ -23,7 +23,7 @@ public class SavedDataFragment extends Fragment
 	public void onCreate (Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		Log.d("newmapsforge", "fragment onCreate()");
+		Log.d("OpenTrail", "fragment onCreate()");
 		setRetainInstance(true);
 	}
 	
@@ -31,19 +31,19 @@ public class SavedDataFragment extends Fragment
 	{
 		super.onActivityCreated(savedInstanceState);
 		
-		Log.d("newmapsforge", "onActivityCreated(): dataTask = " + dataTask + " dfTask = " + dfTask);
+		Log.d("OpenTrail", "onActivityCreated(): dataTask = " + dataTask + " dfTask = " + dfTask);
 		OpenTrail activity = (OpenTrail)getActivity();
 				
 		// any tasks running, connect to activity
 		if(dataTask!=null)
 		{
-			Log.d("newmapsforge", "dataTask not null so reconnecting");
+			Log.d("OpenTrail", "dataTask not null so reconnecting");
 		
 			dataTask.reconnect(activity, activity);
 		}
 		if(dfTask!=null)
 		{
-			Log.d("newmapsforge", "dfTask not null so reconnecting");
+			Log.d("OpenTrail", "dfTask not null so reconnecting");
 		
 			dfTask.reconnect(activity, activity);
 		}
@@ -60,7 +60,9 @@ public class SavedDataFragment extends Fragment
 	}
 	public void executeHTTPCommunicationTask (HTTPCommunicationTask dfTask, String dialogTitle, String dialogText)
 	{
+		Log.d("OpenTrail", "executeHTTPCommunciatonTask()");
 		setHTTPCommunicationTask (dfTask, dialogTitle, dialogText);
+		Log.d("OpenTrail", "confirmAndExccute()");
 		dfTask.confirmAndExecute();
 	}
 	
@@ -83,12 +85,12 @@ public class SavedDataFragment extends Fragment
 	{
 		super.onDetach();
 		
-		Log.d("newmapsforge", "onDetach()");
+		Log.d("OpenTrail", "onDetach()");
 		// any tasks running, disconnect from activity
 		if(dataTask!=null && dataTask.getStatus()==AsyncTask.Status.RUNNING)
 		{
 			
-			Log.d("newmapsforge", "disconnecting data task");
+			Log.d("OpenTrail", "disconnecting data task");
 			
 			dataTask.disconnect();
 		}
@@ -96,7 +98,7 @@ public class SavedDataFragment extends Fragment
 			dataTask = null;
 		if(dfTask!=null && dfTask.getStatus()==AsyncTask.Status.RUNNING)
 		{
-			Log.d("newmapsforge", "disconnecting dfTask");
+			Log.d("OpenTrail", "disconnecting dfTask");
 		
 			dfTask.disconnect();
 		}

@@ -91,7 +91,7 @@ import freemap.andromaps.DownloadTextFilesTask;
 import freemap.andromaps.HTTPUploadTask;
 import freemap.andromaps.HTTPCommunicationTask;
 import freemap.andromaps.DialogUtils;
-
+import freemap.andromaps.MapsforgeUtil;
 
 
 import freemap.proj.OSGBProjection;
@@ -134,7 +134,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 	int readZoom = -1;
 	
 	boolean mapSetup=false,waitingForNewPOIData=false;
-	boolean updateMapFile=false;
+	boolean updateMapFile=false,styleFileDownloaded=false;
 	
 	
 	
@@ -203,10 +203,10 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         {
         	sdcard = Environment.getExternalStorageDirectory().getAbsolutePath() ;
         	
-        	File opentrailDir = new File(sdcard+"/opentrail");
+        	File opentrailDir = new File(sdcard+"/opentrail-test");
         	if(!opentrailDir.exists())
         		opentrailDir.mkdir();
-        
+
         	mapFile = null;
         	
        	
@@ -217,7 +217,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         
     		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     		SharedPreferences.Editor ed = p.edit();
-    		ed.putString("wrCacheLoc", sdcard+"/opentrail/walkroutes/");
+    		ed.putString("wrCacheLoc", sdcard + "/opentrail-test/walkroutes/");
     		ed.commit();
         	
         	walkrouteIdx = -1;
@@ -234,7 +234,8 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         	readZoom = 14;
       
           	curGridsq="";
-          	
+
+
         	if(savedInstanceState!=null)
         	{
         		initPos = new LatLong(savedInstanceState.getDouble("lat"),
@@ -252,9 +253,9 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         	    
         		initPos = new LatLong(prefs.getFloat("lat",51.05f),
         							prefs.getFloat("lon", -0.72f));
-        		//mapFile = prefs.getString("mapFile",null);
-        		mapFile = prefs.getString("mapFile", sdcard+"/opentrail/su.map");
-     
+        		mapFile = prefs.getString("mapFile",null);
+        		//mapFile = prefs.getString("mapFile", sdcard+"/opentrail-test/su.map");
+     			mapFile=null;
         	
         		readZoom = prefs.getInt("zoom", 14);
         		recordingWalkroute = prefs.getBoolean("recordingWalkroute", false);    
@@ -270,7 +271,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         	
         	curGridsq = (mapFile!=null && mapFile.matches(regex)) ? 
         			mapFile.substring(mapFile.length()-6, mapFile.length()-4): "";
-        	Log.d("newmapsforge", "mapfile is : "+ mapFile + " Initialising curGridsq to: " + curGridsq);
+        	Log.d("OpenTrail", "mapfile is : "+ mapFile + " Initialising curGridsq to: " + curGridsq);
     		cachedir=makeCacheDir(projString);
     		FreemapFileFormatter formatter=new FreemapFileFormatter(this.proj.getID());
     		formatter.setScript("bsvr.php");
@@ -297,7 +298,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     			alertDisplayMgr.setWalkroute(Shared.walkroutes.get(walkrouteIdx));
     			overlayMgr.setWalkroute(Shared.walkroutes.get(walkrouteIdx));
     		}
-    		wrCacheMgr = new WalkrouteCacheManager(sdcard+"/opentrail/walkroutes/");
+    		wrCacheMgr = new WalkrouteCacheManager(sdcard+"/opentrail-test/walkroutes/");
     	
     		
     		mapLocationProcessor=new MapLocationProcessorBR(this,this,overlayMgr);
@@ -307,11 +308,11 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     		filter.addAction("freemap.opentrail.locationchanged");
     		
     		
-    		File wrDir = new File(sdcard+"/opentrail/walkroutes/");
+    		File wrDir = new File(sdcard+"/opentrail-test/walkroutes/");
     		if(!wrDir.exists())
     			wrDir.mkdir();
     			
-        	annCacheMgr = new AnnotationCacheManager(sdcard+"/opentrail/annotations/");
+        	annCacheMgr = new AnnotationCacheManager(sdcard+"/opentrail-test/annotations/");
         	
         	gpsServiceConn = new ServiceConnection()
         	{
@@ -400,7 +401,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 		//we need this as the activity requires data from the service, but we
 		//also need the service to keep going once the activity finishes
 		Intent startServiceIntent = new Intent(this,GPSService.class);
-		startServiceIntent.putExtra("wrCacheLoc",sdcard+"/opentrail/walkroutes/");
+		startServiceIntent.putExtra("wrCacheLoc",sdcard+"/opentrail-test/walkroutes/");
 		startServiceIntent.putExtra("recordingWalkroute", recordingWalkroute);
 		startService(startServiceIntent);
 	}
@@ -408,17 +409,19 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 	// deals with reloading map when mapfile changes, or on pause/resume
 	public void refreshDisplay(boolean recreateTileLayer)
 	{
+
+
 		// renderer layer. can also have marker layers etc. must associate with cache
 		// false= transparency
 		// true = render labels
-				
+		Log.d("OpenTrail","refreshDisplay()");
 	
 		if(updateMapFile)
 			regenerateTileCache();
 					
 		if(recreateTileLayer)
 		{
-			Log.d("newmapsforge", "recreating tile layer");
+			Log.d("OpenTrail", "recreating tile layer");
 			renderLayer = new PressableTileRendererLayer
 										(this, this, tileCache, mapView.getModel().mapViewPosition, false, true,
 											AndroidGraphicFactory.INSTANCE);
@@ -429,37 +432,53 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 			*/
 			
 			if(overlayMgr==null)
-				Log.d("newmapsforge","WARNING data displayer is null");
-				     
-			
+				Log.d("OpenTrail","WARNING data displayer is null");
+
+
+
 				 
 			try
 			{
-				
-				renderTheme = new ExternalRenderTheme(new File(sdcard + "/opentrail/freemap_v4.xml"));
+
+				renderTheme = new ExternalRenderTheme(new File(sdcard + "/opentrail-test/freemap_v4.xml"));
 				renderLayer.setXmlRenderTheme(renderTheme);
+				Log.d("OpenTrail", "set render theme " + renderTheme);
 		
 			}
 			catch(FileNotFoundException e) // should never happen
 			{
 				DialogUtils.showDialog(this, "can't find style file!");
+				Log.d("OpenTrail", "cant find style file!");
 			}	     		
-		}		    
-				     	
+		}
+
+		// dont try and run the rest if we havent got a stylefile yet
+		if (!styleFileDownloaded)
+			return;
+
+		Log.d("OpenTrail", "style file downloaded but no map file");
+
+		if(mapFile==null)
+			return;
+
 		// check mapfile exists
-		File mf = mapFile==null ? null:new File(mapFile);
+
+		Log.d("OpenTrail", "refreshDisplay(): dealing with map file");
+		File mf = new File(mapFile);
+
 		if(!mf.exists())
 			mapFile=null;
-				     		
+
+
 		if((!mapSetup || updateMapFile==true) && mapFile!=null)
 		{
 			
-			Log.d("newmapsforge", "setting up map with a file of " + mapFile);
+			Log.d("OpenTrail", "setting up map with a file of " + mapFile);
 			setupMap(mf, recreateTileLayer);
 		}
 		else if(mapSetup)
 		{
-			Log.d("newmapsforge", "map setup : mapfile = " + mapFile);
+			Log.d("OpenTrail", "map setup : mapfile = " + mapFile);
 			// redrawing bombs with no map file. setupMap() will do it otherwise
 				     		 	
 			// crashes if no mapfile
@@ -483,7 +502,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 			
 	    }
 		else
-			Log.d("newmapsforge", "WARNING: mapFile is null and map not setup, not doing anything");
+			Log.d("OpenTrail", "WARNING: mapFile is null and map not setup, not doing anything");
 
 		updateMapFile=false;
 	}
@@ -550,10 +569,13 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 	
     public void downloadStyleFile()
     {
-    	styleFile = sdcard+"/opentrail/freemap_v4.xml";
+		Log.d("OpenTrail", "downloadStyleFile()");
+    	styleFile = sdcard+"/opentrail-test/freemap_v4.xml";
     	File sf = new File(styleFile);
-    	if(!sf.exists())
+		styleFileDownloaded = sf.exists();
+    	if(!styleFileDownloaded)
     	{
+			Log.d("OpenTrail", "Downloading style file...");
     		frag.executeHTTPCommunicationTask ( new DownloadTextFilesTask(this,  new String[] 
                     { "http://www.free-map.org.uk/data/android/freemap_v4.xml" }, 
                     new String[] { styleFile }, 
@@ -561,7 +583,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     	}
     	
     }
-    
+
     public void setupMap(File mf)
     {
     	setupMap(mf,true);
@@ -575,7 +597,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     		
     		if(mf.exists())
     		{
-    			android.util.Log.d("newmapsforge", "FILE WE WANT EXISTS, mapfile=" + mf);	
+    			android.util.Log.d("OpenTrail", "FILE WE WANT EXISTS, mapfile=" + mf);
     			renderLayer.setMapFile(mf);
     			// add the layer to the map
         		
@@ -583,10 +605,13 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
         		   		
         		if(!mapSetup)
     			{		
-    				setContentView(mapView);	
+    				setContentView(mapView);
+					Log.d("OpenTrail", "set content view to " + mapView);
     				mapSetup=true;
     			}
-        	
+
+				Log.d("OpenTrail", "this.location=" + this.location +
+						" initPos=" + initPos);
         		if(this.location!=null)
     				mapView.getModel().mapViewPosition.setCenter(this.location);
     			else if (initPos!=null)
@@ -594,15 +619,17 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 
         	 	
          		// crashes if no mapfile
+				// note when first loading map if addTileLayer is false this
+				// does not show the map!
         		if(addTileLayer)
         		{
-        			Log.d("newmapsforge", "adding tile render layer");
+        			Log.d("OpenTrail", "adding tile render layer");
         			overlayMgr.addTileRendererLayer(renderLayer);
         		
         			if(prefAnnotations==true)
         				loadAnnotationOverlay();
             		overlayMgr.addAllOverlays();	
-            		Log.d("newmapsforge", "done");
+            		Log.d("OpenTrail", "done");
         		}
          		
         		mapView.invalidate();
@@ -616,9 +643,11 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     
     public void downloadFinished(int id, Object addData)
     {
+		Log.d("OpenTrail", "downloadFinished(): id=" + id);
     	switch(id)
     	{
     		case 0:
+				styleFileDownloaded=true;
     			if(mapFile!=null)
     			{
     				updateMapFile=true;
@@ -640,17 +669,23 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
                                 
                             osgb = this.proj.project(new Point(this.location.longitude,this.location.latitude));
                             gsq = new OSRef(osgb.x,osgb.y).toSixFigureString().substring(0,2).toLowerCase();
-                        
+
+
+							Log.d("OpenTrail", "download map data finished: gsq=" + gsq +  " addData=" + addData);
                             if(gsq.equals((String)addData))
                             {
-                                mapFile=sdcard+"/opentrail/"+((String)addData)+".map";
+                                mapFile=sdcard+"/opentrail-test/"+((String)addData)+".map";
                                 /* 211114 call refreshDisplay() instead to delete/restore cache if needed - this will call setupMap()
                                 
                                 File mf = new File(mapFile);
                                 if(mf.exists())
                                     setupMap(mf);
                                 */
-                                refreshDisplay(false);
+								Log.d("OpenTrail", "now mapFile is" + mapFile);
+
+								// 101115 should this be false? (it was before)
+								// results in the map tile layer not being shown
+                                refreshDisplay(true);
                             }
                         }
                 }
@@ -708,7 +743,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     	
     	frag.setHTTPCommunicationTask(new DownloadBinaryFilesTask(this,  new String[] 
                 { "http://www.free-map.org.uk/data/android/"+mapName+".map" }, 
-            	new String[] { sdcard+"/opentrail/"+mapName+".map" }, 
+            	new String[] { sdcard+"/opentrail-test/"+mapName+".map" },
             	addMsg + "Download "+mapName+".map? Warning: 150-300+MB file if downloading all of England " +
             	            "or Wales; wifi extremely strongly advised!", this, 1), "Downloading...", "Downloading map file...");
     	frag.getHTTPCommunicationTask().setAdditionalData(mapName);
@@ -939,7 +974,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     				Bundle extras = i.getExtras();
     	
     				
-    				mapFile = sdcard+"/opentrail/"+extras.getString("mapFile");
+    				mapFile = sdcard+"/opentrail-test/"+extras.getString("mapFile");
     				
     				File mf=new File(mapFile);
     				if(mf.exists())
@@ -1145,7 +1180,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     
     private String makeCacheDir(String projID)
     {
-    	String cachedir = sdcard+"/opentrail/cache/" + projID.toLowerCase().replace("epsg:", "")+"/";
+    	String cachedir = sdcard+"/opentrail-test/cache/" + projID.toLowerCase().replace("epsg:", "")+"/";
     	File dir = new File(cachedir);
     	if(!dir.exists())
     		dir.mkdirs();
@@ -1186,7 +1221,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     	// lat=50.9;
     	// end
     	
-    	Log.d("newmapsforge", "Received location: " + lon + " " + lat);
+    	Log.d("OpenTrail", "Received location: " + lon + " " + lat);
     	
 		Point pt = new Point(lon,lat);
 		
@@ -1216,18 +1251,21 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
 		// If the current map file is a grid square map file, and we change grid square,
 		// change the map (or prompt user to download new map). This will not happen if we
 		// are using england.map or wales.map.
-		
+
+		Log.d("OpenTrail", "curGridsq=" + curGridsq + " loc gridsq=" + gridsq + " mapFile=" + mapFile);
+
 		if(!curGridsq.equals(gridsq) && (mapFile==null ||
-		        mapFile.equals(sdcard+"/opentrail/"+curGridsq+".map")))
+		        mapFile.equals(sdcard+"/opentrail-test/"+curGridsq+".map")))
 		{
 		
 			curGridsq = gridsq;
 			updateMapFile = true;
 			
 			
-			File mf = new File(sdcard+"/opentrail/"+gridsq+".map");
+			File mf = new File(sdcard+"/opentrail-test/"+gridsq+".map");
 			if(!mf.exists())
 			{
+				Log.d("OpenTrail", "Downloading " + mf.getName());
 				// This will eventually call refreshDisplay() and setupMap()
 				// the mapFile is set when we get it back from the server
 				downloadMapFile(gridsq,"Map file for current location not present on device. ");
@@ -1430,7 +1468,7 @@ public class OpenTrail extends Activity implements AlertDisplay, MapLocationProc
     public void about()
     {
       
-    	DialogUtils.showDialog(this,"OpenTrail 0.2 (beta) 08/02/15, using Mapsforge 0.5. Uses OpenStreetMap data, copyright 2013 " +
+    	DialogUtils.showDialog(this,"OpenTrail 0.2 (beta), using Mapsforge 0.5. Uses OpenStreetMap data, copyright 2013 " +
     											"OpenStreetMap contributors, Open Database Licence. Uses " +
     											"Ordnance Survey OpenData LandForm Panorama contours, Crown Copyright." +
     											"Person icon taken from the osmdroid project. Annotation icon based on " +
