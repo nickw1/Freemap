@@ -25,21 +25,35 @@ import freemap.data.Point;
 // application-specific processing.
 // Essentially it's a "bridge" between the location listener and the rest of the application.
 
+
+// 160216 comments are old version - have updated interface to make it clearer
 public class MapLocationProcessor 
 {
 	
 	LocationDisplayer displayer;
 	Drawable icon;
-	//ProgressDialog gpsWaitingDialog;
+
 	Context ctx;
 	boolean gpsWaiting;
 	Toast toast;
-	
+
+	/*
 	public interface LocationDisplayer
 	{
 		public void setLocationMarker(Point p);
 		public void addLocationMarker();
 		public void moveLocationMarker(Point p);
+		public void removeLocationMarker();
+		public boolean isLocationMarker();
+	}
+	*/
+
+	public interface LocationDisplayer
+	{
+		public void addLocationMarker(Point p);
+		public void moveLocationMarker(Point p);
+		public void showLocationMarker();
+		public void hideLocationMarker();
 		public void removeLocationMarker();
 		public boolean isLocationMarker();
 	}
@@ -67,14 +81,13 @@ public class MapLocationProcessor
 	
 	public void startUpdates()
 	{
-		if(!isUpdating)
-		{
-			isUpdating=true;
-			Log.d("OpenTrail","MapLocationProcessor.startUpdates()");
-			
-			if(displayer.isLocationMarker())
-			{
-				displayer.addLocationMarker();
+		if(!isUpdating) {
+			isUpdating = true;
+			Log.d("OpenTrail", "MapLocationProcessor.startUpdates()");
+
+
+			if (displayer.isLocationMarker()) {
+				displayer.showLocationMarker();
 			}
 		}
 	}
@@ -98,13 +111,15 @@ public class MapLocationProcessor
 	
 	public void onLocationChanged(double lon, double lat, boolean refresh)
 	{
-		Log.d("OpenTrail", "broadcastreceiver: location=" + lon+","+lat);
+
 		Point p = new Point(lon,lat);
-		
+
+
 		if(!displayer.isLocationMarker())
-			displayer.setLocationMarker(p);
+			displayer.addLocationMarker(p);
 		else
 			displayer.moveLocationMarker(p);
+
 		
 		cancelGPSWaiting();
 		receiver.receiveLocation(lon,lat,refresh);	
@@ -143,7 +158,7 @@ public class MapLocationProcessor
 	private void showLocationMarker()
 	{
 		if(displayer.isLocationMarker())
-			displayer.addLocationMarker();
+			displayer.showLocationMarker();
 	}
 
 	private void hideLocationMarker()
