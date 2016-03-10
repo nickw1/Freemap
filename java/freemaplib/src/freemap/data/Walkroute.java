@@ -26,28 +26,26 @@ public class Walkroute {
 		}
 	}
 
-	String title, description;
-	int id;
-	double presetDistance;
+	WalkrouteSummary summary;
 	
 	ArrayList<TrackPoint> points = new ArrayList<TrackPoint>();
 	ArrayList<Stage> stages = new ArrayList<Stage>();
 
 	public Walkroute()
 	{
-		title=description="Unknown";
-		presetDistance = -1.0;
+		summary=new WalkrouteSummary();
+		
 	}
 	
 	public Walkroute(String title, String description)
 	{
-		setTitle(title);
-		setDescription(description);
+		summary=new WalkrouteSummary(title,description);
+
 	}
 
 	public void setDistance (double d)
 	{
-		presetDistance = d;
+		summary.setDistance(d);
 	}
 	
 	public void addStage(Point start,String description)
@@ -58,27 +56,29 @@ public class Walkroute {
 	
 	public void addPoint(TrackPoint p)
 	{
+		if(points.size()==0)
+			summary.setStart(p);
 		points.add(p);
 	}
 	
 	public void setTitle(String title)
 	{
-		this.title=title;
+		summary.setTitle(title);
 	}
 	
 	public void setDescription(String description)
 	{
-		this.description=description;
+		summary.setDescription(description);
 	}
 	
 	public void setId(int id)
 	{
-		this.id=id;
+		summary.setId(id);
 	}
 	
 	public int getId()
 	{
-		return id;
+		return summary.getId();
 	}
 	
 	public Point getStart()
@@ -93,7 +93,8 @@ public class Walkroute {
 	
 	public String toString()
 	{
-		String desc = "WALKROUTE Title: " + title + " Description: " + description + "\n";
+		String desc = "WALKROUTE Title: " + summary.getTitle() + " Description: " 
+				+ summary.getDescription() + "\n";
 		for(int i=0; i<stages.size(); i++)
 		{
 			desc += stages.get(i).toString() + "\n";
@@ -105,7 +106,8 @@ public class Walkroute {
 	public String toXML()
 	{
 		DecimalFormat format=new DecimalFormat("000");
-		String desc = "<gpx><trk><name>" + title + "</name><desc>" + description + "</desc><number>"+id+
+		String desc = "<gpx><trk><name>" + summary.getTitle() + "</name><desc>" + 
+					summary.getDescription() + "</desc><number>"+summary.getId()+
 				"</number><extensions><distance>" + getDistance() + "</distance></extensions>";
 		
 		
@@ -130,12 +132,12 @@ public class Walkroute {
 	}
 	public String getTitle()
 	{
-		return title;
+		return summary.getTitle();
 	}
 	
 	public String getDescription()
 	{
-		return description;
+		return summary.getDescription();
 	}
 	
 	public ArrayList<TrackPoint> getPoints()
@@ -181,7 +183,7 @@ public class Walkroute {
 	
 	public Walkroute simplifyDouglasPeucker(double distMetres)
 	{
-	    Walkroute simplified = new Walkroute (title, description);
+	    Walkroute simplified = new Walkroute (summary.getTitle(), summary.getDescription());
 	    for(int i=0; i<stages.size(); i++)
 	        simplified.addStage(stages.get(i).start, stages.get(i).description);
 	    
@@ -214,7 +216,7 @@ public class Walkroute {
 			return dist / 1000;
 			
 		}
-		System.out.println("getDistance(): presetDistance: " + presetDistance);
-		return presetDistance;
+		System.out.println("getDistance(): presetDistance: " + summary.getDistance());
+		return summary.getDistance();
 	}
 }

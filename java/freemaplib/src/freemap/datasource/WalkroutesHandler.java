@@ -1,13 +1,13 @@
 package freemap.datasource;
 
 
-import freemap.data.Walkroute;
 import org.xml.sax.Attributes;
 import freemap.data.TrackPoint;
 import java.util.ArrayList;
+import freemap.data.WalkrouteSummary;
 
 public class WalkroutesHandler extends XMLDataHandler{
-	ArrayList<Walkroute> routes = new ArrayList<Walkroute>();
+	ArrayList<WalkrouteSummary> routes = new ArrayList<WalkrouteSummary>();
 	String curTag, routeName,routeDescription, routeId, strDist;
 	boolean  inName, inDesc,inWpt, inId, inExtensions, inDistance;
 	TrackPoint curPoint = new TrackPoint();
@@ -62,8 +62,8 @@ public class WalkroutesHandler extends XMLDataHandler{
 		System.out.println("closingTag: " + closingTag);
 		if(closingTag.equals("wpt"))
 		{
-			Walkroute curRoute = new Walkroute(routeName,routeDescription);
-			curRoute.addPoint(curPoint);
+			WalkrouteSummary curRoute = new WalkrouteSummary(routeName,routeDescription);
+			curRoute.setStart(curPoint);
 			curRoute.setId(Integer.parseInt(routeId));
 			System.out.println("Distance=" + curDistance);
 			curRoute.setDistance(curDistance);
@@ -122,7 +122,7 @@ public class WalkroutesHandler extends XMLDataHandler{
 	
 	public void reset()
 	{
-		routes = new ArrayList<Walkroute>();
+		routes = new ArrayList<WalkrouteSummary>();
 	}
 }
 

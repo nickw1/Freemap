@@ -104,7 +104,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 
 public class OpenTrail extends Activity implements AlertDisplay, MapLocationProcessor.LocationReceiver,
-			DataReceiver, HTTPCommunicationTask.Callback, PressableTileRendererLayer.Callback
+			DataReceiver, HTTPComFmunicationTask.Callback, PressableTileRendererLayer.Callback
 {
 
 	// FROM EXISTING OPENTRAIL
