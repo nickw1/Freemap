@@ -7,7 +7,7 @@ import android.os.AsyncTask;
 import android.content.DialogInterface;
 
 
-public abstract class DataCallbackTask<Params,Progress> extends ConfigChangeSafeTask<Params,Progress> {
+public abstract class DataCallbackTask<Params,Progress> extends CallbackTask<Params,Progress> {
 
 
 	protected Object receiver, data;

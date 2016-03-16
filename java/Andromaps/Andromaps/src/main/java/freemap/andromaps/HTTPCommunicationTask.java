@@ -10,7 +10,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import freemap.andromaps.ConfigChangeSafeTask;
 
-public abstract class HTTPCommunicationTask extends ConfigChangeSafeTask<Void,Void> {
+public abstract class HTTPCommunicationTask extends CallbackTask<Void,Void> {
 
 	public interface Callback
 	{
@@ -43,22 +43,18 @@ public abstract class HTTPCommunicationTask extends ConfigChangeSafeTask<Void,Vo
 	public void confirmAndExecute()
 	{
 		new AlertDialog.Builder(ctx).setMessage(alertMsg).
-			setNegativeButton("Cancel",new DialogInterface.OnClickListener()
-			{
-				public void onClick(DialogInterface i, int which)
-				{
+			setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface i, int which) {
 					callback.downloadCancelled(taskId);
 				}
 			}).
 			setPositiveButton("OK",
-					new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface i, int which)
-					{
-						HTTPCommunicationTask.this.execute();
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface i, int which) {
+							HTTPCommunicationTask.this.execute();
+						}
 					}
-				}
-		 ).show();
+			).show();
 	}
 	
 	protected void showFinishDialog(String result)
@@ -88,6 +84,15 @@ public abstract class HTTPCommunicationTask extends ConfigChangeSafeTask<Void,Vo
 	{
 		callback=null;
 		super.disconnect();
+	}
+
+	// TODO fix this
+	public void reconnect(Context ctx, Object receiver) {
+		if(receiver instanceof Callback) {
+			reconnect(ctx, (Callback) receiver);
+		}else{
+			throw new IllegalArgumentException("reconnect() expects an HTTPCommunicationTask.Callback");
+		}
 	}
 
 	public void reconnect(Context ctx, Callback receiver)
