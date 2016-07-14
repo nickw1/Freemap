@@ -10,18 +10,19 @@ require_once('password.php');
 
 class UserManager
 {
-    protected $conn;
+    protected $conn, $table;
 
-    public function __construct($conn)
+    public function __construct($conn, $table="users")
     {
         $this->conn = $conn;
+		$this->table = $table;
     }
 
     function isValidLogin($username,$password)
     {
 		
             $stmt=$this->conn->prepare
-                ("select * from users where username=?");
+                ("select * from ".$this->table." where username=?");
             $stmt->bindParam (1, $username);
             $stmt->execute();
             $row = $stmt->fetch();
@@ -39,13 +40,13 @@ class UserManager
         if(ctype_alnum($user))
         {
             $stmt=$this->conn->prepare
-            ("SELECT id FROM users WHERE username=?");
+            ("SELECT id FROM ".$this->table." WHERE username=?");
             $stmt->bindParam (1, $user);
             $stmt->execute();
             $row = $stmt->fetch();
             if($row!==false)
             {
-                return new User($row["id"], $this->conn);
+                return new User($row["id"], $this->conn, $this->table);
             }
         }
         return null;
