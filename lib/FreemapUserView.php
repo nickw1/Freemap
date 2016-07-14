@@ -70,25 +70,7 @@ class FreemapUserView extends UserView
 		to activate your account, which you should follow.
         Your email is NOT used for marketing or other similar activities!</p>
         <?php
-        if($error==1)
-        {
-            echo "<p class='error'>Error: Username already taken. ";
-            echo "Please choose another one.</p>";
-        }
-        elseif($error==2)
-        {
-            echo "<p class='error'>Spaces not allowed in usernames.</p>";
-        }
-        elseif($error==3)
-        {
-            echo "<p class='error'>You've got to <em>actually provide</em> ".
-            "a username and password!!!!! ;-)</p>";
-        }
-        elseif($error==4)
-        {
-            echo "<p class='error'>Invalid username - letters and numbers ".
-				"only!</p>";
-        }
+		UserView::showSignupError($error);
         ?>
         <div>
         <form method="post" action=
