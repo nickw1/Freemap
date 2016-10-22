@@ -557,4 +557,14 @@ function pgconnstring()
 {
 	return "dbname=". PG_DBNAME ." user=".PG_USER;
 }
+
+function pdoGetUserFromId($conn, $id, $table="users", $usercol="username",
+							$idcol="id")
+{
+	$stmt=$conn->prepare ("SELECT $usercol FROM $table WHERE $idcol=?");
+	$stmt->bindParam (1, $id);
+	$stmt->execute();
+
+	return (($row=$stmt->fetch()) === null) ? null: $row[$usercol];
+}
 ?>
