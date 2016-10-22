@@ -4,6 +4,13 @@
 define('MAX_TILE_AGE', 86400);
 define('TILELIST', '/home/www-data/cron/tilelist.txt');
 
+// change 180815
+// add $ext parameter to extend bbox to avoid boundary artefacts
+// was originally done if $kg existed, however now we also want to do this
+// when calling the web service from the mapsforge client (i.e. a non-kothic
+// scenario)
+// also turn back on loading from cache if it exists. that's why the site
+// has been slow lately! 
 
 class DataGetter
 {
@@ -11,6 +18,7 @@ class DataGetter
             $doWays, $doPolygons, $dbq, $conn;
 
     function __construct($kothic_gran=null, $dbdetails=null, $srid="900913",
+						$projSRID="900913",$outSRID="900913",	
                             $dbname="gis", $user="gis")
     {
         $this->conn = new PDO("pgsql:host=localhost;dbname=$dbname", $user);
@@ -39,9 +47,11 @@ class DataGetter
                             "col"=>"way"),
                     array("table"=>"coastlines",
                             "col"=>"the_geom"),
-                    array("col"=>"xy")
+                    array("col"=>"xy"), 
+					$srid, $projSRID, $outSRID
                             ); 
         $this->SRID = $srid;
+        $this->projSRID = $projSRID;
 
         // 240913 if not in kothic mode we want the full ways, not just
         // the intersection with the bbox
@@ -58,18 +68,23 @@ class DataGetter
         $this->data["properties"]["copyright"] =  $copyright;
     }
 
-    function getData($options,$outProj=null)
+    function getData($options)//,$outProj=null)
     {
         $this->doGetData($options);
+		/*
         if($outProj!==null)
             $this->reprojectData($outProj);
+		*/
         return $this->data;
     }
 
     protected function doGetData($options)
     {
+
         $plyrs = isset($options["poi"]) ? explode(",", $options["poi"]):null;
         $wlyrs = isset($options["way"]) ? explode(",", $options["way"]):null;
+		//print_r($plyrs);
+		//print_r($wlyrs);
 
         if(isset($options["poi"]))
             $this->getPOIData($plyrs);
@@ -125,7 +140,6 @@ class DataGetter
     {
         $qry="";
         $filter = ($type=="poi") ? $this->poiFilter: $this->wayFilter;
-
         if(count($filter) > 0)
         {
         $firsttag=true;
@@ -154,7 +168,6 @@ class DataGetter
             }
         $qry .= ")";
         }
-    //echo "query $qry";
         return $qry;
     }
 
@@ -164,7 +177,7 @@ class DataGetter
         //$pqry = $this->dbq->getPOIQuery();
         $pqry = $this->getPOIQuery();
 
-
+		//echo "POI Query is : $pqry<br />";
 
         if($plyrs[0]!="all")
             $pqry .= DataGetter::criteria($plyrs);
@@ -175,6 +188,7 @@ class DataGetter
 
         $presult = $this->conn->query($pqry);
 		$errorInfo = $this->conn->errorInfo();
+//		print_r($errorInfo);
 		if($errorInfo[0]!="00000")
 			return;
 
@@ -182,11 +196,11 @@ class DataGetter
         {
             $feature=array();
             $feature["type"] = $this->kothic_gran===null?"Feature":"Point";
-            $f= json_decode($prow["geojson"],true);
+            $f= json_decode($prow["st_asgeojson"],true);
             $counteddata=array();
 
             foreach($prow as $k=>$v)    
-                if($k!='way' && $k!='geojson' && $v!='')
+                if($k!='way' && $k!='st_asgeojson' && $k!='tway' && $v!='')
                     $counteddata[$k]=htmlspecialchars
                         (str_replace("&","and",$v));
 
@@ -217,12 +231,28 @@ class DataGetter
 
         foreach($arr as $table)
         {
-            $wqry = $this->getWayQuery($table);
+			$f = DataGetter::applyFilter("way");
+			$criteria = $wlyrs[0]=="all"?"":DataGetter::criteria($wlyrs);
+            $wqry = $this->getWayQuery($table,
+				$criteria. " ".
+				DataGetter::applyFilter("way"));
 
+		
+//			echo "FILTER $f";	
+			//echo "Way query: $wqry<br />";
+
+			/*
             if($wlyrs[0]!="all")
                 $wqry .= DataGetter::criteria($wlyrs);
             $wqry .= DataGetter::applyFilter("way");
+		*/
 
+			/*
+			echo "CONSTRAINT ".
+				DataGetter::criteria($wlyrs). "  ".
+				DataGetter::applyFilter("way"). "<br />";
+			*/
+			//echo "<br />ACTUAL QUERY $wqry<br />";
             $wresult = $this->conn->query($wqry);
 			$errorInfo = $this->conn->errorInfo();
 			if($errorInfo[0]!="00000")
@@ -237,12 +267,15 @@ class DataGetter
             while($wrow=$wresult->fetch(PDO::FETCH_ASSOC))
             {
                 $feature=array();
-                $f = json_decode($wrow['geojson'],true);
+				//echo $wrow['st_asgeojson']. "<br />";
+                $f = json_decode($wrow['st_asgeojson'],true);
                 $tags = array();
-            
+         
+   
                 // Replace ampersands with the word "and".
                 foreach($wrow as $k=>$v)
-                    if($k!=$excluded_col && $k!='geojson' && $v!='')
+                    if($k!=$excluded_col && $k!='st_asgeojson' && $k!='tway'
+					&& $v!='')
                         $tags[$k] = htmlspecialchars(str_replace("&","and",$v));
 
                 $feature["properties"] = $tags;
@@ -271,13 +304,14 @@ class DataGetter
         return $this->dbq->getPOIQuery();
     }
 
-    function getWayQuery($table)
+    function getWayQuery($table, $constraint)
     {
         return ($table=="polygon") ?
             $this->dbq->getPolygonQuery(): 
         $this->dbq->getWayQuery();
     }
 
+		/* now not done - done in DB query
     function reprojectData($outProj)
     {
         for($f=0; $f<count($this->data["features"]); $f++)
@@ -357,16 +391,18 @@ class DataGetter
             }
         }
     }
+		*/
 }
 
 class NameSearch extends DataGetter
 {
     protected $name;
 
-    function __construct($name,$tbl_prefix="planet_osm",$dbname="gis",
+    function __construct($name,$outProj,$tbl_prefix="planet_osm",$dbname="gis",
                             $user="gis")
     {
-        parent::__construct(null,$tbl_prefix,"900913",$dbname,$user);
+        parent::__construct(null,$tbl_prefix,"900913","900913",$outProj,
+								$dbname,$user);
         $this->name=$name;
     }
 
@@ -385,14 +421,18 @@ class NameSearch extends DataGetter
 class BboxGetter extends DataGetter
 {
     private $bbox, $forceCache;
+	private $ext; // extend bbox to avoid boundary artefacts
 
-    function __construct($bbox,$kothic_gran=null,$dbdetails=null,$srid="900913",
+    function __construct($bbox,$bboxSRID="4326",$outSRID="900913",$ext=0,
+							$kothic_gran=null,$dbdetails=null,$srid="900913",
                             $dbname="gis", $user="gis")
     {
-        parent::__construct($kothic_gran,$dbdetails,$srid,$dbname,$user);
+        parent::__construct($kothic_gran,$dbdetails,$srid,$bboxSRID,$outSRID,
+								$dbname,$user);
         $this->bbox = $bbox;
+		$this->ext = ($kothic_gran===null) ? $ext*0.01:0.2; // $ext parameter is a % extension
         $this->geomtxt = $this->mkgeom();
-        $this->geomtxt2 = $this->mkgeom2();
+        $this->extGeomtxt = $this->mkExtGeom();
         $this->forceCache = false;
     }
 
@@ -401,15 +441,20 @@ class BboxGetter extends DataGetter
         $this->forceCache = $fc;
     }
 
-    function getData($options, $contourCache=null, $cache=null, $outProj=null,
+	// NW 120815 removed $outProj as it's no longer doing anything
+	// (This was done as part of the bbox stuff done circa March but
+	// never removed until now)
+    function getData($options, $contourCache=null, $cache=null, 
                         $x=null, $y=null, $z=null)
     {
-
         // Only cache if all was requested and we're in kothic mode 
         $all = isset($options["coastline"]) && $options["coastline"]
             && isset($options["poi"]) && $options["poi"]=="all"
             && isset($options["way"]) && $options["way"]=="all"
             && $this->kothic_gran;
+
+		// test: now only cache if were in kothic (only)
+		$all = $this->kothic_gran;
 
         
         if($this->forceCache)
@@ -420,6 +465,8 @@ class BboxGetter extends DataGetter
         elseif($cache!==null && $all)
         {
             $result = $this->getCachedData($cache);
+// $result = false; // never readin from cache for testing - was done during
+// change of extended bbox handling to database level
             if($result===false)
             {
                 $this->getDataFromDB($options);
@@ -444,8 +491,10 @@ class BboxGetter extends DataGetter
         if(isset($options["contour"]) && $options["contour"])
             $this->getContourData($contourCache);
 
+		/*
         if($outProj!==null)
             $this->reprojectData($outProj);
+		*/
 
         return $this->data;
     }
@@ -520,17 +569,20 @@ class BboxGetter extends DataGetter
     function doGetContourData()
     {
         $features=array();
-        $q=$this->dbq->getContourQuery($this->geomtxt);
+        $q=$this->dbq->getContourQuery
+			($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
         if($q===null)
             return;
         $result=$this->conn->query($q);
         while($row=$result->fetch(PDO::FETCH_ASSOC))
         {
             $feature=array();
-            $f = json_decode($row['geojson'],true);
+            $f = json_decode($row['st_asgeojson'],true);
             $tags = array();
             $feature["properties"] = array();
             $feature["properties"]["contour"]=$row["height"];
+            $feature["properties"]["contourtype"]=$row["height"]%50==0?
+					"major":"minor";
             if($this->kothic_gran===null)
             {
                 $feature["type"]="Feature";
@@ -564,7 +616,7 @@ class BboxGetter extends DataGetter
         while($row=$result->fetch(PDO::FETCH_ASSOC))
         {
             $feature=array();
-            $f = json_decode($row['geojson'],true);
+            $f = json_decode($row['st_asgeojson'],true);
             $tags = array();
             $feature["properties"] = array();
             $feature["properties"]["natural"] = "land"; 
@@ -599,15 +651,14 @@ class BboxGetter extends DataGetter
             return;
 
         $presult = $this->conn->query($pqry);
-
         while($prow=$presult->fetch(PDO::FETCH_ASSOC))
         {
             $feature=array();
             $feature["type"] = "Feature";
-            $f= json_decode($prow["geojson"],true);
+            $f= json_decode($prow["st_asgeojson"],true);
             $counteddata=array();
             foreach($prow as $k=>$v)    
-                if($k!='authorised' && $k!='geojson' && 
+                if($k!='authorised' && $k!='st_asgeojson' &&  $k!='tway' &&
                     $k!=$this->dbq->overlayDetails["col"] && $v!='')
                     $counteddata[$k]=$v;
             $feature["properties"] = $counteddata;
@@ -627,21 +678,22 @@ class BboxGetter extends DataGetter
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
             $this->SRID.")";    
     */
+	// now use the native srid and transform later
     $g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
         $this->SRID.")";
         return $g; 
     }
 
-    function mkgeom2()
+    function mkExtGeom()
     {
         $bbox=$this->bbox;
         $w = $this->bbox[2] - $this->bbox[0];
         $h = $this->bbox[3] - $this->bbox[1];
 
-        $bbox[0] = $bbox[0] - $w*0.2; 
-        $bbox[2] = $bbox[2] + $w*0.2; 
-        $bbox[1] = $bbox[1] - $h*0.2; 
-        $bbox[3] = $bbox[3] + $h*0.2;
+        $bbox[0] = $bbox[0] - $w*$this->ext; 
+        $bbox[2] = $bbox[2] + $w*$this->ext; 
+        $bbox[1] = $bbox[1] - $h*$this->ext; 
+        $bbox[3] = $bbox[3] + $h*$this->ext;
     /*
         $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
@@ -752,15 +804,17 @@ class BboxGetter extends DataGetter
 
     function getPOIQuery()
     {
-        return parent::getPOIQuery() . " AND ".$this->dbq->poiDetails["col"].
-            " && ".$this->geomtxt2;
+		return $this->dbq->getBboxPOIQuery
+//				($this->kothic_gran===null ? $this->geomtxt: $this->extGeomtxt);
+				($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
+
     }
 
-    function getWayQuery($table)
+    function getWayQuery($table, $constraint)
     {
         return ($table=="polygon") ?
-            $this->dbq->getBboxPolygonQuery($this->geomtxt) :
-            $this->dbq->getBboxWayQuery($this->geomtxt);
+            $this->dbq->getBboxPolygonQuery($this->geomtxt, $constraint):
+            $this->dbq->getBboxWayQuery($this->geomtxt, $constraint);
     }
 
     function getUniqueList($property)

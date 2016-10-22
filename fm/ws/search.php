@@ -23,11 +23,11 @@ else
 {
     $format=isset($cleaned["format"]) && ctype_alpha($cleaned["format"])
 			  ? $cleaned["format"]:"xml";
-    $ns=new NameSearch($cleaned["q"], $tbl_prefix);
     if(isset($cleaned["outProj"]) && ctype_alnum($cleaned["outProj"]))
         adjustProj($cleaned["outProj"]);
-    $data=$ns->getData($cleaned,isset($cleaned['outProj'])?
-        $cleaned['outProj']:null);
+    $ns=new NameSearch($cleaned["q"], $cleaned["outProj"], $tbl_prefix);
+    $data=$ns->getData($cleaned);
+		//,isset($cleaned['outProj'])?$cleaned['outProj']:null);
     switch($cleaned["format"])
     {
         case "json":

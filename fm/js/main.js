@@ -7,7 +7,8 @@ function init(loggedIn)
  var freemap = {
   initialise: function (lat, lon, zoom, loggedIn) 
   {
-    var url = "/fm/ws/tsvr.php?x={x}&y={y}&z={z}&way=all&poi=all"+
+    var url = "/fm/ws/tsvr.php?x={x}&y={y}&z={z}&"+
+				"way=highway,natural,waterway,railway&poi=all"+
                 "&kothic=1&contour=1&coastline=1";
 
     var kothic = new L.TileLayer.Kothic

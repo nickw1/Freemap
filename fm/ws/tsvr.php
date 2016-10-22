@@ -1,5 +1,8 @@
 <?php
 
+// To work with the *.php code
+// NOT TESTED !!!
+
 // Tiled data server
 // Input: 
 // x,y,z - standard Google tiling system values
@@ -17,6 +20,9 @@ require_once('DBDetails.php');
 
 header("Access-Control-Allow-Origin: http://www.opentrailview.org");
 
+define('CONTOUR_CACHE2','/home/www-data/contourcache');
+define('CACHE2','/home/www-data/fmapcache2');
+
 $cleaned = clean_input($_GET, null);
 
 // DBDetails: poi way poly contour coast ann
@@ -27,7 +33,9 @@ $y = $cleaned["y"];
 $z = $cleaned["z"];
 
 $tbl_prefix=isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"]:"planet_osm";
+$ext=isset($cleaned["ext"]) ? $cleaned["ext"]:0;
 
+$mftest=isset($cleaned["mftest"]) ? $cleaned["mftest"]:0;
 
 $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '900913';
 adjustProj($outProj);
@@ -57,7 +65,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     if(!file_exists(CACHE."/$kg/$z/$x"))
         mkdir(CACHE."/$kg/$z/$x",0755,true);
         
-    $bg = new BboxGetter($bbox,$kg,$tbl_prefix);
+    $bg = new BboxGetter($bbox,"900913","900913",$ext,$kg,$tbl_prefix);
 
     if($z<=7)
     {
@@ -94,7 +102,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     }
 
     $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
-                        CACHE."/$kg/$z/$x/$y.json",$outProj,$x,$y,$z);
+                        CACHE."/$kg/$z/$x/$y.json",$x,$y,$z);
     $data["granularity"] = $kg;
     $data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
             $ne['lon']+0.01,$ne['lat']+0.01);
@@ -103,8 +111,13 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
 else
 {
     header("Content-type: application/json");
-    $bg=new BboxGetter($bbox,null,$tbl_prefix);
-    $data=$bg->getData($cleaned,null,null,$outProj);
+    $bg=new BboxGetter($bbox,"900913",$outProj,$ext,null,$tbl_prefix);
+    // mapsforge rendering test
+	if($mftest==1)
+	{
+		$bg->addWayFilter("designation","public_bridleway");
+	}
+    $data=$bg->getData($cleaned,null,null);
     echo json_encode($data);
 }
 

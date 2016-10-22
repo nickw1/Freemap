@@ -26,8 +26,8 @@ function FixMyPaths(lon,lat)
 
     this.map = new L.Map("map");
 
-    var tileUrl = 'http://www.free-map.org.uk/0.6/ws/tsvr.php'+
-        '?x={x}&y={y}&z={z}&way=all&poi=all&kothic=1&contour=1'+
+    var tileUrl = 'http://www.free-map.org.uk/fm/ws/tsvr.php'+
+        '?x={x}&y={y}&z={z}&way=highway,natural&poi=all&kothic=1&contour=1'+
         '&coastline=1';
 
     var kothic = new L.TileLayer.Kothic(tileUrl,

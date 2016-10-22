@@ -27,6 +27,7 @@ $cleaned = clean_input ($_GET, null);
 $inProj = (isset($cleaned['inProj'])) ? $cleaned['inProj']: '4326';
 $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '4326';
 $format = (isset($cleaned["format"])) ? $cleaned["format"]:"xml";
+$ext = (isset($cleaned["ext"])) ? $cleaned["ext"]:0;
 
 if(isset($cleaned["poi"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["poi"]) ||
    isset($cleaned["way"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["way"]) || 
@@ -60,10 +61,12 @@ if(isset($cleaned['inUnits'])
 		$values[$i] /= 1000000.0;
 }
 
+
 // Native projection of DB is 900913 (Google Mercator)
 
 // 041114 ensure reprojected bbox completely contains original bbox by
 // taking the min and max eastings and northings of each corner
+
 list($sw['e'],$sw['n']) = reproject($values[0],$values[1],$inProj,'900913');
 list($nw['e'],$nw['n']) = reproject($values[0],$values[3],$inProj,'900913');
 list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'900913');
@@ -73,9 +76,8 @@ list($se['e'],$se['n']) = reproject($values[2],$values[1],$inProj,'900913');
 $bbox = array(min($sw["e"],$nw["e"]),min($sw["n"],$se["n"]),
 				max($ne["e"],$se["e"]), max($ne["n"],$nw["n"]));
 
-
-$bg=new BboxGetter($bbox);
-$data=$bg->getData($cleaned,null,null,$outProj=='900913'?null:$outProj);
+$bg=new BboxGetter($bbox, $inProj, $outProj, $ext);
+$data=$bg->getData($cleaned,null,null);
 
 switch($format)
 {
