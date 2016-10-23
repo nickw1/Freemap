@@ -27,3 +27,7 @@ Lesser GPL. Library code includes:
 Anything in a directory named "lib";
 The subdirectories "freemaplib", "freemaplibProj" and "andromaps" within the
 "java" directory.
+
+Looking for OpenTrail?
+
+This now lives in its own repository, https://github.com/nickw1/opentrail.
