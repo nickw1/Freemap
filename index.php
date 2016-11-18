@@ -58,8 +58,8 @@ href='http://leaflet.github.io/Leaflet.draw/leaflet.draw.css' />
 
 <script type='text/javascript' src='fm/style.js'></script>
 
-<script type='text/javascript' src='fm/js/lib/Dialog.js'></script>
-<script type='text/javascript' src='fm/js/lib/SearchWidget.js'></script>
+<script type='text/javascript' src='jslib/Dialog.js'></script>
+<script type='text/javascript' src='jslib/SearchWidget.js'></script>
 
 <script type='text/javascript'>
 var loggedIn=<?php echo $loggedIn;?>;
@@ -76,7 +76,18 @@ title='The Freemap blog, revisited' href='/wordpress/' />
 </head>
 
 <?php
-if(file_exists(POPULATE_LOCK))
+if(false)
+{
+	?>
+	<body>
+	<p>Freemap is temporarily unavailable due to some problems with the
+	database when upgrading the server. It is hoped to be restored during
+	this week. Also, OpenTrail 0.3 will temporarily be unable to download
+	data from the Freemap server. 14/11/16</p>
+	</body>
+	<?php
+}
+else if(file_exists(POPULATE_LOCK))
 {
     ?>
     <body>
@@ -123,6 +134,9 @@ function write_sidebar($homepage=false)
     <p id='intro'>Welcome to <em>Freemap 0.7 (preview)</em>, 
     with kothic-js client-side rendering. 
     <a href='fm/about.html'>More...</a> </p>
+	<p><strong>Important!</strong> Due to issues with the server OS
+	upgrade, not all features may be available for the next few days. However
+	the map and search do work. 18/11/16</p>
 
     <div id='appmsg'>
     <a href='/common/opentrail.html'>Android app</a>

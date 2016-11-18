@@ -20,7 +20,7 @@ class Walkroute
         {
             $stmt = $this->conn->prepare
             ("SELECT id,title,description,startlat,startlon,userid,".
-                "distance,astext(the_geom) FROM walkroutes WHERE id=?");
+                "distance,ST_AsText(the_geom) FROM walkroutes WHERE id=?");
             $stmt->bindParam (1, $id);
             $stmt->execute();
             if($stmt->rowCount()==1)
@@ -66,15 +66,15 @@ class Walkroute
         $this->id=$row["id"];
         $this->userid=$row["userid"];
         $m = array(); 
-        preg_match("/LINESTRING\((.+)\)/",$row['astext'],$m);
+        preg_match("/LINESTRING\((.+)\)/",$row['ST_AsText'],$m);
         $p = explode(",", $m[1]);
         foreach($p as $pt)
         {
             $this->points[] = explode(" ", $pt);
         }
 
-        $stmt=$this->conn->prepare("SELECT astext(w.xy),w.description,w.id,".
-                                "line_locate_point(r.the_geom, w.xy) AS llp".
+        $stmt=$this->conn->prepare("SELECT ST_AsText(w.xy),w.description,w.id,".
+                                "ST_Line_Locate_Point(r.the_geom, w.xy) AS llp".
                                 " FROM wr_waypoints w, walkroutes r ".
                                 " WHERE r.id=? AND r.id=w.wrid ORDER BY llp");
         $stmt->bindParam (1, $this->id);
@@ -83,7 +83,7 @@ class Walkroute
         while($row2=$stmt->fetch(PDO::FETCH_ASSOC))
         {
             $m=array();
-            preg_match("/POINT\((.+)\)/",$row2['astext'],$m);
+            preg_match("/POINT\((.+)\)/",$row2['ST_AsText'],$m);
             list($x,$y) = explode(" ", $m[1]);
             $ll=sphmerc_to_ll($x,$y);
             $this->waypoints[] = array("lon"=>$ll["lon"],
@@ -98,17 +98,17 @@ class Walkroute
     public function findAnnotations()
     {
         $stmt = $this->conn->prepare
-            ( "SELECT astext(a.xy), a.text, ".
-            "line_locate_point(r.the_geom,a.xy)".
+            ( "SELECT ST_AsText(a.xy), a.text, ".
+            "ST_Line_Locate_Point(r.the_geom,a.xy)".
             " AS llp FROM annotations a, walkroutes r ".
-            " WHERE r.id=? AND distance(r.the_geom,a.xy) < 100 ".
+            " WHERE r.id=? AND st_distance(r.the_geom,a.xy) < 100 ".
             "ORDER BY llp");
         $stmt->bindParam (1, $this->id);
         $stmt->execute();
         while($row=$stmt->fetch(PDO::FETCH_ASSOC))
         {
             $m = array(); 
-            preg_match("/POINT\((.+)\)/",$row['astext'],$m);
+            preg_match("/POINT\((.+)\)/",$row['ST_AsText'],$m);
             $p = explode(" ", $m[1]);
             $ann = sphmerc_to_ll($p[0],$p[1]);
             $ann["description"] = $row["text"];
@@ -267,7 +267,7 @@ class Walkroute
         {
             if($first==false)
                 $sql.=",";
-            $sql.= "the_geom=GeomFromText(?,900913) ";
+            $sql.= "the_geom=ST_GeomFromText(?,3857) ";
         }
     
         $sql.=" WHERE id=?";    
@@ -359,7 +359,7 @@ class Walkroute
     public static function getRoutesByBbox($conn,$w,$s,$e,$n)
     {
         $stmt = $conn->prepare
-            ("SELECT *,astext(the_geom) FROM walkroutes WHERE ".
+            ("SELECT *,ST_AsText(the_geom) FROM walkroutes WHERE ".
                             "authorised=1 AND ". 
                              "startlat ".
                             "BETWEEN ? AND ? AND startlon ".
@@ -377,7 +377,7 @@ class Walkroute
     {
         
         $routes=array();
-        $result=$conn->query("SELECT *,astext(the_geom) FROM walkroutes ".
+        $result=$conn->query("SELECT *,ST_AsText(the_geom) FROM walkroutes ".
                             "WHERE authorised=1");
         while($row=$result->fetch(PDO::FETCH_ASSOC))
         {
@@ -395,7 +395,7 @@ class Walkroute
     public static function getRoutesByUser($conn, $userid)
     {
         $stmt=$conn->prepare
-            ("SELECT *,astext(the_geom) FROM walkroutes WHERE userid=?"); 
+            ("SELECT *,ST_AsText(the_geom) FROM walkroutes WHERE userid=?"); 
         $stmt->bindParam (1, $userid);
         return Walkroute::getRoutesFromQuery($conn, $stmt);
     }
@@ -419,7 +419,7 @@ class Walkroute
       $stmt=$conn->prepare
             ("INSERT INTO walkroutes(title,description,distance,the_geom,".
                 "startlon,startlat,userid,authorised) VALUES ".
-                "(?,?,?,GeomFromText(?,900913),?,?,?,?)");
+                "(?,?,?,ST_GeomFromText(?,3857),?,?,?,?)");
       switch($format)
       {
        case "geojson":
@@ -460,7 +460,7 @@ class Walkroute
         // At some point the x,y columns will go and we'll just have xy
         $stmt=$conn->prepare
             ("INSERT INTO wr_waypoints(wrid,wpid,description,x,y,xy) ".
-            "VALUES (?,?,?,?,?,GeomFromText(?,900913))");
+            "VALUES (?,?,?,?,?,ST_GeomFromText(?,3857))");
         $geom = "POINT($sphmerc[e] $sphmerc[n])";
         $stmt->bindParam (1, $rteid);
         $stmt->bindParam (2, $wpid);
@@ -539,7 +539,7 @@ class Walkroute
 
         // At some point the x,y columns will go and we'll just have xy
         $stmt=$conn->prepare ("UPDATE wr_waypoints SET xy=".
-                    "GeomFromText(?,900913) WHERE id=?");
+                    "ST_GeomFromText(?,3857) WHERE id=?");
         $geom = "POINT($sphmerc[e] $sphmerc[n])";
         $stmt->bindParam (1, $geom);
         $stmt->bindParam (2, $wpid);

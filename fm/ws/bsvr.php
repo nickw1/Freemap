@@ -62,15 +62,15 @@ if(isset($cleaned['inUnits'])
 }
 
 
-// Native projection of DB is 900913 (Google Mercator)
+// Native projection of DB is 3857 (Google Mercator)
 
 // 041114 ensure reprojected bbox completely contains original bbox by
 // taking the min and max eastings and northings of each corner
 
-list($sw['e'],$sw['n']) = reproject($values[0],$values[1],$inProj,'900913');
-list($nw['e'],$nw['n']) = reproject($values[0],$values[3],$inProj,'900913');
-list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'900913');
-list($se['e'],$se['n']) = reproject($values[2],$values[1],$inProj,'900913');
+list($sw['e'],$sw['n']) = reproject($values[0],$values[1],$inProj,'3857');
+list($nw['e'],$nw['n']) = reproject($values[0],$values[3],$inProj,'3857');
+list($ne['e'],$ne['n']) = reproject($values[2],$values[3],$inProj,'3857');
+list($se['e'],$se['n']) = reproject($values[2],$values[1],$inProj,'3857');
 
 
 $bbox = array(min($sw["e"],$nw["e"]),min($sw["n"],$se["n"]),

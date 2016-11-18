@@ -20,7 +20,7 @@ $expected = array ("create" => array("lon","lat","text"),
 
 $userid=0; // 0=not supplied; -1=incorrect
 
-$conn = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
+$conn = new PDO ("pgsql:host=localhost;dbname=gis2;", "gis");
 $um = new UserManager($conn);
 $action = isset($cpost["action"]) && ctype_alpha($cpost["action"]) ?
 			$cpost["action"] : "";
@@ -72,15 +72,15 @@ switch($cpost['action'])
 		elseif($userid>=0)
 		{
 			list($goog['e'],$goog['n']) = 
-				reproject($cpost['lon'],$cpost['lat'],$inProj,'900913');
+				reproject($cpost['lon'],$cpost['lat'],$inProj,'3857');
             $q= "INSERT INTO annotations(text,xy,dir,userid,authorised) ".
                 "VALUES (?,".
-                "PointFromText('POINT ($goog[e] $goog[n])',900913)".
+                "ST_PointFromText('POINT ($goog[e] $goog[n])',3857)".
                 ",0,$userid,".($userid==0 ? 0:1).")";
 			$stmt = $conn->prepare($q);
 			$stmt->bindParam (1, $cpost['text']);
 			// Note you can't use prepared statements for params to the 
-			// POINT in the call to the PointFromText function as it seems to 
+			// POINT in the call to the ST_PointFromText function as it seems to 
 			// go into an infinite loop
 			$stmt->execute();
             $result=$conn->query
@@ -108,12 +108,12 @@ switch($cpost['action'])
 						$desc=$annotation->description;
 						list($goog['e'],$goog['n']) = 
 							reproject($attrs['x'], $attrs['y'],
-								  $inProj,'900913');
+								  $inProj,'3857');
 						// HERE 1
 						$stmt = $conn->prepare
 						("INSERT INTO annotations(text,xy,dir,userid,".
 						"authorised) VALUES (?,".
-						"PointFromText('POINT($goog[e] $goog[n])',900913),".
+						"ST_PointFromText('POINT($goog[e] $goog[n])',3857),".
 						"0,$userid,".($userid==0 ? 0:1).")");
 						$stmt->bindParam (1, $desc);
 						$stmt->execute();
@@ -179,7 +179,7 @@ switch($cpost['action'])
 				$goog = ll_to_sphmerc($cpost['lon'],$cpost['lat']);
 				$stmt=$conn->prepare
                 		("UPDATE annotations SET xy=".
-                    	"PointFromText('POINT($goog[e] $goog[n])',900913) ".
+                    	"ST_PointFromText('POINT($goog[e] $goog[n])',3857) ".
                     	"WHERE id=?");
 				$stmt->bindParam (1, $cpost["id"]);
 				$stmt->execute();

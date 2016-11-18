@@ -20,7 +20,7 @@ class FreemapUserController extends UserController
         if(isset($httpData["username"]) && isset($httpData["password"]))
         {
         $um = new FreemapUserManager($this->conn);
-            $res=$um->processSignup
+            $res=$um->processFreemapSignup
                 ($httpData['username'],$httpData['password'],
                 $httpData['email']);
             if(is_int($res))

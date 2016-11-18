@@ -78,3 +78,8 @@ Dialog.prototype.setSize = function(w,h)
     this.div.style.width=w;
     this.div.style.height=h;
 }
+
+Dialog.prototype.setCallback = function(btn, cb) 
+{
+	this.callbacks[btn] = cb;
+}

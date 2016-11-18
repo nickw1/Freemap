@@ -22,7 +22,7 @@ class FreemapUserManager extends UserManager
         return $stmt->fetch();
     }
 
-    function processSignup($username,$password,$email)
+    function processFreemapSignup($username,$password,$email)
     {
         $stmt=$this->conn->prepare("SELECT * FROM users WHERE username=?");
         $stmt->bindParam (1, $username);

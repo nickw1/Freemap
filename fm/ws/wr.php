@@ -10,7 +10,7 @@ $format = isset($_REQUEST["format"]) && ctype_alpha($_REQUEST["format"])
          ? $_REQUEST["format"]:"geojson";
 $action = isset($_REQUEST["action"]) ? $_REQUEST["action"]:"get";
 
-$conn = new PDO ("pgsql:host=localhost;dbname=gis;", "gis");
+$conn = new PDO ("pgsql:host=localhost;dbname=gis2;", "gis");
 $um = new UserManager($conn);
 
 $cget = clean_input($_GET, null);

@@ -17,9 +17,9 @@ class DataGetter
     protected $data, $kothic_gran, $wayMustMatch, $poiFilter, $wayFilter,
             $doWays, $doPolygons, $dbq, $conn;
 
-    function __construct($kothic_gran=null, $dbdetails=null, $srid="900913",
-						$projSRID="900913",$outSRID="900913",	
-                            $dbname="gis", $user="gis")
+    function __construct($kothic_gran=null, $dbdetails=null, $srid="3857",
+						$projSRID="3857",$outSRID="3857",	
+                            $dbname="gis2", $user="gis")
     {
         $this->conn = new PDO("pgsql:host=localhost;dbname=$dbname", $user);
         $this->data = array();
@@ -177,7 +177,7 @@ class DataGetter
         //$pqry = $this->dbq->getPOIQuery();
         $pqry = $this->getPOIQuery();
 
-		//echo "POI Query is : $pqry<br />";
+//		echo "POI Query is : $pqry<br />";
 
         if($plyrs[0]!="all")
             $pqry .= DataGetter::criteria($plyrs);
@@ -304,6 +304,8 @@ class DataGetter
         return $this->dbq->getPOIQuery();
     }
 
+	// 181116 $constraint not needed but need to satisfy Strict Standards
+	// still no overloading in php
     function getWayQuery($table, $constraint)
     {
         return ($table=="polygon") ?
@@ -398,10 +400,10 @@ class NameSearch extends DataGetter
 {
     protected $name;
 
-    function __construct($name,$outProj,$tbl_prefix="planet_osm",$dbname="gis",
+    function __construct($name,$outProj,$tbl_prefix="planet_osm",$dbname="gis2",
                             $user="gis")
     {
-        parent::__construct(null,$tbl_prefix,"900913","900913",$outProj,
+        parent::__construct(null,$tbl_prefix,"3857","3857",$outProj,
 								$dbname,$user);
         $this->name=$name;
     }
@@ -411,7 +413,10 @@ class NameSearch extends DataGetter
         return parent::getPOIQuery()." AND name ILIKE '%".$this->name."%'";
     }
 
-    function getWayQuery($table)
+
+	// 181116 $constraint not needed but need to satisfy Strict Standards
+	// still no overloading in php
+    function getWayQuery($table, $constraint)
     {
         return parent::getWayQuery($table)." AND name ILIKE '%".
             $this->name."%'";
@@ -423,9 +428,9 @@ class BboxGetter extends DataGetter
     private $bbox, $forceCache;
 	private $ext; // extend bbox to avoid boundary artefacts
 
-    function __construct($bbox,$bboxSRID="4326",$outSRID="900913",$ext=0,
-							$kothic_gran=null,$dbdetails=null,$srid="900913",
-                            $dbname="gis", $user="gis")
+    function __construct($bbox,$bboxSRID="4326",$outSRID="3857",$ext=0,
+							$kothic_gran=null,$dbdetails=null,$srid="3857",
+                            $dbname="gis2", $user="gis")
     {
         parent::__construct($kothic_gran,$dbdetails,$srid,$bboxSRID,$outSRID,
 								$dbname,$user);
@@ -674,12 +679,12 @@ class BboxGetter extends DataGetter
     {
         $bbox=$this->bbox;
     /*
-        $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
+        $g="ST_GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
             $this->SRID.")";    
     */
 	// now use the native srid and transform later
-    $g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
+    $g = "ST_SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
         $this->SRID.")";
         return $g; 
     }
@@ -695,11 +700,11 @@ class BboxGetter extends DataGetter
         $bbox[1] = $bbox[1] - $h*$this->ext; 
         $bbox[3] = $bbox[3] + $h*$this->ext;
     /*
-        $g="GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
+        $g="ST_GeomFromText('POLYGON(($bbox[0] $bbox[1],$bbox[2] $bbox[1], ".
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
             $this->SRID.")";
     */
-    $g = "SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
+    $g = "ST_SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
         $this->SRID.")";
         return $g; 
     }

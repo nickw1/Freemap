@@ -37,7 +37,7 @@ $ext=isset($cleaned["ext"]) ? $cleaned["ext"]:0;
 
 $mftest=isset($cleaned["mftest"]) ? $cleaned["mftest"]:0;
 
-$outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '900913';
+$outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '3857';
 adjustProj($outProj);
 $kg=isset($cleaned["kg"]) ? $cleaned["kg"]: 1000;
 
@@ -65,7 +65,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     if(!file_exists(CACHE."/$kg/$z/$x"))
         mkdir(CACHE."/$kg/$z/$x",0755,true);
         
-    $bg = new BboxGetter($bbox,"900913","900913",$ext,$kg,$tbl_prefix);
+    $bg = new BboxGetter($bbox,"3857","3857",$ext,$kg,$tbl_prefix);
 
     if($z<=7)
     {
@@ -111,7 +111,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
 else
 {
     header("Content-type: application/json");
-    $bg=new BboxGetter($bbox,"900913",$outProj,$ext,null,$tbl_prefix);
+    $bg=new BboxGetter($bbox,"3857",$outProj,$ext,null,$tbl_prefix);
     // mapsforge rendering test
 	if($mftest==1)
 	{

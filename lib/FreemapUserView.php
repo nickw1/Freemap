@@ -9,7 +9,9 @@ class FreemapUserView extends UserView
 		parent::__construct ($title,$css);
     }
 
-    function displayLogin($redirect="index.php", $errorRedirect="")
+	// Strict Standards !
+    function displayLogin($redirect="index.php", $errorRedirect="", 
+			$data=array())
     {
         ?>
         <h1>Login</h1>
