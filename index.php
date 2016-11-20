@@ -17,30 +17,17 @@ $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
 <script type='text/javascript' 
 src='javascript/leaflet-0.7/leaflet.js'></script>
 <?php
-// Performance on Chrome of new kothic is significantly less good than old
-if(strpos($_SERVER["HTTP_USER_AGENT"], "Chrome") !== false ||
-	(isset($_GET["kv"]) && $_GET["kv"]=="11"))
-{
-?>
-<!-- old kothic-->
-<script type='text/javascript' src='../javascript/kothic/dist/kothic.js'>
-</script>
-<script type='text/javascript' 
-src='../javascript/kothic/dist/kothic-leaflet.js'></script>
+$kv = isset($_GET["kv"]) && is_numeric($_GET["kv"]) && 
+		is_dir("/var/www/javascript/kothic/$_GET[kv]") ? 
+		$_GET["kv"] : 
+			(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome") !==false ? "11":"13");
 
-<?php
-}
-else
-{
 ?>
-<!-- new kothic-->
-<script type='text/javascript' src='javascript/kothic-js/dist/kothic.js'>
+<script type='text/javascript' 
+src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic.js'>
 </script>
 <script type='text/javascript' 
-src='javascript/kothic-js/dist/kothic-leaflet.js'></script>
-<?php
-}
-?>
+src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet.js'></script>
 <link rel='stylesheet' type='text/css' 
 href='javascript/leaflet-0.7/leaflet.css' />
 
@@ -131,12 +118,13 @@ function write_sidebar($homepage=false)
 	<div id='title'> </div>
 
 
-    <p id='intro'>Welcome to <em>Freemap 0.7 (preview)</em>, 
+    <p id='intro'>Welcome to <em>Freemap 0.7</em>, 
     with kothic-js client-side rendering. 
     <a href='fm/about.html'>More...</a> </p>
-	<p><strong>Important!</strong> Due to issues with the server OS
-	upgrade, not all features may be available for the next few days. However
-	the map and search do work. 18/11/16</p>
+	<p><strong>Update:</strong> Most or all 
+	issues from server OS upgrade fixed now. Please let me know any
+	remaining issues (see <a href='about.html'>here</a> for email). 
+	20/11/16</p>	
 
     <div id='appmsg'>
     <a href='/common/opentrail.html'>Android app</a>
