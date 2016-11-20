@@ -17,7 +17,7 @@ $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
 <script type='text/javascript' 
 src='javascript/leaflet-0.7/leaflet.js'></script>
 <?php
-$kv = isset($_GET["kv"]) && is_numeric($_GET["kv"]) && 
+$kv = isset($_GET["kv"]) && ctype_digit($_GET["kv"]) && 
 		is_dir("/var/www/javascript/kothic/$_GET[kv]") ? 
 		$_GET["kv"] : 
 			(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome") !==false ? "11":"13");
