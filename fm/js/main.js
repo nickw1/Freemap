@@ -326,7 +326,7 @@ function init(loggedIn)
             {    
                 this.sendPointDeletionRequest 
                     (annJson, "/fm/ws/annotation.php", "deleteMulti",
-                         (function()
+                         (function(e)
                             { 
                                 alert("Annotation(s) deleted!");
                                 this.annotations = [];

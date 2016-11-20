@@ -14,8 +14,6 @@ class Walkroute
         $this->waypoints=array();
         $this->annotations=array();
         $this->conn = $conn;
-		// What weird, useless behaviour. ctype_digit on a number gives
-		// false.
         if($id!==null && ctype_digit("$id"))
         {
             $stmt = $this->conn->prepare
@@ -66,7 +64,7 @@ class Walkroute
         $this->id=$row["id"];
         $this->userid=$row["userid"];
         $m = array(); 
-        preg_match("/LINESTRING\((.+)\)/",$row['ST_AsText'],$m);
+        preg_match("/LINESTRING\((.+)\)/",$row['st_astext'],$m);
         $p = explode(",", $m[1]);
         foreach($p as $pt)
         {
@@ -83,7 +81,7 @@ class Walkroute
         while($row2=$stmt->fetch(PDO::FETCH_ASSOC))
         {
             $m=array();
-            preg_match("/POINT\((.+)\)/",$row2['ST_AsText'],$m);
+            preg_match("/POINT\((.+)\)/",$row2['st_astext'],$m);
             list($x,$y) = explode(" ", $m[1]);
             $ll=sphmerc_to_ll($x,$y);
             $this->waypoints[] = array("lon"=>$ll["lon"],
@@ -108,7 +106,7 @@ class Walkroute
         while($row=$stmt->fetch(PDO::FETCH_ASSOC))
         {
             $m = array(); 
-            preg_match("/POINT\((.+)\)/",$row['ST_AsText'],$m);
+            preg_match("/POINT\((.+)\)/",$row['st_astext'],$m);
             $p = explode(" ", $m[1]);
             $ann = sphmerc_to_ll($p[0],$p[1]);
             $ann["description"] = $row["text"];
@@ -426,7 +424,9 @@ class Walkroute
         $stmt->bindParam (1, $f["properties"]["title"]);
         $stmt->bindParam (2, $f["properties"]["description"]);
         $stmt->bindParam (3, $f["properties"]["distance"]);
-        $stmt->bindParam (4, Walkroute::mkgeom($f["geometry"]["coordinates"]));
+		// 19/11/16 Strict Standards fix - only variables passed by reference
+		$coords = Walkroute::mkgeom($f["geometry"]["coordinates"]);
+        $stmt->bindParam (4, $coords);
         $stmt->bindParam (5, $f["geometry"]["coordinates"][0][0]);
         $stmt->bindParam (6, $f["geometry"]["coordinates"][0][1]);
         $stmt->bindParam (7, $userid);
@@ -437,7 +437,9 @@ class Walkroute
         $stmt->bindParam (1, $f["name"]);
         $stmt->bindParam (2, $f["desc"]);
         $stmt->bindParam (3, $f["distance"]);
-        $stmt->bindParam (4, Walkroute::mkgeom($f["trk"]));
+		// 19/11/16 Strict Standards fix - only variables passed by reference
+		$trk = Walkroute::mkgeom($f["trk"]);
+        $stmt->bindParam (4, $trk);
         $stmt->bindParam (5, $f["trk"][0]["lon"]);
         $stmt->bindParam (6, $f["trk"][0]["lat"]);
         $stmt->bindParam (7, $userid);
@@ -464,7 +466,8 @@ class Walkroute
         $geom = "POINT($sphmerc[e] $sphmerc[n])";
         $stmt->bindParam (1, $rteid);
         $stmt->bindParam (2, $wpid);
-        $stmt->bindParam (3, str_replace("'","",$wpdesc));
+		$wpdesc = str_replace("'","",$wpdesc);
+        $stmt->bindParam (3, $wpdesc);
         $stmt->bindParam (4, $sphmerc["e"]);
         $stmt->bindParam (5, $sphmerc["n"]);
         $stmt->bindParam (6, $geom);
