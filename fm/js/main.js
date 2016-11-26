@@ -137,13 +137,14 @@ function init(loggedIn)
     this.drawnItems = new L.FeatureGroup();
     this.map.addLayer(this.drawnItems);
 
-    L.drawLocal.draw.toolbar.buttons.polyline = 'Draw walk route';
+    L.drawLocal.draw.toolbar.buttons.polyline = (loggedIn) ? 'Draw walk route':
+						'Calculate distance of route';
     L.drawLocal.draw.toolbar.buttons.marker = 'Add annotation';
 
     this.drawControl = new L.Control.Draw ( { 
             draw: {
-            polyline:
-                { shapeOptions: { color: "blue" } },
+			marker: false,
+            polyline: { shapeOptions: { color: "blue" } },
             polygon: false,
             rectangle: false,
             circle: false
@@ -151,12 +152,13 @@ function init(loggedIn)
             edit: { featureGroup: this.drawnItems } 
             } );
 
-    if(loggedIn)
-    {
-        this.map.addControl(this.drawControl);
-        document.getElementById('myroutes').addEventListener("click", 
-           this.wrViewMgr.sendRequest.bind(this.wrViewMgr));
-   }
+	this.map.addControl(this.drawControl);
+	if(loggedIn)
+	{
+		document.getElementById('myroutes').addEventListener("click", 
+           		this.wrViewMgr.sendRequest.bind(this.wrViewMgr));
+		this.enableMarkerTool();
+	}
 
     this.map.on('draw:created', (function (e)
         {
@@ -170,7 +172,9 @@ function init(loggedIn)
                 case "polyline":
                     this.drawnItems.addLayer(e.layer);
 
-                    this.sendDlg = new Dialog ( 'main',
+					if(this.loggedIn) 
+					{
+                    	this.sendDlg = new Dialog ( 'main',
                          { ok: this.saveWalkrouteToServer.bind(this,e.layer),
                               cancel:   (function() 
                                             {
@@ -178,23 +182,35 @@ function init(loggedIn)
                                                 this.drawnItems.removeLayer
                                                     (e.layer);
                                             }).bind(this)
-                        },
-                        { backgroundColor: '#8080ff',
-                            width: '400px' ,
-                            height: '400px',
-                            color: 'white',
-                            borderRadius: '15px' }
+                        	},
+                        	{ backgroundColor: '#8080ff',
+                            	width: '400px' ,
+                            	height: '400px',
+                            	color: 'white',
+                            	borderRadius: '15px' }
                             );
-                    this.sendDlg.setContent  
+                    	this.sendDlg.setContent  
                 ("<h3>Please enter details of your walk:</h3><p>Walk title: "+
             "<input id='_wrmgr_wtitle' /></p>"+
             "<p>Description:<br /><textarea id='_wrmgr_wdesc' " +
             "style='margin: 10px 10px 10px 10px;width:360px;height:150px'>"+
             "</textarea></p>" );
 
-                this.sendDlg.setPosition("100px","100px");
-                this.sendDlg.show();
-                this.addWalkrouteEditDeleteHandlers(e.layer);
+                		this.sendDlg.setPosition("100px","100px");
+                		this.sendDlg.show();
+                		this.addWalkrouteEditDeleteHandlers(e.layer);
+					} 
+					else 
+					{
+						var latlngs = e.layer.getLatLngs();
+						var dist = 0.0;
+						for(var i=0; i<latlngs.length-1; i++)
+						{
+							dist += latlngs[i].distanceTo(latlngs[i+1]);
+						}
+						alert("Distance: " + (dist*0.001).toFixed(2) +" km");
+						this.map.removeLayer(e.layer);
+					}
             }
         }).bind(this));
 
@@ -649,7 +665,7 @@ function init(loggedIn)
     document.getElementById('myroutes').addEventListener("click", 
         this.wrViewMgr.sendRequest.bind(this.wrViewMgr));
     this.loggedIn = true;
-    this.map.addControl(this.drawControl);
+	this.enableMarkerTool();
   },
 
   saveWalkrouteToServer : function(polyline)
@@ -774,6 +790,17 @@ function init(loggedIn)
         "<img src='fm/images/freemap_small.png' alt='freemap_small' /><br/>"+
         "</div>";
      }
+  },
+
+  enableMarkerTool: function()
+  {
+		this.drawControl.setDrawingOptions({marker:true});
+
+		// https://github.com/Leaflet/Leaflet.draw/issues/369
+		// need to remove control and add it again for changes to 
+		// take effect
+		this.map.removeControl(this.drawControl);
+		this.map.addControl(this.drawControl);
   }
  };
 
