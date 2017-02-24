@@ -23,9 +23,9 @@ class UserView
         <?php
         echo "<form method='post' action='".$this->ctrlScript."'>";
         ?>
-        <label for="username">Username</label>
+        <label for="username">Username</label> <br />
         <input name="username" id="username" /> <br />
-        <label for="password">Password</label>
+        <label for="password">Password</label> <br />
         <input name="password" id="password" type="password" /> <br />
         <input type="hidden" name="action" value="login" />
         <?php
