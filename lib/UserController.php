@@ -117,12 +117,12 @@ class UserController
         {
             unset($httpData["username"]);
             unset($httpData["password"]);
-            $this->view->head();
+            //$this->view->head();
             $this->view->displayLogin
             (isset($httpData["redirect"]) ?  
                 $httpData["redirect"] :"index.php", 
                 "", $httpData); 
-           $this->view->closePage();
+           //$this->view->closePage();
         }
     }
 
@@ -138,7 +138,7 @@ class UserController
 
     function actionSignup($httpData)
     {
-        $this->view->head();
+        //$this->view->head();
         if(isset($httpData["username"]) && isset($httpData["password"]))
         {
             $um = new UserManager($this->conn, $this->table);
@@ -153,7 +153,7 @@ class UserController
         {
             $this->view->displaySignupForm();
         }
-        $this->view->closePage();
+        //$this->view->closePage();
     }
 
 
