@@ -20,13 +20,13 @@ class UserManager
 
     function isValidLogin($username,$password)
     {
-        
             $stmt=$this->conn->prepare
                 ("select * from ".$this->table." where username=?");
+                echo ("select * from ".$this->table." where username=$username");
             $stmt->bindParam (1, $username);
             $stmt->execute();
             $row = $stmt->fetch();
-            
+
             return ($row===false) ?  false:
                     (password_verify($password, $row["password"]) ||
                         $row["active"]==-1) ? $row: false;

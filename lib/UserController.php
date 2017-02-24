@@ -25,11 +25,14 @@ class UserController
         $first=true;
         foreach($data as $k=>$v)
         {
-            if($first==false)
-                $qs.="&";
-            else
-                $first=false;
-            $qs .= "$k=$v";
+			if($k!="action") 
+			{
+            	if($first==false)
+                	$qs.="&";
+            	else
+                	$first=false;
+            	$qs .= "$k=$v";
+			}
         }
         $result = $this->doLogin($username,$password);
         if($result===false)
@@ -57,7 +60,7 @@ class UserController
 
     public  function doLogin($username,$password)
     {
-        $um = new UserManager($this->conn);
+        $um = new UserManager($this->conn, $this->table);
         $row = $um->isValidLogin($username,$password);
         if($row!==false)
         {
@@ -129,7 +132,7 @@ class UserController
         session_destroy();
         if(!isset($httpData['redirect']))
             $httpData['redirect'] = 'index.php';
-        header("Location: $httpData[redirect]");
+        header("Location: $httpData[redirect]?action=login");
 
     }
 
