@@ -1,18 +1,19 @@
 <?php
 
+require_once('Controller.php');
 require_once('User.php');
 require_once('UserView.php');
 require_once('functionsnew.php');
 require_once('UserManager.php');
 
-class UserController
+class UserController extends Controller
 {
-    protected $view, $conn, $userSession, $adminSession, $table;
+    protected $conn, $userSession, $adminSession, $table;
 
     public function __construct($view, $conn, $userSession, $adminSession,
                                     $table="users")
     {
-        $this->view = $view;
+		parent::__construct($view);	
         $this->conn = $conn;
         $this->userSession = $userSession;
         $this->adminSession = $adminSession;
