@@ -72,7 +72,9 @@ class FreemapUserManager extends UserManager
                     "/fm/user.php?action=activate&id=$lastid".
                 "&key=$random");
 			
-            return new User($lastid, $this->conn);
+           $u = new User($this->conn);
+		   $u->findById($lastid);
+		   return $u;
         }
     }
 }

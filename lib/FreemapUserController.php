@@ -53,7 +53,8 @@ class FreemapUserController extends UserController
         }
         else 
         {
-            $u=new User($httpData["id"], $this->conn);
+            $u=new User($this->conn);
+			$u->findById($httpData["id"]);
             if($u->isValid())
             {
                 $status = $u->remove();

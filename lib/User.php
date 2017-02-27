@@ -4,8 +4,8 @@ require_once('DAO.php');
 
 class User extends DAO {
 
-    function __construct($id, $conn, $table="users") {
-        parent::__construct($id, $conn, $table);
+    function __construct($conn, $table=null) {
+        parent::__construct($conn, $table);
     }
 
     function isAdmin() {

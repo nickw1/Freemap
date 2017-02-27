@@ -46,7 +46,9 @@ class UserManager
             $row = $stmt->fetch();
             if($row!==false)
             {
-                return new User($row["id"], $this->conn, $this->table);
+                $u = new User($this->conn, $this->table);
+				$u->setRow($row);
+				return $u;
             }
         }
         return null;
