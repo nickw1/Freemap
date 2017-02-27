@@ -6,18 +6,16 @@ require_once('UserView.php');
 require_once('functionsnew.php');
 require_once('UserManager.php');
 
-class UserController extends Controller
+class UserController extends DAOController
 {
-    protected $conn, $userSession, $adminSession, $table;
+    protected $userSession, $adminSession;
 
     public function __construct($view, $conn, $userSession, $adminSession,
                                     $table="users")
     {
-		parent::__construct($view);	
-        $this->conn = $conn;
+		parent::__construct($view, $conn, $table);	
         $this->userSession = $userSession;
         $this->adminSession = $adminSession;
-        $this->table = $table;
     }
 
     public function login($username,$password,$redirect,$data)
@@ -61,7 +59,7 @@ class UserController extends Controller
 
     public  function doLogin($username,$password)
     {
-        $um = new UserManager($this->conn, $this->table);
+        $um = new UserManager($this->dao);
         $row = $um->isValidLogin($username,$password);
         if($row!==false)
         {
@@ -86,7 +84,7 @@ class UserController extends Controller
             else
             {
                 header("Content-type: application/json");
-                $um = new UserManager($this->conn);
+                $um = new UserManager($this->dao);
                 $user = $um->getUserFromUsername($_SESSION[$this->userSession]);
                 $info = array ($_SESSION[$this->userSession],
                             $user->isAdmin() ? "1":"0");
@@ -142,7 +140,7 @@ class UserController extends Controller
         //$this->view->head();
         if(isset($httpData["username"]) && isset($httpData["password"]))
         {
-            $um = new UserManager($this->conn, $this->table);
+            $um = new UserManager($this->dao);
             $res=$um->processSignup
                 ($httpData['username'],$httpData['password']);
             if(is_int($res))

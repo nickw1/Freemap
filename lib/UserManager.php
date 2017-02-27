@@ -12,10 +12,10 @@ class UserManager
 {
     protected $conn, $table;
 
-    public function __construct($conn, $table="users")
+    public function __construct($dao)
     {
-        $this->conn = $conn;
-        $this->table = $table;
+        $this->conn = $dao->getConn();
+        $this->table = $dao->getTable();
     }
 
     function isValidLogin($username,$password)

@@ -7,8 +7,15 @@ class DAO {
         $this->conn = $conn;
         $this->table = $table ? $table: strtolower(static::class)."s";
     }
-    
+
+	// Sets the ID without loading the row
+	// e.g. if we want to delete a record
+	function setId($id) {
+		$this->id = $id;
+	}    
+
     function findById($id) {
+		$this->setId($id);
         $stmt=$this->conn->prepare
         ("SELECT * FROM {$this->table} WHERE id=?");
         $stmt->bindParam (1, $id);
@@ -54,7 +61,7 @@ class DAO {
             $sql .= " WHERE id=?";
             $stmt=$this->conn->prepare($sql);
             $values = array_values($data);
-            array_push($values, $this->row["id"]);
+            array_push($values, $this->id);
             $stmt->execute($values);
             return $stmt->rowCount()==1 ? true:false;
         }
@@ -69,7 +76,7 @@ class DAO {
         if($this->isValid()) {
             $stmt2=$this->conn->prepare
                  ("DELETE FROM {$this->table} WHERE id=?");
-            $stmt2->bindParam (1, $this->row["id"]);
+            $stmt2->bindParam (1, $this->id);
             $stmt2->execute();
 			$this->row = false;
             return true;
@@ -79,7 +86,7 @@ class DAO {
     }
 
     function getID() {
-        return $this->isValid() ? $this->row["id"]: 0;
+        return $this->id;
     }
 
     function getRow() {
@@ -89,11 +96,36 @@ class DAO {
     function setRow($row) {
         $this->row = $row;
     }
+
+	function getAllRows() {
+		$result=$this->conn->query ("SELECT * FROM {$this->table}");
+		return $result->fetchAll(PDO::FETCH_ASSOC);	
+	}
     
     function reload() {
         if($this->isValid()) {
-            $this->findById($this->row["id"]);
+            $this->findById($this->id);
         }
     }
+	
+	function getConn() {
+		return $this->conn;
+	}
+
+	function getTable() {
+		return $this->table;
+	}
+
+	function getCols() {
+		$coldata = [];
+		$result = $this->conn->query("SELECT * FROM {$this->table}");
+		for($i=0; $i<$result->columnCount(); $i++) {
+			$thisCol = $result->getColumnMeta($i);
+			// type is BLOB for text
+			$coldata[] = [ "name"=>$thisCol["name"],
+							"type"=>$thisCol["native_type"]];
+		}
+		return $coldata;
+	}
 } 
 ?>

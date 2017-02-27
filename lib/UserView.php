@@ -1,6 +1,8 @@
 <?php
 
-class UserView 
+require_once('DefaultHTMLView.php');
+
+class UserView extends DefaultHTMLView
 {
     protected $ctrlScript; 
 
