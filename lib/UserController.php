@@ -1,19 +1,18 @@
 <?php
 
-require_once('Controller.php');
+require_once('DAOController.php');
 require_once('User.php');
 require_once('UserView.php');
 require_once('functionsnew.php');
-require_once('UserManager.php');
 
 class UserController extends DAOController
 {
     protected $userSession, $adminSession;
 
-    public function __construct($view, $conn, $userSession, $adminSession,
-                                    $table="users")
+    public function __construct($view, $conn, $allowedActions=null,
+						$userSession, $adminSession, $table="users")
     {
-		parent::__construct($view, $conn, $table);	
+		parent::__construct($view, $conn, $table, $allowedActions);	
         $this->userSession = $userSession;
         $this->adminSession = $adminSession;
     }
@@ -42,25 +41,15 @@ class UserController extends DAOController
         }
         else
         {
-            if($result["active"]==-1)
-            {
-                ?>
-                Please note that the login system has been update to
-                reflect current security standards. Your old login is
-                no longer valid; please 
-                <a href="user.php?action=signup">signup for a new account.</a>
-                <?php
-            }
-            else
-                header("Location: $redirect?$qs");
+			header("Location: $redirect?$qs");
         }
     }
     
 
     public  function doLogin($username,$password)
     {
-        $um = new UserManager($this->dao);
-        $row = $um->isValidLogin($username,$password);
+		$this->dao->findUserByLogin($username,$password);
+		$row = $this->dao->getRow();
         if($row!==false)
         {
             if($row["active"]!=-1)
@@ -84,10 +73,9 @@ class UserController extends DAOController
             else
             {
                 header("Content-type: application/json");
-                $um = new UserManager($this->dao);
-                $user = $um->getUserFromUsername($_SESSION[$this->userSession]);
+                $this->dao->findUserByUsername($_SESSION[$this->userSession]);
                 $info = array ($_SESSION[$this->userSession],
-                            $user->isAdmin() ? "1":"0");
+                            $this->dao->isAdmin() ? "1":"0");
                 echo json_encode($info);
             }
         }
@@ -140,8 +128,7 @@ class UserController extends DAOController
         //$this->view->head();
         if(isset($httpData["username"]) && isset($httpData["password"]))
         {
-            $um = new UserManager($this->dao);
-            $res=$um->processSignup
+            $res=$this->dao->processSignup
                 ($httpData['username'],$httpData['password']);
             if(is_int($res))
                 $this->view->displaySignupForm($res);
@@ -153,18 +140,6 @@ class UserController extends DAOController
             $this->view->displaySignupForm();
         }
         //$this->view->closePage();
-    }
-
-
-    // WARNING should NOT be used without some form of validation of the
-    // input data!!!
-    public function execute($rawHTTPdata)
-    {
-        $function = "action".ucfirst($rawHTTPdata["action"]);
-           if(method_exists($this, $function)) 
-        {
-            $this->$function($rawHTTPdata);
-        } 
     }
 }
 

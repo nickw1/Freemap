@@ -95,6 +95,9 @@ class DAO {
 
     function setRow($row) {
         $this->row = $row;
+		if($row!==false) {
+			$this->id = $this->row["id"];
+		}
     }
 
 	function getAllRows() {

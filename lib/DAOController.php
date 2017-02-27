@@ -6,8 +6,9 @@ class DAOController extends Controller {
 
 	protected $dao;
 
-	public function __construct(View $view, $conn, $table=null) {
-		parent::__construct($view);
+	public function __construct(View $view, $conn, $table=null, 
+			$allowedActions=null) {
+		parent::__construct($view, $allowedActions);
 		$class = str_replace("Controller","",static::class);
 		require_once("{$class}.php");
 		echo "Creating class $class<br />\n";
