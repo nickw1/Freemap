@@ -11,16 +11,24 @@ class DAOController extends Controller {
 		parent::__construct($view, $allowedActions);
 		$class = str_replace("Controller","",static::class);
 		require_once("{$class}.php");
-		echo "Creating class $class<br />\n";
 		$this->dao = new $class($conn, $table); 
+		$view->setConn($conn);
 	}
 
-	public function actionCreate($rawHTTPData) {
-		$this->dao->create($this->getRelevantData($rawHTTPData));
+	public function actionCreate($inputData) {
+		$data = $this->getRelevantData($inputData);
+		if(($blanks=$this->checkBlank($data))===[]) {
+			$row=$this->dao->create($data);
+			return $row["id"];
+		} else {
+			$this->generateBlankMsg($blanks);
+			$this->actionCreateForm($inputData);
+			return 0;
+		}
 	}
 
-	public function actionRetrieve($rawHTTPData) {
-		$this->dao->findById($rawHTTPData["id"]);
+	public function actionRetrieve($inputData) {
+		$this->dao->findById($inputData["id"]);
 		$this->view->outputRecord($this->dao->getRow());
 	}
 
@@ -28,38 +36,74 @@ class DAOController extends Controller {
 		$this->view->outputAllRecords($this->dao->getAllRows());
 	}
 
-	public function actionUpdate($rawHTTPData) {
-		$this->dao->setId($rawHTTPData["id"]);
-		$this->dao->update($this->getRelevantData($rawHTTPData));
+	public function actionUpdate($inputData) {
+		$this->dao->setId($inputData["id"]);
+		$data = $this->getRelevantData($inputData);
+		if(($blanks=$this->checkBlank($data))===[]) {
+			$this->dao->update($data);
+			return true;
+		} else {
+			$this->generateBlankMsg($blanks);
+			$this->actionUpdateForm($inputData);
+			return false;
+		}
 	}
 
-	public function actionDelete($rawHTTPData) {
-		$this->dao->setId($rawHTTPData["id"]);
+	public function actionDelete($inputData) {
+		$this->dao->setId($inputData["id"]);
 		$this->dao->remove();
 	}
 
-	protected function getRelevantData($rawHTTPData) {
+	protected function getRelevantData($inputData) {
 		$data = array();
-		foreach($rawHTTPData as $k=>$v) {
-			if($k!="action" && $k!="redirect" && $k!="id") {
+		foreach($inputData as $k=>$v) {
+			if($k!="action" && $k!="redirect" && $k!="id" 
+				&& !isset($_FILES[$k])) {
 				$data[$k] = $v;
 			}
 		}
 		return $data;
 	}
 
-	public function actionCreateAddForm($rawHTTPData) {
+	protected function checkBlank($data) {
+		$blanks = [];
+		foreach($data as $k=>$v) {
+			if($v=="") {
+				$blanks[] = $k;
+			}
+		}
+		return $blanks;
+	}
+
+	protected function generateBlankMsg($blanks) {
+		$this->view->outputMsg("The following fields were blank:");
+		$this->view->startList();
+		foreach($blanks as $blank) {
+			$this->view->addListItem($blank);
+		}
+		$this->view->endList();
+	}
+
+	public function actionCreateForm($inputData, $enctype=null) {
 		$cols = $this->dao->getCols();
-		echo "<form method='post' action='$_SERVER[PHP_SELF]'>\n";
+		echo "<form method='post' ";
+		if($enctype!==null) {
+			echo "enctype='$enctype' ";
+		}
+		echo "action='$_SERVER[PHP_SELF]'>\n";
 		echo "<input type='hidden' name='action' value='create' />";
 		$this->view->generateForm($cols);
 		echo "</form>";
 	}
 
-	public function actionCreateUpdateForm($rawHTTPData) {
+	public function actionUpdateForm($inputData, $enctype=null) {
 		$cols = $this->dao->getCols();
-		$this->dao->findById($rawHTTPData["id"]);
-		echo "<form method='post' action='$_SERVER[PHP_SELF]'>\n";
+		$this->dao->findById($inputData["id"]);
+		echo "<form method='post' ";
+		if($enctype!==null) {
+			echo "enctype='$enctype' ";
+		}
+		echo "action='$_SERVER[PHP_SELF]'>\n";
 		echo "<input type='hidden' name='action' value='update' />";
 		$this->view->generateForm($cols, $this->dao->getRow());
 		echo "</form>";

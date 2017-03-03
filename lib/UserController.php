@@ -80,6 +80,10 @@ class UserController extends DAOController
             }
         }
     }
+	
+	public function actionGet($httpData) {
+		$this->actionLogin($httpData);
+	}
 
     public function actionLogin($httpData)
     {
@@ -102,8 +106,6 @@ class UserController extends DAOController
         }
         else
         {
-            unset($httpData["username"]);
-            unset($httpData["password"]);
             //$this->view->head();
             $this->view->displayLogin
             (isset($httpData["redirect"]) ?  

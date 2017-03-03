@@ -16,11 +16,11 @@ class DAO {
 
     function findById($id) {
 		$this->setId($id);
-        $stmt=$this->conn->prepare
-        ("SELECT * FROM {$this->table} WHERE id=?");
+        $stmt=$this->conn->prepare($this->getFindByIdSQL());
         $stmt->bindParam (1, $id);
         $stmt->execute();
         $this->row = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $this->row;
     }
 
     function create($data) {
@@ -100,8 +100,9 @@ class DAO {
 		}
     }
 
-	function getAllRows() {
-		$result=$this->conn->query ("SELECT * FROM {$this->table}");
+	function getAllRows($orderby=null) {
+		$result=$this->conn->query ($this->getRetrieveSQL().
+				($orderby==null ? "":" ORDER BY $orderby"));
 		return $result->fetchAll(PDO::FETCH_ASSOC);	
 	}
     
@@ -121,7 +122,7 @@ class DAO {
 
 	function getCols() {
 		$coldata = [];
-		$result = $this->conn->query("SELECT * FROM {$this->table}");
+		$result = $this->conn->query($this->getRetrieveSQL());
 		for($i=0; $i<$result->columnCount(); $i++) {
 			$thisCol = $result->getColumnMeta($i);
 			// type is BLOB for text
@@ -129,6 +130,16 @@ class DAO {
 							"type"=>$thisCol["native_type"]];
 		}
 		return $coldata;
+	}
+
+	// WHRER 1 to avoid tedious logic of working out whether there's a 
+	// WHERE or not, so extra conditions can always use AND
+	protected function getRetrieveSQL() {
+		return "SELECT * FROM {$this->table} WHERE 1 ";
+	}
+
+	protected function getFindByIdSQL() {
+        return $this->getRetrieveSQL() ." AND id=?";
 	}
 } 
 ?>
