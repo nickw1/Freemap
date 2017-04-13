@@ -38,6 +38,13 @@ function init(loggedIn)
                 ).openPopup();
         }}).bind(this));
 
+    this.intIcon = L.icon (
+                                {iconUrl: '/fm/icons/interest.png',
+                                shadowUrl: null,
+                                iconSize: new L.Point(16,16),
+                                shadowSize: null,
+                                iconAnchor: new L.Point(8,8),
+                                popupAnchor: new L.Point(8,8) } );
     this.markersLayer = new L.GeoJSON( null,
         { 
             onEachFeature: (function (feature, layer)
@@ -51,10 +58,10 @@ function init(loggedIn)
                 // you have to add it to the layer group
                 this.drawnItems.addLayer(layer);
             } ).bind(this),
-            pointToLayer: function(geojson,latlng)
+            pointToLayer: (function(geojson,latlng)
             {
-                return new L.Marker(latlng, { icon: intIcon } );
-            }
+                return new L.Marker(latlng, { icon: this.intIcon } );
+            }).bind(this)
         } );
 
     this.walkrouteLayer = new L.GeoJSON ( null,
@@ -86,13 +93,6 @@ function init(loggedIn)
         shadowSize: null,
         iconAnchor: new L.Point(8,15),
         popupAnchor: new L.Point(2,-2) } );
-    this.intIcon = L.icon (
-                                {iconUrl: '/fm/icons/interest.png',
-                                shadowUrl: null,
-                                iconSize: new L.Point(16,16),
-                                shadowSize: null,
-                                iconAnchor: new L.Point(8,8),
-                                popupAnchor: new L.Point(8,8) } );
 
     this.walkrouteStarts = [];
     this.walkroutes = [];
