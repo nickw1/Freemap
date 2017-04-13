@@ -83,11 +83,13 @@ SearchWidget.prototype.resultsReturned = function(e)
             results.appendChild(resultsHeading);
             for(var i=0; i<this.json.features.length; i++)
             {
+				var nameContainer = document.createElement("strong");
                 var name = (this.json.features[i].properties.name) ?
                     this.json.features[i].properties.name: "unnamed";
+				nameContainer.appendChild(document.createTextNode(name));
 				var is_in = (this.json.features[i].properties.is_in) ?
 					this.json.features[i].properties.is_in: "";
-                var t = document.createTextNode(name + 
+                var t = document.createTextNode( 
 					(this.json.features[i].properties.is_in ?
 					","+this.json.features[i].properties.is_in : "")
 						+"(" +
@@ -97,6 +99,7 @@ SearchWidget.prototype.resultsReturned = function(e)
                 a.href='#';
                 a.id='result'+i;
                 handleEvent("click",a,this.btnClick,this);
+				a.appendChild(nameContainer);
                 a.appendChild(t);
                 results.appendChild(a);
                 results.appendChild(document.createElement("br"));
