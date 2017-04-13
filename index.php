@@ -13,14 +13,14 @@ $loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
 <html>
 <head>
 <title>FREEMAP</title>
+<meta charset="utf-8" />
 <link rel='stylesheet' type='text/css' href='fm/css/style.css' />
 <script type='text/javascript' 
 src='javascript/leaflet-0.7/leaflet.js'></script>
 <?php
 $kv = isset($_GET["kv"]) && ctype_digit($_GET["kv"]) && 
 		is_dir("/var/www/javascript/kothic/$_GET[kv]") ? 
-		$_GET["kv"] : 
-			(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome") !==false ? "11":"13");
+		$_GET["kv"] : 16;
 
 ?>
 <script type='text/javascript' 
@@ -28,6 +28,9 @@ src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic.js'>
 </script>
 <script type='text/javascript' 
 src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet.js'></script>
+<script type='text/javascript' 
+src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet-clickable.js'>
+</script>
 <link rel='stylesheet' type='text/css' 
 href='javascript/leaflet-0.7/leaflet.css' />
 
@@ -43,7 +46,7 @@ href='http://leaflet.github.io/Leaflet.draw/leaflet.draw.css' />
 -->
 
 
-<script type='text/javascript' src='fm/style.js'></script>
+<script type='text/javascript' src='fm/style_new.js?killcache=<?php echo time();?>'></script>
 
 <script type='text/javascript' src='jslib/Dialog.js'></script>
 <script type='text/javascript' src='jslib/SearchWidget.js'></script>
@@ -63,18 +66,7 @@ title='The Freemap blog, revisited' href='/wordpress/' />
 </head>
 
 <?php
-if(false)
-{
-	?>
-	<body>
-	<p>Freemap is temporarily unavailable due to some problems with the
-	database when upgrading the server. It is hoped to be restored during
-	this week. Also, OpenTrail 0.3 will temporarily be unable to download
-	data from the Freemap server. 14/11/16</p>
-	</body>
-	<?php
-}
-else if(file_exists(POPULATE_LOCK))
+if(file_exists(POPULATE_LOCK))
 {
     ?>
     <body>
@@ -91,7 +83,6 @@ else
     ?>
     <body onload='init(<?php echo $loggedIn;?>)'> 
     <?php write_sidebar(true); ?>
-
     <div id='main'>
 
     <div id="map"></div>
@@ -112,10 +103,22 @@ function write_sidebar($homepage=false)
 {
 ?>
     <div id='sidebar'>
-	
+
 
 	<!-- filled in by js using matchMedia() -->
 	<div id='title'> </div>
+
+	<!--
+	<div style="border: 1px solid black; background-color: white; color: black">
+	<h3>NO TO BREXIT!</h3>
+	<p>Britain in the 1990s and 2000s was known for tolerance and for 
+	consigning xenophobia to the dustbin of history. Sadly, it seems
+	Theresa May wants to take us back to the dark ages of the 1950s or
+	before. If you voted Remain and voted Conservative in 2015 (for the record,
+	I didn't) then please pledge to boycott the Conservatives in 2020...
+	and write to your MP to tell them this.</p>
+	</div>
+	-->
 
 
     <p id='intro'>Welcome to <em>Freemap 0.7</em>, 

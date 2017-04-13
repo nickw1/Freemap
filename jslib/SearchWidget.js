@@ -85,7 +85,12 @@ SearchWidget.prototype.resultsReturned = function(e)
             {
                 var name = (this.json.features[i].properties.name) ?
                     this.json.features[i].properties.name: "unnamed";
-                var t = document.createTextNode(name + "(" +
+				var is_in = (this.json.features[i].properties.is_in) ?
+					this.json.features[i].properties.is_in: "";
+                var t = document.createTextNode(name + 
+					(this.json.features[i].properties.is_in ?
+					","+this.json.features[i].properties.is_in : "")
+						+"(" +
                         this.json.features[i].properties.featuretype+")");    
                 var b  = document.createElement("input");
                 var a = document.createElement("a");

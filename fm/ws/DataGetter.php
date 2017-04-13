@@ -731,15 +731,20 @@ class BboxGetter extends DataGetter
                     $y =     (int)
                     round(($f["coordinates"][$i][1]-$this->bbox[1]) * $factor);
                     // coords of (0,0) seem to  screw up rendering
+			
+					
                     $x=($x==0)?1:$x;
                     $y=($y==0)?1:$y;
     
+					
                     $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                     $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
+					
+					
+		
 
-                    if($x>=0 && $y>=0 && $x<=$this->kothic_gran && 
-                        $y<=$this->kothic_gran)
-            if(true)
+                    if($x>=0 && $y>=0 && $x<=$this->kothic_gran && $y<=$this->kothic_gran)
+//            if(true)
                     {
                            $coords[] = array($x,$y);
                     }

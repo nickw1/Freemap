@@ -1,17 +1,14 @@
-
-
-
 function init(loggedIn)
 {
  
  var freemap = {
   initialise: function (lat, lon, zoom, loggedIn) 
   {
-    var url = "/fm/ws/tsvr.php?x={x}&y={y}&z={z}&"+
-				"way=highway,natural,waterway,railway&poi=all"+
+    var url = "/fm/ws/tsvr.php?x={x}&y={y}&z={z}"+//&t="+new Date().getTime()+
+				"&way=highway,natural,waterway,railway,power,barrier&poi=all"+
                 "&kothic=1&contour=1&coastline=1";
 
-    var kothic = new L.TileLayer.Kothic
+    var kothic = new L.TileLayer.Kothic.Clickable
             ( url, 
                             { minZoom: 11, attribution:
                     "&copy; 2004-" + new Date().getFullYear() + 
@@ -22,7 +19,24 @@ function init(loggedIn)
                     "<a href='https://github.com/kothic/kothic-js'>"+
                     "Kothic JS</a>" } 
             );
-
+	
+	kothic.on("featureclick", (function(e) {
+			// brtimes.com
+			// www.brtimes.com/#!board?stn=XXX&date=YYYYMMDD
+			if(!this.drawing && e.feature.properties.featuretype!="unknown") {
+			if(!this.circle) {
+				this.circle = L.circle([e.latlng.lat, e.latlng.lng],50).addTo(this.map); }
+			else {
+//			this.circle.removeFrom(this.map);
+//			this.map.removeLayer(this.circle);
+			this.circle.setLatLng(e.latlng);
+			}
+			this.circle.bindPopup("<h2>"+e.feature.properties.name+"</h2><p>"+
+				e.feature.properties.featuretype+"</p>"+
+				 (e.feature.properties.website ?  "<p><a target='_newtab' href='"+e.feature.properties.website+"'>Website</a>":"") +
+				 (e.feature.properties.wikipedia ?  "<p><a target='_newtab' href='http://www.wikipedia.org/wiki/"+e.feature.properties.wikipedia+"'>Wikipedia</a>":"")
+				).openPopup();
+		}}).bind(this));
     var mql = window.matchMedia("(max-device-aspect-ratio: 2/3)");
     mql.addListener( this.onOrientationChange.bind(this));
     this.onOrientationChange(mql);
@@ -127,7 +141,7 @@ function init(loggedIn)
             this.walkrouteLayer, this.walkrouteWaypointsLayer] } );
 
     L.control.layers ( null,
-                        { "Annotations" : this.markersLayer,
+                        { "Walkroute Markers" : this.markersLayer,
                            "Walk routes": L.layerGroup
                             ( [this.walkrouteStartsLayer, 
                               this.walkrouteLayer,
@@ -139,7 +153,7 @@ function init(loggedIn)
 
     L.drawLocal.draw.toolbar.buttons.polyline = (loggedIn) ? 'Draw walk route':
 						'Calculate distance of route';
-    L.drawLocal.draw.toolbar.buttons.marker = 'Add annotation';
+    L.drawLocal.draw.toolbar.buttons.marker = 'Add direction to walk route';
 
     this.drawControl = new L.Control.Draw ( { 
             draw: {
@@ -160,8 +174,12 @@ function init(loggedIn)
 		this.enableMarkerTool();
 	}
 
+	this.map.on('draw:drawstart', (function(e) {
+		this.drawing=true;
+		}).bind(this));
     this.map.on('draw:created', (function (e)
         {
+			this.drawing=false;
             switch(e.layerType)
             {
                 case "marker":
@@ -194,7 +212,10 @@ function init(loggedIn)
             "<input id='_wrmgr_wtitle' /></p>"+
             "<p>Description:<br /><textarea id='_wrmgr_wdesc' " +
             "style='margin: 10px 10px 10px 10px;width:360px;height:150px'>"+
-            "</textarea></p>" );
+            "</textarea></p>"+
+				"<p>Having saved your walk, you can then add directions to "+
+				"your walk by clicking and dragging the marker icon to "+
+				"the appropriate point(s) on your walk route.</p>" );
 
                 		this.sendDlg.setPosition("100px","100px");
                 		this.sendDlg.show();
@@ -270,7 +291,7 @@ function init(loggedIn)
     this.map.on("dragend",  (function(e)
             {
                 var bounds = e.target.getBounds();
-                this.annotationLoader.loadFeatures(bounds);
+//                this.annotationLoader.loadFeatures(bounds);
                 this.walkrouteStartsLoader.loadFeatures(bounds);
                 this.saveLocation();
             } ).bind(this));
@@ -551,8 +572,11 @@ function init(loggedIn)
             { ok: 
                 (function()
                 {
+					/*
                   if(document.getElementById("addToWalkroute") &&
                     document.getElementById('addToWalkroute').checked)
+					*/
+				  if(true)
                   {
                      var wp = this.addWalkrouteWaypoint
                             (nearWalkroute,marker.getLatLng(),
@@ -606,15 +630,19 @@ function init(loggedIn)
                     color: 'white',
                     borderRadius: '15px' } );
 
+		// 130417 moved if - only creates marker if near walkroute
+        if(nearWalkroute>0)
+		{
           var content= 
-        "<p>Please enter details of the annotation: </p>"+
+        "<p>Please enter details of the walk route directions: </p>"+
             "<p><textarea id='annotation' " +
             "style='margin: 10px 10px 10px 10px;width:360px;height:150px'>"+
             "</textarea></p>" ;
-        if(nearWalkroute>0)
+			/*
             content += "<p>"+
                "<input type='checkbox' id='addToWalkroute' checked='checked'/>"+
                 "<label for='addToWalkroute'>Add to walk route?</label></p>";
+			*/
         this.dlg.setContent(content);
         this.dlg.setPosition("100px", "100px");
         if(!this.dlg.isVisible())
@@ -622,6 +650,7 @@ function init(loggedIn)
             this.dlg.show();
         }
         document.getElementById('annotation').focus();
+		}
     }
     else
     {
@@ -639,12 +668,9 @@ function init(loggedIn)
                         this.loginSuccess(e.target.responseText);
                     else if(e.target.status==401)
                             alert('Incorrect login');
-                        else if(e.target.status==503)
-                            alert('Please note that you need to re-register '+
-                                    'for an account. This is due to the ' +
-                                    'login system being upgraded to reflect '+
-                                    'current security standards. ' +
-                                    '(SHA1 replaced by PHP password library)');
+					else
+						alert('Unknown server error: HTTP code=' + 
+							e.target.status);
                 } ).bind(this));    
     xhr2.open('POST','/fm/user.php');
     var data = new FormData();
@@ -665,6 +691,8 @@ function init(loggedIn)
     document.getElementById('myroutes').addEventListener("click", 
         this.wrViewMgr.sendRequest.bind(this.wrViewMgr));
     this.loggedIn = true;
+    L.drawLocal.draw.toolbar.buttons.polyline = (this.loggedIn) ? 'Draw walk route':
+						'Calculate distance of route';
 	this.enableMarkerTool();
   },
 
