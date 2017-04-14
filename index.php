@@ -105,20 +105,11 @@ function write_sidebar($homepage=false)
     <div id='sidebar'>
 
 
-	<!-- filled in by js using matchMedia() -->
-	<div id='title'> </div>
-
-	<!--
-	<div style="border: 1px solid black; background-color: white; color: black">
-	<h3>NO TO BREXIT!</h3>
-	<p>Britain in the 1990s and 2000s was known for tolerance and for 
-	consigning xenophobia to the dustbin of history. Sadly, it seems
-	Theresa May wants to take us back to the dark ages of the 1950s or
-	before. If you voted Remain and voted Conservative in 2015 (for the record,
-	I didn't) then please pledge to boycott the Conservatives in 2020...
-	and write to your MP to tell them this.</p>
+	<div id='title'> 
+		<div class='titlebox' id='titlebox'>
+		<img src='fm/images/freemap_small.png' alt='Freenap logo' /> <br />
+		</div>
 	</div>
-	-->
 
 
     <p id='intro'>Welcome to <em>Freemap 0.7</em>, 

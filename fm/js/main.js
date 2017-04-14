@@ -336,18 +336,19 @@ function init(loggedIn)
 
     this.map.on("viewreset", (function(e) 
         { 
-            if(this.map.getZoom()<=13)
+            if(this.map.getZoom()<=14)
                 this.map.removeLayer(this.markersLayer);
             else
                 this.map.addLayer(this.markersLayer);
 
-            if(this.map.getZoom()<=11)
+            if(this.map.getZoom()<=12)
                 this.map.removeLayer(this.walkrouteStartsLayer);
             else
                 this.map.addLayer(this.walkrouteStartsLayer);
 
+			this.saveLocation();
+
         } ).  bind(this) );
-  
     var bounds = this.map.getBounds();
     this.annotationLoader.loadFeatures(bounds);
     this.walkrouteStartsLoader.loadFeatures(bounds);
