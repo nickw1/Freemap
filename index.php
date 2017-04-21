@@ -56,6 +56,7 @@ var loggedIn=<?php echo $loggedIn;?>;
 </script>
 
 <script type='text/javascript' src='fm/js/main.js'></script>
+<script type='text/javascript' src='fm/js/InformationFormatter.js'></script>
 <script type='text/javascript' src='fm/js/FeatureLoader.js'> </script>
 <script type='text/javascript' src='fm/js/WRViewMgr.js'> </script>
 
@@ -112,17 +113,15 @@ function write_sidebar($homepage=false)
 	</div>
 
 
-    <p id='intro'>Welcome to <em>Freemap 0.7</em>, 
-    with kothic-js client-side rendering. 
-    <a href='fm/about.html'>More...</a> </p>
-	<p><strong>Update:</strong> Most or all 
-	issues from server OS upgrade fixed now. Please let me know any
-	remaining issues (see <a href='about.html'>here</a> for email). 
-	20/11/16</p>	
+    <p id='intro'>Welcome to <em>Freemap</em>... 
+	OpenStreetMap-based maps of the UK countryside, allowing 
+	you to share footpath problems and walking routes. Now with
+	field boundaries, stiles, gates and clickable POIs...
+    <a href='fm/about.html'>More</a> </p>
 
     <div id='appmsg'>
     <a href='/common/opentrail.html'>Android app</a>
-    now available!</div>
+    also available!</div>
 
 
     <?php

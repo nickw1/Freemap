@@ -5,7 +5,7 @@ function init(loggedIn)
   initialise: function (lat, lon, zoom, loggedIn) 
   {
     var url = "/fm/ws/tsvr.php?x={x}&y={y}&z={z}"+//&t="+new Date().getTime()+
-                "&way=highway,natural,waterway,railway,power,barrier&poi=all"+
+                "&way=highway,natural,waterway,railway,power,barrier,landuse&poi=all"+
                 "&kothic=1&contour=1&coastline=1";
 
     var kothic = new L.TileLayer.Kothic.Clickable
@@ -21,8 +21,6 @@ function init(loggedIn)
             );
     
     kothic.on("featureclick", (function(e) {
-            // brtimes.com
-            // www.brtimes.com/#!board?stn=XXX&date=YYYYMMDD
             if(!this.drawing && e.feature.properties.featuretype!="unknown") {
             if(!this.circle) {
                 this.circle = L.circle([e.latlng.lat, e.latlng.lng],50).addTo(this.map); }
@@ -31,20 +29,26 @@ function init(loggedIn)
 //            this.map.removeLayer(this.circle);
             this.circle.setLatLng(e.latlng);
             }
-            this.circle.bindPopup("<h2>"+e.feature.properties.name+"</h2><p>"+
-                e.feature.properties.featuretype+"</p>"+
-                 (e.feature.properties.website ?  "<p><a target='_newtab' href='"+e.feature.properties.website+"'>Website</a>":"") +
-                 (e.feature.properties.wikipedia ?  "<p><a target='_newtab' href='http://www.wikipedia.org/wiki/"+e.feature.properties.wikipedia+"'>Wikipedia</a>":"")
-                ).openPopup();
+			var ifo = new InformationFormatter(e.feature);
+            this.circle.bindPopup(ifo.format()).openPopup();
         }}).bind(this));
 
-    this.intIcon = L.icon (
-                                {iconUrl: '/fm/icons/interest.png',
+    this.intIcons = [  L.icon (
+                                {iconUrl: '/fm/icons/caution.png',
                                 shadowUrl: null,
                                 iconSize: new L.Point(16,16),
                                 shadowSize: null,
                                 iconAnchor: new L.Point(8,8),
-                                popupAnchor: new L.Point(8,8) } );
+                                popupAnchor: new L.Point(8,8) } ),
+
+                                L.icon({iconUrl: '/fm/icons/interest.png',
+                                shadowUrl: null,
+                                iconSize: new L.Point(16,16),
+                                shadowSize: null,
+                                iconAnchor: new L.Point(8,8),
+                                popupAnchor: new L.Point(8,8) } ) ];
+
+
     this.markersLayer = new L.GeoJSON( null,
         { 
             onEachFeature: (function (feature, layer)
@@ -60,7 +64,7 @@ function init(loggedIn)
             } ).bind(this),
             pointToLayer: (function(geojson,latlng)
             {
-                return new L.Marker(latlng, { icon: this.intIcon } );
+                return new L.Marker(latlng, { icon: this.intIcons[geojson.properties.annotationtype? geojson.properties.annotationtype-1: 1] } );
             }).bind(this)
         } );
 
@@ -161,7 +165,7 @@ function init(loggedIn)
 
     L.drawLocal.draw.toolbar.buttons.polyline = (loggedIn) ? 'Draw walk route':
                         'Calculate distance of route';
-    L.drawLocal.draw.toolbar.buttons.marker = 'Add direction to walk route';
+    L.drawLocal.draw.toolbar.buttons.marker='Add note to map or to walk route';
 
     this.drawControl = new L.Control.Draw ( { 
             draw: {
@@ -346,7 +350,7 @@ function init(loggedIn)
             else
                 this.map.addLayer(this.walkrouteStartsLayer);
 
-			this.saveLocation();
+            this.saveLocation();
 
         } ).  bind(this) );
     var bounds = this.map.getBounds();
@@ -374,7 +378,7 @@ function init(loggedIn)
                     (annJson, "/fm/ws/annotation.php", "deleteMulti",
                          (function(e)
                             { 
-                                alert("Annotation(s) deleted!");
+                                alert("Note(s) deleted!");
                                 this.annotations = [];
                             } ).bind(this));
             }
@@ -599,12 +603,14 @@ function init(loggedIn)
                   }
                   else
                   {    
+                            var aType = (document.getElementById("annotationType"))? document.getElementById('annotationType').value : 1;
                     var xhr2 = new XMLHttpRequest();
                     xhr2.addEventListener ('load', 
                         (function(e)
                         {
                             alert('Annotation added');
-                            var marker2 = new L.Marker(marker.getLatLng(), {icon:this.intIcon});
+                            var marker2 = new L.Marker(marker.getLatLng(), {icon:this.intIcons[aType-1]});
+                        console.log("annotation type=" + aType);
 //                            var marker2=marker;    
                         marker2.addToDelList = function(deletionList)
 
@@ -623,6 +629,7 @@ function init(loggedIn)
                         ("text", document.getElementById('annotation').value);
                     data.append("lat", marker.getLatLng().lat);
                     data.append("lon", marker.getLatLng().lng);
+                    data.append("annotationType", aType);
                     data.append("action", "create");
                     xhr2.send(data);
                  }  
@@ -643,7 +650,7 @@ function init(loggedIn)
                     borderRadius: '15px' } );
 
           var content= 
-        "<p>Please enter details of the annotation: </p>"+
+        "<p>Enter your note: </p>"+
             "<p><textarea id='annotation' " +
             "style='margin: 10px 10px 10px 10px;width:360px;height:150px'>"+
             "</textarea></p>" ;
@@ -652,6 +659,15 @@ function init(loggedIn)
             content += "<p>"+
                "<input type='checkbox' id='addToWalkroute' checked='checked'/>"+
                 "<label for='addToWalkroute'>Add to walk route?</label></p>";
+        }
+        else
+        {
+            content += "<p>"+
+                "<label for='annotationType'>What is it?</label>"+
+                "<select id='annotationType'>"+
+                "<option value='1'>Problem/issue with path</option>"+
+                "<option value='2'>Directions</option></select>"+
+                "</p>";
         }
         this.dlg.setContent(content);
         this.dlg.setPosition("100px", "100px");
@@ -663,7 +679,7 @@ function init(loggedIn)
     }
     else
     {
-        alert("Must be logged in to add annotation.");
+        alert("Must be logged in to add note.");
     }
   },
 

@@ -575,7 +575,9 @@ class BboxGetter extends DataGetter
     {
         $features=array();
         $q=$this->dbq->getContourQuery
-			($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
+//***210417 FIX??? - don't use extended geometry for contours
+//			($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
+			($this->geomtxt);
         if($q===null)
             return;
         $result=$this->conn->query($q);
@@ -732,23 +734,22 @@ class BboxGetter extends DataGetter
                     round(($f["coordinates"][$i][1]-$this->bbox[1]) * $factor);
                     // coords of (0,0) seem to  screw up rendering
 			
-					
+				
+/* 210417 can we get rid of this now the ext factor is sorted for contours?
                     $x=($x==0)?1:$x;
                     $y=($y==0)?1:$y;
     
 					
                     $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                     $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
+*/
 					
 					
 		
 
-                    if($x>=0 && $y>=0 && $x<=$this->kothic_gran && $y<=$this->kothic_gran)
-//            if(true)
-                    {
+                   if($x>=0 && $y>=0 && $x<=$this->kothic_gran && $y<=$this->kothic_gran)
                            $coords[] = array($x,$y);
-                    }
-                }
+				}
                 break;
 
             case "MultiLineString":

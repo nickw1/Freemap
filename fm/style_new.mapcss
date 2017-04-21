@@ -30,6 +30,7 @@ node|z13-18[railway=station]
 	allow-overlap: true;
 	z-index: 10;
 	text-offset: 6;
+	opacity: 1;
 }
 
 node|z13-18[man_made=mast]
@@ -37,6 +38,7 @@ node|z13-18[man_made=mast]
 	icon-image: /fm/icons/mast.png;
 	allow-overlap: true;
 	z-index: 10;
+	opacity: 1;
 }
 
 node|z13-18[power=tower]
@@ -44,6 +46,7 @@ node|z13-18[power=tower]
 	icon-image: /fm/icons/powertower.png;
 	allow-overlap: true;
 	z-index: 10;
+	opacity: 1;
 }
 
 node|z15-18[barrier=stile]
@@ -51,6 +54,7 @@ node|z15-18[barrier=stile]
 	icon-image: /fm/icons/stile.png;
 	allow-overlap: true;
 	z-index: 10;
+	opacity: 1;
 }
 
 node|z15-18[barrier=gate]
@@ -58,6 +62,7 @@ node|z15-18[barrier=gate]
 	icon-image: /fm/icons/gate.png;
 	allow-overlap: true;
 	z-index: 10;
+	opacity: 1;
 }
 
 node|z14-18[tourism=viewpoint]
@@ -65,6 +70,7 @@ node|z14-18[tourism=viewpoint]
 	icon-image: /fm/icons/viewpoint.png;
 	allow-overlap: true;
 	z-index: 10;
+	opacity: 1;
 }
 
 node|z15-18[amenity=parking]
@@ -72,51 +78,124 @@ node|z15-18[amenity=parking]
 	icon-image: /fm/icons/carpark.png;
 	allow-overlap: true;
 	z-index: 10;
+	opacity: 1;
 }
 
 node|z14-18[place=suburb],node[place=hamlet]
 {
 	font-size: 10;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 10;
+	z-index: 10;
 }
 
 node|z14-18[place=village]
 {
 	font-size:12;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 12;
+	z-index: 10;
 }
 
 node|z14-18[place=town]
 {
 	font-size: 14;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 12;
+	z-index: 10;
 }
 
 node|z14-18[place=city]
 {
 	font-size: 16;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 14;
+	z-index: 10;
 }
 
 node|z12-13[place=village]
 {
 	font-size:10;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 10;
+	z-index: 10;
 }
 
 node|z12-13[place=town]
 {
 	font-size: 12;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 12;
+	z-index: 10;
 }
 
 node|z12-13[place=city]
 {
 	font-size: 14;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 12;
+	z-index: 10;
 }
 
 node|z10-11[place=town]
 {
 	font-size: 10;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 10;
+	z-index: 10;
 }
 
 node|z10-11[place=city]
 {
 	font-size: 12;
+	text-color: black;
+	font-weight: bold;
+	font-family: DejaVu Sans Book; 
+	text: name;
+	icon-image: /fm/icons/waypoint.png;
+	allow-overlap: true;
+	text-offset: 12;
+	z-index: 10;
 }
 
 node[natural=peak]
@@ -127,6 +206,8 @@ node[natural=peak]
 	font-family: DejaVu Sans Book; 
 	text: name;
 	text-allow-overlap: true;
+	icon-image: /fm/icons/peak_small.png;
+	text-offset: 12;
 }
 
 node|z14-18[amenity=pub]

@@ -32,78 +32,157 @@
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
             s_default['text-offset'] = 6;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['man_made'] == 'mast') && zoom >= 13 && zoom <= 18)) {
             s_default['icon-image'] = '/fm/icons/mast.png';
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['power'] == 'tower') && zoom >= 13 && zoom <= 18)) {
             s_default['icon-image'] = '/fm/icons/powertower.png';
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['barrier'] == 'stile') && zoom >= 15 && zoom <= 18)) {
             s_default['icon-image'] = '/fm/icons/stile.png';
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['barrier'] == 'gate') && zoom >= 15 && zoom <= 18)) {
             s_default['icon-image'] = '/fm/icons/gate.png';
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['tourism'] == 'viewpoint') && zoom >= 14 && zoom <= 18)) {
             s_default['icon-image'] = '/fm/icons/viewpoint.png';
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['amenity'] == 'parking') && zoom >= 15 && zoom <= 18)) {
             s_default['icon-image'] = '/fm/icons/carpark.png';
             s_default['allow-overlap'] = 'true';
             s_default['z-index'] = 10;
+            s_default['opacity'] = 1;
         }
 
         if (((type == 'node' && tags['place'] == 'suburb') && zoom >= 14 && zoom <= 18) || ((type == 'node' && tags['place'] == 'hamlet'))) {
             s_default['font-size'] = '10';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 10;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'village') && zoom >= 14 && zoom <= 18)) {
             s_default['font-size'] = '12';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 12;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'town') && zoom >= 14 && zoom <= 18)) {
             s_default['font-size'] = '14';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 12;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'city') && zoom >= 14 && zoom <= 18)) {
             s_default['font-size'] = '16';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 14;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'village') && zoom >= 12 && zoom <= 13)) {
             s_default['font-size'] = '10';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 10;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'town') && zoom >= 12 && zoom <= 13)) {
             s_default['font-size'] = '12';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 12;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'city') && zoom >= 12 && zoom <= 13)) {
             s_default['font-size'] = '14';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 12;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'town') && zoom >= 10 && zoom <= 11)) {
             s_default['font-size'] = '10';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 10;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['place'] == 'city') && zoom >= 10 && zoom <= 11)) {
             s_default['font-size'] = '12';
+            s_default['text-color'] = 'black';
+            s_default['font-weight'] = 'bold';
+            s_default['font-family'] = 'DejaVu Sans Book';
+            s_default['text'] = MapCSS.e_localize(tags, 'name');
+            s_default['icon-image'] = '/fm/icons/waypoint.png';
+            s_default['allow-overlap'] = 'true';
+            s_default['text-offset'] = 12;
+            s_default['z-index'] = 10;
         }
 
         if (((type == 'node' && tags['natural'] == 'peak'))) {
@@ -113,6 +192,8 @@
             s_default['font-family'] = 'DejaVu Sans Book';
             s_default['text'] = MapCSS.e_localize(tags, 'name');
             s_default['text-allow-overlap'] = 'true';
+            s_default['icon-image'] = '/fm/icons/peak_small.png';
+            s_default['text-offset'] = 12;
         }
 
         if (((type == 'node' && tags['amenity'] == 'pub') && zoom >= 14 && zoom <= 18)) {
@@ -451,7 +532,7 @@
     }
     
     var sprite_images = {
-    }, external_images = ['/fm/icons/cafe.png', '/fm/icons/carpark.png', '/fm/icons/gate.png', '/fm/icons/mast.png', '/fm/icons/powertower.png', '/fm/icons/pub.png', '/fm/icons/restaurant.png', '/fm/icons/rsmall.png', '/fm/icons/stile.png', '/fm/icons/viewpoint.png'], presence_tags = [], value_tags = ['highway', 'railway', 'amenity', 'contour', 'tourism', 'man_made', 'waterway', 'designation', 'power', 'name', 'natural', 'landuse', 'place', 'foot', 'barrier', 'bridge'];
+    }, external_images = ['/fm/icons/cafe.png', '/fm/icons/carpark.png', '/fm/icons/gate.png', '/fm/icons/mast.png', '/fm/icons/peak_small.png', '/fm/icons/powertower.png', '/fm/icons/pub.png', '/fm/icons/restaurant.png', '/fm/icons/rsmall.png', '/fm/icons/stile.png', '/fm/icons/viewpoint.png', '/fm/icons/waypoint.png'], presence_tags = [], value_tags = ['highway', 'railway', 'amenity', 'contour', 'tourism', 'man_made', 'waterway', 'designation', 'power', 'name', 'natural', 'landuse', 'place', 'foot', 'barrier', 'bridge'];
 
     MapCSS.loadStyle('style_new', restyle, sprite_images, external_images, presence_tags, value_tags);
     MapCSS.preloadExternalImages('style_new');

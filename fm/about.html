@@ -17,28 +17,17 @@ all paths with public access, many of which are missing on other maps.</p>
 <li><a href='#mapkey'>Map key</a></li>
 <li><a href='#interactive'>Using Freemap's interactive features</a> - how
 to annotate the map and create walking routes.</li>
+<li><a href='#new'>New features</a> (April 2017)</li>
 <li><a href='#norender'>The map isn't showing! Why?</a></li>
-<li><a href='#village'>Coverage</a></li>
+<li><a href='#limitations'>Limitations</a></li>
 <li><a href='#technical'>History and technical details</a></li>
-<li><a href='#developer'>Developer</a></li>
 <li><a href='#source'>Source code</a></li>
 <li><a href='../common/otherstuff.html'>Other software</a>
 hosted on this server and available for download.</li>
 <li><a href='/index.php'>Back to map</a></li>
 </ul>
-<h2>First of all, what Freemap is not...</h2>
-<p>I do want to point out that this is a hobbyist rather than a professional
-project. I work on it fully in my spare time, subject to having that spare
-time to start with, and receive no income from it - in fact, I pay for its
-hosting. Furthermore, it is not the only OSM-related project I am working
-on right now. Also I want to point out that there are, shall we say, better
-web designers and cartographers in the world than myself and the hosting
-has its limitations. Consequently I make no promises about coverage or quality
-of Freemap. If you like it, use it, if you don't, don't ;-) That, said,
-<a href="mailto: freemapinfo@gmail.com">constructive feedback and suggestions
-for improvements</a> are welcome.</p>
 <h2 id='mapkey'>Map key</h2>
-The following diagram (based on Freemap 0.5, a previous version, but
+The following diagram (based on a previous version, but
 the current version of Freemap is to all intents and purposes identical)
 shows the colour scheme for different types of path
 (permissive footpaths, not shown here, are light blue):
@@ -58,46 +47,40 @@ they are walkable or private. Also note the public footpath in the top
 centre of the map, and how its southern end follows a farm access road and
 its northern end follows a track.</p>
 <h2 id='interactive'>Using Freemap's interactive features</h2>
-<p><strong>From version 0.7, Freemap has a (hopefully) more user-friendly
-interface for adding annotations and walking routes due to the use
-of <a href='https://github.com/Leaflet/Leaflet.draw'>Leaflet.draw</a>.
-</strong></p>
 <p>Freemap maps are <em>interactive</em> and allow you to:
     <ul>
-    <li>Annotate the map, 
-    e.g. provide path directions or other
-    info, such as the location of a good view or a problem such as a muddy
-    path or path blockage;</li>
+    <li>Add notes to the map, for example share footpath problems or
+	provide directions where this might be unclear;</li>
     <li>Draw your own <em>walk route</em> and automatically
     get a description of it, ready to take on a walk. 
-    Currently walk routes are available as GPX; it is planned to make them
-    available as printable PDF files too.</li>
+    Currently walk routes are available as GPX.</li>
     </ul>
 How to do all this is described below.</p>
-<h3>Annotating the map</h3>
-<p>You need to login to annotate the map, so please
+<h3>Adding notes</h3>
+<p>You need to login to add notes, so please
 <a href='user.php?action=signup'>sign up</a> for an account!</p>
-<h4>Adding annotations</h4>
-<p>You can add general
-annotations to the map, for example, nice views, interesting features
-or path blockages (mud, barbed wire fence, mad cows etc....)
-Select the marker icon from the toolbar, 
+<p>You can share notes by adding them  
+to the map, for example, problems
+(mud, barbed wire fence, mad cows etc....) or provide directions where the
+course of the footpath might be unclear.</p>
+<p>When logged in, select the "marker" icon from the toolbar, 
 click on the map at the position where you want to add the annotation.
 Add your text and click OK.
 </p>
 <h4>Viewing</h4>
-<p>When the map is loaded, you'll see existing annotations as markers. 
-You can simply click on one to see the text associated with
-the annotation.</p> 
+<p>When the map is loaded, you'll see existing notes as markers (exclamation
+marks on a red or brown background).
+You can simply click on one to see the note.</p> 
 <h3>Walking routes</h3>
 <p>Freemap also allows you to create and share <em>walk routes</em>.
 Once logged in, select "Walk route" mode and then:
     <ul>
-    <li>Select the "Draw walk route" option and draw your route on the map;</li>
+    <li>Select the "Draw walk route" option from the toolbar,
+	and draw your route on the map;</li>
     <li>You can then add descriptions to the walk route. Select the 
-    "Add annotation" option and drag the marker to your walk route at the
-    appropriate place. You will be asked to enter a description. Make sure
-    the "Add to walk route" option is selected.
+    marker icon from the toolbar option and drag the marker to your walk route 
+	at the appropriate place. You will be asked to enter a description. 
+	Make sure the "Add to walk route" checkbox is selected.
     </li>
     </ul>
 </p>
@@ -105,34 +88,66 @@ Once logged in, select "Walk route" mode and then:
 downloadable from the site. When logged in, you can select "My routes" to
 see all your routes, and the start of walking routes are shown on the map
 as foot icons. Routes are currently available for download in GPX format,
-so they can be imported into a GPS device. The current version of
-the Android app <a href='/common/opentrail.html'>OpenTrail</a>
-features the ability to "play" these GPX files so you'll be able to see
-walk route directions presented to you on your Android phone in the field.</p>
+so they can be imported into a GPS device.</p>
+<h2>Android app - OpenTrail</h2>
+<p>Freemap has an accompanying Android app, 
+<a href='/common/opentrail.html'>OpenTrail</a>. With OpenTrail you can
+add and share notes "in the field" on your device: these will be uploaded
+to the database. Furthermore, you can record a walking route while out
+walking, add notes to it, upload to Freemap and share with others.</p>
+<p>Furthermore, OpenTrail features the ability to download and "play" 
+existing walking routes - so you'll be able to see
+walk route directions presented to you on your Android device while out
+walking!</p>
+<h2 id='new'>New features</h2>
+<p>After a long period in which Freemap remained unchanged, a few new
+features have been added in April 2017, partly inspired by the setup of the
+OSM-UK group:
+	<ul>
+	<li>Wider range of information included on the map: in particular stiles,
+	gates, field boundaries (where in OpenStreetMap), viewpoints, cafes,
+	restaurants and power lines.</li>
+	<li>Clickable points of interest. Selected POIs can be clicked with
+	information appearing where available, such as a link to
+	the website of a pub or restaurant, a link to
+	a Wikipedia article, or (if available in OSM) a general
+	description. Also, a link to 
+	the train times for today from stations are displayed
+	if you click on them, via  <a href='http://brtimes.com'>
+	brtimes.com</a>.</li>
+	<li>Search results now show the county or district of places found, where
+	this has been added to OSM.</li>
+	</ul>
+</p>
 <h2 id='norender'>The map isn't showing! Why?</h2>
 <p>If the map doesn't show immediately, it's because the map for that
 area needs to be rendered (drawn). Generating the map data from the database
-takes time as this is a relatively low-spec server (sorry, given this is a
-not-for-profit project, that's just the way it is!) It may take 30 seconds
-or even more in built-up areas. However, once an area
+takes time as this is a relatively low-spec server.
+It may take some time in built-up areas. However, once an area
 of map is drawn, it is cached which means that next time you visit that
 area, the map will be drawn much more quickly - a second or two.</p>
-<p>Also please note that from version 0.6, maps are drawn in the
+<p>Also please note that from early 2012, maps have been drawn in the
 browser using HTML5 technology and the
 <a href='http://www.kothic.org/'>kothic-js</a> renderer.
 The decision to switch to in-browser rendering has been
 made as a result of the large demands of server-side rendering due to
-the increased size of the OpenStreetMap database, and also simply because it
-is a concept that I find interesting! ;-)</p> 
-<p>The move to in-browser rendering also means that you will need a reasonably
-up-to-date browser. Current versions of Firefox (4+, I believe), 
-Chrome and Internet Explorer (9+) will work.</p>
-<h2 id='village'>Coverage</h2>
-<p>Experimentally, Freemap now covers the whole of England and Wales. 
-This does mean
-that initial map rendering is slow (see above), 
-but due to caching, next time you visit
-an area it will be much faster.</p>
+the increased size of the OpenStreetMap database.</p>
+<p>The move to in-browser rendering also means that you will need a moderately 
+up-to-date browser (something released in the last 5 years or so); 
+in particular, Internet Explorer versions before IE9 will not work.</p>
+<h2 id='limitations'>Limitations</h2>
+<p>There are some limitations with Freemap as it stands: in 
+particular, due to server constraints it's restricted to England and Wales,
+and it cannot currently handle certain types of OpenStreetMap data. 
+The main example of this is "multipolygon
+relations", which is the mechanism OSM uses to handle situations such as
+lakes with islands or forests with "holes" of open land within them.
+The principle effect is that, 
+unfortunately, many of the larger lakes in the Lake District
+are not drawn.  This is something that will hopefully be dealt with in the 
+future.</p>
+<p>Also, artefacts sometimes occur at tile boundaries; again I aim to 
+resolve this time permitting.</p>
 <h2 id='technical'>History and technical details</h2>
 <h3>Freemap history</h3>
 <p>Freemap basically started up in 2004 more or less
@@ -145,52 +160,11 @@ GPS data. Then in early 2005 I met Steve and, once a tagging scheme had been
 sorted out, contributed my data to OSM;
 Freemap then used OSM data for its maps, the maps still being rendered
 on the Freemap server, originally using PHP/GD and later using Mapnik.</p>
-<h4>More detail on history</h4>
-<p>Since it's more or less continuously updated, I have not up to now 
-allocated well-defined version numbers. However, it is possible to identify
-five fairly distinct versions:
-    <ul>
-    <li><em>Freemap 0.1</em>, February 2005. Way back before the days of
-    AJAX and "slippy maps", and when OSM was basically just Steve and one
-    or two others, it rendered footpaths, roads and NASA SRTM
-    contours from Freemap's own database using PHP and GD, 
-    and there was almost no JavaScript to be seen. At the time, it covered only
-    a small section of southern England.</li>
-    <li><em>Freemap 0.2</em>, autumn 2005. This was the time when there was
-    a big buzz round AJAX, and consequently I added AJAX feature lookup 
-    and annotation to Freemap. Still using its own database.</li>
-    <li><em>Freemap 0.3</em>, summer 2006. Two big additions, "slippy maps"
-    (courtesy of Anselm Hook's tile.js, anyone remember that?) and more
-    significantly, data was taken from OSM. For a time data was taken from
-    the live OSM database; later a local copy of planet.osm was used.
-    Rendering, though, was still done using the traditional PHP and GD
-    approach.</li>
-    <li><em>Freemap 0.4</em>, March 2007. Perhaps the first "modern" Freemap,
-    using OpenLayers for the slippy map (though an experimental
-    OpenLayers version had been live since the previous
-    summer), a "Google Mercator" projection, and Mapnik for the rendering.
-    The map style was "Landranger-like", as with previous versions.
-    This lasted some time, mostly due to a slight loss of interest in the
-    project on my part due to server memory issues (see below). This was
-    the version that the Java ME client, FreemapMobile, communicated with.</li>
-    <li><em>Freemap 0.5</em>, December 2010. Used
-    tiles from Swansea University Computer Society (SUCS). 
-    Redesign of
-    distinguish physical state of ways and access rights, as described
-    above. Android client.</li>
-    <li><em>Freemap 0.6</em> (March 2012). Use of kothic-js client-side
-    rendering. December 2013: due to a more powerful server provided by
-    Bytemark and server-side caching, all of England and Wales is covered
-    once again.</li>
-    <li><em>Freemap 0.7</em> (preview, December 2014). No great changes in
-    map look-and-feel but significant server-side updates 
-    (use of PDO rather than
-    the old-style mysql API), update to the 2013 version of kothic-js, and
-    use of Leaflet.draw for a more user-friendly UI for adding annotations
-    and walking routes. It's hoped the final version of 0.7 will include
-    a mobile interface too.</li>
-    </ul>
-
+<p>Eventually the larger size of the OSM database meant that server-side
+rendering used up too much resources, so a decision was made in early 2012
+to switch to browser-based rendering using Kothic-JS. This means maps are
+a little slower to draw, but with the increasing power of desktops
+and laptops in recent years this is less of a problem.</p>
 </p>
 <h3>Technical details</h3>
 <p>Here is a description of how Freemap is maintained, should you be 
@@ -207,121 +181,8 @@ thanks to Frederik for that!</li>
 GeoJSON (or a slightly modified version of GeoJSON, see
 <a href='http://www.kothic.org/'>kothic-js</a>). On the client side, 
 kothic-js parses the GeoJSON and renders it to produce a visible map, using
-the <a href='style.mapcss'>MapCSS file here</a>.</p>
+the <a href='style_new.mapcss'>MapCSS file here</a>.</p>
 </ul>
-<h2 id='developer'>Developer</h2>
-<h3>API</h3>
-<p>Freemap exposes a simple API to add and retrieve annotations, walking
-routes and underlying OSM data. Here are the details (all specified PHP
-scripts may be found at <em>http://www.free-map.org.uk/fm/ws)</em></p>
-<h4>bsvr.php - Bounding-box based data server</h4>
-<p>This retrieves underlying OSM and Freemap annotation
-data by bounding box. Data is retrieved
-either as GeoJSON or a custom XML format. OSM format is not used as the
-PostGIS does not store member nodes of ways. Instead, ways are retrieved
-as polylines. This service is really geared for rendering the data rather
-than for any other purpose, e.g. routing.</p>
-<p>Parameters:
-<pre>
-poi: comma-separated OSM tag list for POIs ("all" for all)
-way: comma-separated OSM tag list for ways ("all" for all)
-annotation: a non-zero value retrieves Freemap annotations
-bbox: comma-separated bounding box (in latlon, Spherical Mercator, or OSGB)
-coastline: a non-zero value retrieves coastline data from processed_p.shp;
-    note that sea is treated as the "default" state and land is retrieved
-    as polygons with a tag of "natural=land"
-contour: non-zero value retrieves OS LandForm PANORAMA contours (XML or GeoJSON)
-inProj: projection the bounding box is specified in
-outProj: projection of output data
-format: output format (geojson or xml; xml is a custom XML format, not OSM)
-</pre>
-Projections may be specified as:
-    <ul>
-    <li>Spherical Mercator: 900913,3857,3785</li>
-    <li>WGS84 latlon: 4326, wgs84</li>
-    <li>OSGB: 27700, osgb</li>
-    </ul>
-</p>
-<h4>tsvr.php - tile-based data server</h4>
-<p>This retrieves OSM data in the same format as for bsvr.php, above, but
-by "Google" tile rather than bounding box. GeoJSON is always retrieved.
-Parameters:
-<pre>
-x,y,z: standard "Google" tiling scheme values
-poi: comma-separated OSM tag list for POIs ("all" for all)
-way: comma-separated OSM tag list for ways ("all" for all)
-outProj: projection of output data, see above
-coastline: a non-zero value retrieves coastline data (see above)
-contour: a non-zero value retrieves OS LandForm PANORAMA contours as GeoJSON
-kothic: a non-zero value retrieves GeoJSON in a format ready for kothic-js
-</pre>
-</p>
-<h4>annotation.php - add an annotation</h4>
-<p>Adds an annotation to Freemap. Retrieving annotations is dealt with by
-bsvr.php, above. A method of POST must be used. Parameters:
-<pre>
-lat - the WGS84 latitude of the annotation
-lon - the WGS84 longitude of the annotation
-text - the annotation text
-</pre>
-Returns a unique integer ID for this annotation.
-</p>
-<h4>wr.php - walking routes</h4>
-<p>Adds walking routes to, and retrieves them from, Freemap. Always expects
-an "action" parameter to specify the action to perform. Each action is 
-described below:
-</p>
-<h5>action=add: add a walk route to Freemap</h5>
-<p> A POST request must be used, and a valid Freemap username and password
-must be provided via HTTP authentication.
-<pre>
-route: the walk route, in GeoJSON. This must be a FeatureCollection with the
-    first feature the walk route itself (a LineString of WGS84 lat/lon), and
-    subsequent features, waypoints representing the start of each stage of the 
-    walk (Points in WGS84 lat/lon).
-
-The walk route feature itself expects the following <em>properties</em>:
-    title: the walk route title;
-    description: a short description of the route;
-    distance: distance in km (optional).
-
-The route stage features expect:
-    id: the stage ID (e.g. 1 for the first stage);
-    description: description of this stage of the walk.
-</pre>
-A unique integer ID representing this walk route is returned on success.
-HTTP 401 is returned if username and password are invalid and HTTP 400 is 
-returned if the request is not POST. 
-</p>
-<h5>action=get: retrieve a walk route</h5>
-<p>Retrieves a walk route by ID. Parameters:
-<pre>
-id: the ID of the walk route;
-format: format to return (geojson or gpx)
-ann: a non-zero value includes map annotations close to the walk route in the
-    output, ordered along the walk route.
-</pre>
-A GET request should be used, otherwise 400 Bad Request is returned.</p>
-<h5>action=getByBbox: retrieve all walk routes in a given bounding box</h5>
-<p>Retrieves a summary of all walk routes in a given bounding box. GeoJSON
-or GPX containing start points, ID, title and description of all walking routes
-in the box is returned. The full details of each walk (i.e. the walk route
-stages) are <em>not</em> returned; a potential use of this API call is to
-overlay start points of walk routes on a slippy map. Parameters:
-<pre>
-bbox: w,s,e,n comma-separated bounding box (in WGS84 lon/lat)
-format: format to return (geojson or gpx)
-</pre>
-A GET request should be used, otherwise 400 Bad Request is returned.
-</p>
-<h5>action=getByUser: retrieve walk routes by user</h5>
-<p>Retrieves all walk routes of a given user, or the
-currently logged-in user. Same format as <em>getByBbox</em>. Parameters:
-<pre>
-userid: ID of the user (if omitted, the currently logged-in user)
-format: the format (geojson or gpx)
-</pre>
-</p>
 <h3 id='source'>Source code</h3>
 <p>Freemap
 source code is available via github; see

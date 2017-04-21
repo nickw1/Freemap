@@ -73,10 +73,14 @@ switch($cpost['action'])
         {
             list($goog['e'],$goog['n']) = 
                 reproject($cpost['lon'],$cpost['lat'],$inProj,'3857');
-            $q= "INSERT INTO annotations(text,xy,dir,userid,authorised) ".
+			$annotationType = isset($cpost['annotationType']) &&
+				ctype_digit($cpost['annotationType']) ? 
+				$cpost['annotationType'] : 1;
+            $q= "INSERT INTO annotations(text,xy,dir,userid,annotationType,".
+				"authorised) ".
                 "VALUES (?,".
                 "ST_PointFromText('POINT ($goog[e] $goog[n])',3857)".
-                ",0,$userid,".($userid==0 ? 0:1).")";
+                ",0,$userid,$annotationType,".($userid==0 ? 0:1).")";
             $stmt = $conn->prepare($q);
             $stmt->bindParam (1, $cpost['text']);
             // Note you can't use prepared statements for params to the 
@@ -109,12 +113,15 @@ switch($cpost['action'])
                         list($goog['e'],$goog['n']) = 
                             reproject($attrs['x'], $attrs['y'],
                                   $inProj,'3857');
+						$annotationType = isset($annotation->annotationType) &&
+							ctype_digit($annotation->annotationType) ? 
+							$annotation->annotationType : 1;
                         // HERE 1
                         $stmt = $conn->prepare
                         ("INSERT INTO annotations(text,xy,dir,userid,".
-                        "authorised) VALUES (?,".
+                        "annotationType,authorised) VALUES (?,".
                         "ST_PointFromText('POINT($goog[e] $goog[n])',3857),".
-                        "0,$userid,".($userid==0 ? 0:1).")");
+                        "0,$userid,$annotationType,".($userid==0 ? 0:1).")");
                         $stmt->bindParam (1, $desc);
                         $stmt->execute();
                     }
