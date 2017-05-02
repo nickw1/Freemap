@@ -3,7 +3,7 @@ canvas
 	fill-color: lightblue;	
 }
 
-area[natural=land]
+area[natural=nosea]
 {
 	fill-color: #f2efe9;
 	z-index: 0;
@@ -330,7 +330,15 @@ line|z14-18[highway=path],line|z14-18[highway=footway],line|z14-18[highway=bridl
 	z-index: 2;
 }
 
-line|z14-18[highway=path][bridge=yes],line|z14-18[highway=footway][bridge=yes],line|z14-18[highway=bridleway][bridge=yes]
+line|z14-18[highway=cycleway]
+{
+	color: blue;
+	width: 1;
+	dashes: 2,2;
+	z-index: 2;
+}
+
+line|z14-18[highway=path][bridge=yes],line|z14-18[highway=footway][bridge=yes],line|z14-18[highway=bridleway][bridge=yes],line|z14-18[highway=cycleway][bridge=yes]
 {
 	casing-color: #999; 
 	casing-width: 2;
@@ -384,7 +392,7 @@ line[contour]
 	font-size: 8;
 }
 
-line|z14-18[barrier=hedge],line|z14-18[barrier=fence],line|z14-18[barrier=wall]
+line|z14-18[barrier=hedge],line|z14-18[barrier=fence],line|z14-18[barrier=wall],line|z14-18[barrier=ditch],line|z14-18[barrier=retaining_wall]
 {
 	color: #404040;
 	width: 0.5; 

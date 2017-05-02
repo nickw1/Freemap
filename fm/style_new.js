@@ -9,7 +9,7 @@
             s_default['fill-color'] = 'lightblue';
         }
 
-        if (((selector == 'area' && tags['natural'] == 'land'))) {
+        if (((selector == 'area' && tags['natural'] == 'nosea'))) {
             s_default['fill-color'] = '#f2efe9';
             s_default['z-index'] = 0;
         }
@@ -304,7 +304,14 @@
             s_default['z-index'] = 2;
         }
 
-        if (((type == 'way' && tags['highway'] == 'path' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['highway'] == 'footway' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['highway'] == 'bridleway' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18)) {
+        if (((type == 'way' && tags['highway'] == 'cycleway') && zoom >= 14 && zoom <= 18)) {
+            s_default['color'] = 'blue';
+            s_default['width'] = 1;
+            s_default['dashes'] = [2, 2];
+            s_default['z-index'] = 2;
+        }
+
+        if (((type == 'way' && tags['highway'] == 'path' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['highway'] == 'footway' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['highway'] == 'bridleway' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['highway'] == 'cycleway' && (tags['bridge'] == '1' || tags['bridge'] == 'true' || tags['bridge'] == 'yes')) && zoom >= 14 && zoom <= 18)) {
             s_default['casing-color'] = '#999';
             s_default['casing-width'] = 2;
             s_default['casing-dashes'] = [1, 0];
@@ -348,7 +355,7 @@
             s_default['font-size'] = '8';
         }
 
-        if (((type == 'way' && tags['barrier'] == 'hedge') && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['barrier'] == 'fence') && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['barrier'] == 'wall') && zoom >= 14 && zoom <= 18)) {
+        if (((type == 'way' && tags['barrier'] == 'hedge') && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['barrier'] == 'fence') && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['barrier'] == 'wall') && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['barrier'] == 'ditch') && zoom >= 14 && zoom <= 18) || ((type == 'way' && tags['barrier'] == 'retaining_wall') && zoom >= 14 && zoom <= 18)) {
             s_default['color'] = '#404040';
             s_default['width'] = 0.5;
             s_default['z-index'] = 1;
