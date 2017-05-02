@@ -626,7 +626,7 @@ class BboxGetter extends DataGetter
             $f = json_decode($row['st_asgeojson'],true);
             $tags = array();
             $feature["properties"] = array();
-            $feature["properties"]["natural"] = "land"; 
+            $feature["properties"]["natural"] = "nosea"; 
             if($this->kothic_gran===null)
             {
                 $feature["type"]="Feature";
@@ -738,11 +738,13 @@ class BboxGetter extends DataGetter
 /* 210417 can we get rid of this now the ext factor is sorted for contours?
                     $x=($x==0)?1:$x;
                     $y=($y==0)?1:$y;
-    
-					
                     $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
                     $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
 */
+                    $x=($x<0)?0:$x;
+                    $y=($y<0)?0:$y;
+                    $x=($x>$this->kothic_gran)?$this->kothic_gran:$x;
+                    $y=($y>$this->kothic_gran)?$this->kothic_gran:$y;
 					
 					
 		
