@@ -29,7 +29,7 @@ class DefaultHTMLView extends View {
                     }
                     echo "</textarea> <br />\n";
                 } else {
-					$type = "text";
+		    $type = $col["name"]=="password"?"password":"text";
                     echo "<input type='$type' name='$col[name]' ";
                     if($row!=null) {
                         echo "value='{$row[$col["name"]]}'";
