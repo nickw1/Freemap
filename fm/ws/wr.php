@@ -15,6 +15,7 @@ $um = new UserManager($conn);
 
 $cget = clean_input($_GET, null);
 $cpost = clean_input($_POST, null);
+$cpost["route"] = html_entity_decode($cpost["route"]); // TODO somehting better than this
 
 switch($action)
 {
