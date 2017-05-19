@@ -424,8 +424,8 @@ class Walkroute
         $stmt->bindParam (1, $f["properties"]["title"]);
         $stmt->bindParam (2, $f["properties"]["description"]);
         $stmt->bindParam (3, $f["properties"]["distance"]);
-		// 19/11/16 Strict Standards fix - only variables passed by reference
-		$coords = Walkroute::mkgeom($f["geometry"]["coordinates"]);
+        // 19/11/16 Strict Standards fix - only variables passed by reference
+        $coords = Walkroute::mkgeom($f["geometry"]["coordinates"]);
         $stmt->bindParam (4, $coords);
         $stmt->bindParam (5, $f["geometry"]["coordinates"][0][0]);
         $stmt->bindParam (6, $f["geometry"]["coordinates"][0][1]);
@@ -437,8 +437,10 @@ class Walkroute
         $stmt->bindParam (1, $f["name"]);
         $stmt->bindParam (2, $f["desc"]);
         $stmt->bindParam (3, $f["distance"]);
-		// 19/11/16 Strict Standards fix - only variables passed by reference
-		$trk = Walkroute::mkgeom($f["trk"]);
+        // 19/11/16 Strict Standards fix - only variables passed by reference
+        // 19/05/17 somehow the 2nd and 3rd arguments were removed here for
+        // GPX - don't ask me how - anyway they are now back again
+        $trk = Walkroute::mkgeom($f["trk"], "lon", "lat");
         $stmt->bindParam (4, $trk);
         $stmt->bindParam (5, $f["trk"][0]["lon"]);
         $stmt->bindParam (6, $f["trk"][0]["lat"]);
@@ -466,16 +468,16 @@ class Walkroute
         $geom = "POINT($sphmerc[e] $sphmerc[n])";
         $stmt->bindParam (1, $rteid);
         $stmt->bindParam (2, $wpid);
-		$wpdesc = str_replace("'","",$wpdesc);
+        $wpdesc = str_replace("'","",$wpdesc);
         $stmt->bindParam (3, $wpdesc);
         $stmt->bindParam (4, $sphmerc["e"]);
         $stmt->bindParam (5, $sphmerc["n"]);
         $stmt->bindParam (6, $geom);
         $stmt->execute();
-      	$result=$conn->query
+          $result=$conn->query
                 ("SELECT currval('wr_waypoints_id_seq') AS lastid");
-      	$row=$result->fetch(PDO::FETCH_ASSOC);
-      	return $row['lastid'];
+          $row=$result->fetch(PDO::FETCH_ASSOC);
+          return $row['lastid'];
     }
 
     private static function mkgeom(&$coords,$lonidx=0,$latidx=1)
@@ -484,11 +486,16 @@ class Walkroute
         $txt = "LINESTRING(";
         foreach($coords as $c)
         {    
+            print_r($c);
+            echo "\n";
             if(! $first)
                 $txt .= ",";
             else
                 $first=false;
+            echo "Info :" . $c[$lonidx]. " ".$c[$latidx]."\nSphmerc:";
             $sphmerc = ll_to_sphmerc($c[$lonidx],$c[$latidx]);
+            print_r($sphmerc);
+            echo "\n";
             $txt.="$sphmerc[e] $sphmerc[n]";
         }
         $txt .= ")";
@@ -556,9 +563,9 @@ class Walkroute
         $stmt->bindParam (1, $wpid);
         $stmt->execute();
         if($row = $stmt->fetch())
-		{
+        {
             return new Walkroute($conn, $row["wrid"]);
-		}
+        }
         return null;
     }
 
