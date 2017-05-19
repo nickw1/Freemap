@@ -43,7 +43,9 @@ class DAO {
             $stmt->bindParam($i+1,$data[$keys[$i]]);
         }
         $stmt->execute();
-        $this->findById($this->conn->lastInsertId());
+	$id = $this->conn->lastInsertId();
+        $this->findById($id);
+	return $this->row;
     }
 
     function update($data) {
