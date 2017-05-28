@@ -313,6 +313,8 @@ class Walkroute
     public static function addWR($conn,$txtdata,$userid,$format="geojson")
     {
         $data = $format=="gpx" ? parseGPX($txtdata):json_decode($txtdata,true);
+		print_r(array_keys($data));
+		echo "DISTANCE: $data[distance]\n";
         $d = $format=="gpx" ? $data:$data["features"][0];
         $id=Walkroute::doAddRoute ($conn,$d,$userid,$format);
         switch($format)
@@ -339,13 +341,15 @@ class Walkroute
                 break;
 
             case "gpx":
+			echo "WAYPOINTS:";
                 for($i=0; $i<count($data["wp"]); $i++)
                 {
                     $f=$data["wp"][$i];
                     if(preg_match("/^-?[\d\.]+$/", $f["lat"]) &&
                         preg_match("/^-?[\d\.]+$/", $f["lon"]))
                     {
-                        Walkroute::addRouteWaypoint($id,$f["lon"],$f["lat"],
+						// 230517 somehow $conn missed out here
+                        Walkroute::addRouteWaypoint($conn,$id,$f["lon"],$f["lat"],
                                             $i+1, htmlentities($f["desc"]));
                     }
                 }
@@ -486,16 +490,11 @@ class Walkroute
         $txt = "LINESTRING(";
         foreach($coords as $c)
         {    
-            print_r($c);
-            echo "\n";
             if(! $first)
                 $txt .= ",";
             else
                 $first=false;
-            echo "Info :" . $c[$lonidx]. " ".$c[$latidx]."\nSphmerc:";
             $sphmerc = ll_to_sphmerc($c[$lonidx],$c[$latidx]);
-            print_r($sphmerc);
-            echo "\n";
             $txt.="$sphmerc[e] $sphmerc[n]";
         }
         $txt .= ")";
