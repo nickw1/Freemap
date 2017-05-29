@@ -1,10 +1,5 @@
 
 
-function handleEvent(eventType,el,cb,scope)
-{
-    el.addEventListener(eventType,function(e) { cb.apply(scope,[e]); },false);
-}
-
 
 function SearchWidget(divId,options,resultsDivStyle)
 {
@@ -32,20 +27,20 @@ function SearchWidget(divId,options,resultsDivStyle)
     }
 
     holder.appendChild(txt);
-	if(typeof(options.heading)=="undefined" || options.heading===true)
-	{
-//    	holder.appendChild(document.createElement("br"));
-    	var heading=document.createElement("h1");
-    	heading.appendChild(document.createTextNode("Search"));
-    	heading.style.marginLeft='auto';
-    	heading.style.marginRight='auto';
-    	div.appendChild(heading);
-	}
-	holder.appendChild(btn);
+    if(typeof(options.heading)=="undefined" || options.heading===true)
+    {
+//        holder.appendChild(document.createElement("br"));
+        var heading=document.createElement("h1");
+        heading.appendChild(document.createTextNode("Search"));
+        heading.style.marginLeft='auto';
+        heading.style.marginRight='auto';
+        div.appendChild(heading);
+    }
+    holder.appendChild(btn);
     div.appendChild(holder);
     div.appendChild(results);
    
-    handleEvent("click",btn,this.sendRequest,this);
+    btn.addEventListener('click', this.sendRequest.bind(this));
 }
 
 SearchWidget.prototype.sendRequest  =function()
@@ -53,10 +48,10 @@ SearchWidget.prototype.sendRequest  =function()
     var p = 'q='+document.getElementById('searchterm').value+'&format=json&'
             +this.options.parameters;
 
-	var xhr2 = new XMLHttpRequest();
-	xhr2.addEventListener ("load", this.resultsReturned.bind(this));
-	xhr2.open('GET', this.options.url + '?' + p);
-	xhr2.send();
+    var xhr2 = new XMLHttpRequest();
+    xhr2.addEventListener ("load", this.resultsReturned.bind(this));
+    xhr2.open('GET', this.options.url + '?' + p);
+    xhr2.send();
 }
 
 SearchWidget.prototype.resultsReturned = function(e)
@@ -83,23 +78,22 @@ SearchWidget.prototype.resultsReturned = function(e)
             results.appendChild(resultsHeading);
             for(var i=0; i<this.json.features.length; i++)
             {
-				var nameContainer = document.createElement("strong");
+                var nameContainer = document.createElement("strong");
                 var name = (this.json.features[i].properties.name) ?
                     this.json.features[i].properties.name: "unnamed";
-				nameContainer.appendChild(document.createTextNode(name));
-				var is_in = (this.json.features[i].properties.is_in) ?
-					this.json.features[i].properties.is_in: "";
-                var t = document.createTextNode( 
-					(this.json.features[i].properties.is_in ?
-					","+this.json.features[i].properties.is_in : "")
-						+"(" +
+                nameContainer.appendChild(document.createTextNode(name));
+                var is_in = (this.json.features[i].properties.is_in) ?
+                    this.json.features[i].properties.is_in: "";
+                var t = document.createTextNode(
+                    (this.json.features[i].properties.is_in ?
+                    ","+this.json.features[i].properties.is_in : "")
+                        +"(" +
                         this.json.features[i].properties.featuretype+")");    
                 var b  = document.createElement("input");
                 var a = document.createElement("a");
                 a.href='#';
-                a.id='result'+i;
-                handleEvent("click",a,this.btnClick,this);
-				a.appendChild(nameContainer);
+                a.addEventListener('click', this.btnClick.bind(this, i));
+                a.appendChild(nameContainer);
                 a.appendChild(t);
                 results.appendChild(a);
                 results.appendChild(document.createElement("br"));
@@ -112,9 +106,8 @@ SearchWidget.prototype.resultsReturned = function(e)
     }
 }
 
-SearchWidget.prototype.btnClick = function(e)
+SearchWidget.prototype.btnClick = function(id, e)
 {
-    var id = e.target.id.substring(6);
     this.options.callback
             (this.json.features[id].geometry.coordinates[0],
             this.json.features[id].geometry.coordinates[1]);
