@@ -6,7 +6,16 @@ require_once('../../lib/UserManager.php');
 session_start();
 
 $cget = clean_input($_GET, null);
-$cpost = clean_input ($_POST, null);
+$cpost = [];
+foreach($_POST as $k=>$v) {
+	if($k!="data") {
+        $cpost[$k] = str_replace("<","&lt;",$_POST[$k]);
+        $cpost[$k] = str_replace(">","&gt;",$cpost[$k]);
+	} else {
+		$cpost[$k] = $_POST[$k];
+	}
+}
+
 
 $inProj = isset($cpost['inProj']) && ctype_alnum($cpost['inProj'])
      ? $cpost['inProj']:'4326';
@@ -33,10 +42,12 @@ if(!isset($expected[$action]))
 else
 {
     foreach($expected[$action] as $field)
-    if(!isset($cpost[$field]))
-    {
-        header("HTTP/1.1 400 Bad Request");
-        exit;
+	{
+    	if(!isset($cpost[$field]))
+    	{
+        	header("HTTP/1.1 400 Bad Request");
+        	exit;
+		}
     }
 }
 
@@ -113,16 +124,18 @@ switch($cpost['action'])
                         list($goog['e'],$goog['n']) = 
                             reproject($attrs['x'], $attrs['y'],
                                   $inProj,'3857');
-						$annotationType = isset($annotation->annotationType) &&
-							ctype_digit($annotation->annotationType) ? 
-							$annotation->annotationType : 1;
+						$annotationType = isset($annotation->type) &&
+							ctype_digit($annotation->type) ? 
+							$annotation->type : 1;
                         // HERE 1
                         $stmt = $conn->prepare
                         ("INSERT INTO annotations(text,xy,dir,userid,".
-                        "annotationType,authorised) VALUES (?,".
+                        "annotationType,authorised,lat,lon) VALUES (?,".
                         "ST_PointFromText('POINT($goog[e] $goog[n])',3857),".
-                        "0,$userid,$annotationType,".($userid==0 ? 0:1).")");
+                        "0,$userid,$annotationType,".($userid==0 ? 0:1).",?,?)");
                         $stmt->bindParam (1, $desc);
+						$stmt->bindParam (2, $attrs['x']);
+						$stmt->bindParam (3, $attrs['y']);
                         $stmt->execute();
                     }
                 }
