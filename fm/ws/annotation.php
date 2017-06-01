@@ -124,18 +124,15 @@ switch($cpost['action'])
                         list($goog['e'],$goog['n']) = 
                             reproject($attrs['x'], $attrs['y'],
                                   $inProj,'3857');
-						$annotationType = isset($annotation->type) &&
-							ctype_digit($annotation->type) ? 
+						$annotationType = isset($annotation->type)?
 							$annotation->type : 1;
                         // HERE 1
                         $stmt = $conn->prepare
                         ("INSERT INTO annotations(text,xy,dir,userid,".
-                        "annotationType,authorised,lat,lon) VALUES (?,".
+                        "annotationtype,authorised) VALUES (?,".
                         "ST_PointFromText('POINT($goog[e] $goog[n])',3857),".
-                        "0,$userid,$annotationType,".($userid==0 ? 0:1).",?,?)");
+                        "0,$userid,$annotationType,".($userid==0 ? 0:1).")");
                         $stmt->bindParam (1, $desc);
-						$stmt->bindParam (2, $attrs['x']);
-						$stmt->bindParam (3, $attrs['y']);
                         $stmt->execute();
                     }
                 }
