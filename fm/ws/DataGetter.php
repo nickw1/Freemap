@@ -12,6 +12,9 @@ define('TILELIST', '/home/www-data/cron/tilelist.txt');
 // also turn back on loading from cache if it exists. that's why the site
 // has been slow lately! 
 
+// 301217 moved geometry type before coordinates in JSON output; e.g. it
+// makes the VTM JSON parser fail otherwise
+
 class DataGetter
 {
     protected $data, $kothic_gran, $wayMustMatch, $poiFilter, $wayFilter,
@@ -210,8 +213,8 @@ class DataGetter
             if($this->kothic_gran===null)
             {
                 $feature["geometry"]=array();
-                $feature["geometry"]["coordinates"] = $f["coordinates"];
                 $feature["geometry"]["type"] = $f["type"];
+                $feature["geometry"]["coordinates"] = $f["coordinates"];
             }
             else
             {
@@ -283,8 +286,8 @@ class DataGetter
                 {
                     $feature["type"] = "Feature"; 
                     $feature["geometry"]=array();
-                    $feature["geometry"]["coordinates"] = $f["coordinates"];
                     $feature["geometry"]["type"] = $f["type"];
+                    $feature["geometry"]["coordinates"] = $f["coordinates"];
                     if(count($feature["geometry"]["coordinates"])>0)
                         $this->data["features"][] = $feature;
                 }
@@ -508,6 +511,13 @@ class BboxGetter extends DataGetter
     {
         
         parent::doGetData($options);
+
+		/* this didn't work (trying to fix mapsforge "flood" problem
+		if(isset($options["mocksea"]) && $options["mocksea"]) 
+		{
+			$this->addMockSeaData();
+		}
+		*/
         
         if(isset($options["coastline"]) && $options["coastline"])
             $this->getCoastlineData();
@@ -587,7 +597,8 @@ class BboxGetter extends DataGetter
             $f = json_decode($row['st_asgeojson'],true);
             $tags = array();
             $feature["properties"] = array();
-            $feature["properties"]["contour"]=$row["height"];
+            $feature["properties"]["ele"]=$row["height"]; // 070517
+            $feature["properties"]["contour"]=$row["height"]; // for bk compat
             $feature["properties"]["contourtype"]=$row["height"]%50==0?
 					"major":"minor";
             if($this->kothic_gran===null)
@@ -633,8 +644,12 @@ class BboxGetter extends DataGetter
                 $feature["geometry"]=array();
                 $feature["geometry"]["coordinates"] = $f["coordinates"];
                 $feature["geometry"]["type"] = $f["type"];
-                if(count($feature["geometry"]["coordinates"])>0)
+                if(count($feature["geometry"]["coordinates"])>0) {
+//					$this->landFix($feature);
+//					print_r($feature);
                     $this->data["features"][] = $feature;
+				
+				}
             }
             else
             {
@@ -642,10 +657,39 @@ class BboxGetter extends DataGetter
                 $feature["type"] = $f["type"];
                 if(count($feature["coordinates"])>0)
                     $this->data["features"][] = $feature;
+				
             }
         } 
     }
-    
+   
+	// hardcoded to do 3857 -> 4326 !
+	/* this experiment didn't work
+	function addMockSeaData()
+	{
+		$bbx = array();
+		list($bbx[0],$bbx[1]) = reproject($this->bbox[0], $this->bbox[1], "3857", "4326");
+		list($bbx[2],$bbx[3]) = reproject($this->bbox[2], $this->bbox[3], "3857", "4326");
+		
+		$feature = array();
+		$feature["type"]="Feature";
+		$feature["geometry"]=array();
+		$feature["geometry"]["coordinates"] =
+					array(
+						array(
+						array($bbx[0],$bbx[1]) ,
+						array($bbx[2],$bbx[1]),
+						array($bbx[2],$bbx[3]),
+						array($bbx[0],$bbx[3]),
+						array($bbx[0],$bbx[1])
+						)
+						);	
+
+		$feature["geometry"]["type"] = "Polygon"; 
+		$feature["properties"] = array ("natural"=>"sea");
+		$this->data["features"][] = $feature;
+	} 
+	*/
+
     function getAnnotationData()
     {
         self::getOverlayData("annotation");
@@ -710,6 +754,41 @@ class BboxGetter extends DataGetter
         $this->SRID.")";
         return $g; 
     }
+
+	function landFix(&$f)
+	{
+
+//		print_r($f);
+		$bbx = array();
+		list($bbx[0],$bbx[1]) = reproject($this->bbox[0], $this->bbox[1], "3857", "4326");
+		list($bbx[2],$bbx[3]) = reproject($this->bbox[2], $this->bbox[3], "3857", "4326");
+
+		for($i=0; $i<count($f["geometry"]["coordinates"]); $i++)
+		{
+			$coords[$i]=array();
+			for($j=0; $j<count($f["geometry"]["coordinates"][$i]); $j++)
+			{
+				// convert back to sphmerc
+				list($x,$y) = 
+				reproject ( (int)
+					(round($f["geometry"]["coordinates"][$i][$j][0])),
+				 (int)
+				(round($f["geometry"]["coordinates"][$i][$j][1])),
+					"4326","3857"
+					);
+				// coords of (0,0) seem to screw up rendering
+				if($x<$this->bbox[0]) $x = $this->bbox[0]+1;
+				if($y<$this->bbox[1]) $y = $this->bbox[1]+1;
+				if($x>$this->bbox[2]) $x = $this->bbox[2]-1;
+				if($y>$this->bbox[3]) $y = $this->bbox[3]-1;
+
+				list($lon,$lat) = reproject($x,$y,"3857","4326");
+				$f["geometry"]["coordinates"][$i][$j][0] = $lon;
+				$f["geometry"]["coordinates"][$i][$j][1] = $lat;
+			}
+		}
+		return $f;
+	}
 
     function kothicAdjust($f)
     {
