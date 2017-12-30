@@ -605,8 +605,8 @@ class BboxGetter extends DataGetter
             {
                 $feature["type"]="Feature";
                 $feature["geometry"]=array();
-                $feature["geometry"]["coordinates"] = $f["coordinates"];
                 $feature["geometry"]["type"] = $f["type"];
+                $feature["geometry"]["coordinates"] = $f["coordinates"];
                 if(count($feature["geometry"]["coordinates"])>0)
                     $features[] = $feature;
             }
@@ -642,8 +642,8 @@ class BboxGetter extends DataGetter
             {
                 $feature["type"]="Feature";
                 $feature["geometry"]=array();
-                $feature["geometry"]["coordinates"] = $f["coordinates"];
                 $feature["geometry"]["type"] = $f["type"];
+                $feature["geometry"]["coordinates"] = $f["coordinates"];
                 if(count($feature["geometry"]["coordinates"])>0) {
 //					$this->landFix($feature);
 //					print_r($feature);
@@ -715,8 +715,8 @@ class BboxGetter extends DataGetter
             $feature["properties"] = $counteddata;
             $feature["properties"][$type] = "yes";
             $feature["geometry"]=array();
-            $feature["geometry"]["coordinates"] = $f["coordinates"];
             $feature["geometry"]["type"] = $f["type"];
+            $feature["geometry"]["coordinates"] = $f["coordinates"];
             $this->data["features"][] = $feature;
         }    
     }
