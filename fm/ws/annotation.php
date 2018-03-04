@@ -2,6 +2,7 @@
 require_once('../../lib/functionsnew.php');
 require_once('../../lib/User.php');
 require_once('../../lib/UserManager.php');
+require_once('ws_defines.php');
 
 session_start();
 
@@ -29,7 +30,7 @@ $expected = array ("create" => array("lon","lat","text"),
 
 $userid=0; // 0=not supplied; -1=incorrect
 
-$conn = new PDO ("pgsql:host=localhost;dbname=gis2;", "gis");
+$conn = new PDO ("pgsql:host=localhost;dbname=".WS_DATABASE, WS_DATABASE_USER);
 $um = new UserManager($conn);
 $action = isset($cpost["action"]) && ctype_alpha($cpost["action"]) ?
             $cpost["action"] : "";

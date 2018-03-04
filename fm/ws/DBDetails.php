@@ -56,12 +56,13 @@ class DBDetails
     // 031113 altered getAnnotationQuery() to getOverlayQuery() so that
     // the same code can be used to load any point overlay e.g. panoramas
 
-	
+	// 080218 added authorised=1 constraint (i.e. annotations)	
     public function getOverlayQuery($geomtxt, $type)
     {
         $q = ($this->overlayDetails) ?
                 $this->trWayIntersectQuery("${type}s",
-                                    $this->overlayDetails["col"], $geomtxt):
+                                    $this->overlayDetails["col"], $geomtxt,
+									"AND authorised=1"):
                 null;
 		return $q;
     }

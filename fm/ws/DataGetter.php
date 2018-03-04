@@ -1,6 +1,7 @@
 <?php
 
 //define('MAX_TILE_AGE', 2592000);
+require_once('ws_defines.php');
 define('MAX_TILE_AGE', 86400);
 define('TILELIST', '/home/www-data/cron/tilelist.txt');
 
@@ -22,7 +23,7 @@ class DataGetter
 
     function __construct($kothic_gran=null, $dbdetails=null, $srid="3857",
 						$projSRID="3857",$outSRID="3857",	
-                            $dbname="gis2", $user="gis")
+                            $dbname=WS_DATABASE, $user=WS_DATABASE_USER)
     {
         $this->conn = new PDO("pgsql:host=localhost;dbname=$dbname", $user);
         $this->data = array();
@@ -403,8 +404,8 @@ class NameSearch extends DataGetter
 {
     protected $name;
 
-    function __construct($name,$outProj,$tbl_prefix="planet_osm",$dbname="gis2",
-                            $user="gis")
+    function __construct($name,$outProj,$tbl_prefix="planet_osm",
+					$dbname=WS_DATABASE, $user=WS_DATABASE_USER)
     {
         parent::__construct(null,$tbl_prefix,"3857","3857",$outProj,
 								$dbname,$user);
@@ -433,7 +434,7 @@ class BboxGetter extends DataGetter
 
     function __construct($bbox,$bboxSRID="4326",$outSRID="3857",$ext=0,
 							$kothic_gran=null,$dbdetails=null,$srid="3857",
-                            $dbname="gis2", $user="gis")
+                            $dbname=WS_DATABASE, $user=WS_DATABASE_USER)
     {
         parent::__construct($kothic_gran,$dbdetails,$srid,$bboxSRID,$outSRID,
 								$dbname,$user);

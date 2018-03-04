@@ -29,7 +29,7 @@ function init(loggedIn)
 //            this.map.removeLayer(this.circle);
             this.circle.setLatLng(e.latlng);
             }
-			var ifo = new InformationFormatter(e.feature);
+            var ifo = new InformationFormatter(e.feature);
             this.circle.bindPopup(ifo.format()).openPopup();
         }}).bind(this));
 
@@ -41,12 +41,20 @@ function init(loggedIn)
                                 iconAnchor: new L.Point(8,8),
                                 popupAnchor: new L.Point(8,8) } ),
 
+                                L.icon({iconUrl: '/fm/icons/directions.png',
+                                shadowUrl: null,
+                                iconSize: new L.Point(16,16),
+                                shadowSize: null,
+                                iconAnchor: new L.Point(8,8),
+                                popupAnchor: new L.Point(8,8) } ),
+
                                 L.icon({iconUrl: '/fm/icons/interest.png',
                                 shadowUrl: null,
                                 iconSize: new L.Point(16,16),
                                 shadowSize: null,
                                 iconAnchor: new L.Point(8,8),
-                                popupAnchor: new L.Point(8,8) } ) ];
+                                popupAnchor: new L.Point(8,8) } ),
+ ];
 
 
     this.markersLayer = new L.GeoJSON( null,
@@ -666,7 +674,8 @@ function init(loggedIn)
                 "<label for='annotationType'>What is it?</label>"+
                 "<select id='annotationType'>"+
                 "<option value='1'>Problem/issue with path</option>"+
-                "<option value='2'>Directions</option></select>"+
+                "<option value='2'>Directions</option>"+
+                "<option value='3'>Place of interest</option></select>"+
                 "</p>";
         }
         this.dlg.setContent(content);

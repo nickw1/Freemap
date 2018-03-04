@@ -33,9 +33,9 @@ share points of interest, interesting views, path directions in awkward
 places, and path blockages with other users. Then, when someone else uses
 OpenTrail later on, details of that annotation will be presented to them in
 the field. It's my aim with Freemap and OpenTrail to produced a crowd-sourced
-source of information for walkers throughout the country. Note that you
-have to provide your Freemap login details int he app preferences, otherwise
-the annotations will have to be authorised before going live.</li>
+source of information for walkers throughout the country. Note that 
+the annotations will have to be authorised before going live; this should
+normally be done within 24 hours.</li>
 <li>View annotations and directions in-the-field contributed by other
 users. So, if you find yourself in the middle of a large field with no
 apparent way out, OpenTrail will tell you where to aim for!</li>
@@ -48,9 +48,8 @@ next stage of the walk, the instructions will be presented to you live
 in-the-field.</li>
 <li>Record new walking routes and save them as GPX files. These can be 
 uploaded to Freemap and shared with other users.  Theoretically this
-functionality can of course be used to survey new data for OSM, but I have
-not yet tested its robustness over several hours or its effect on the
-battery, so it is not recommended just yet.</li>
+functionality can of course be used to survey new data for OSM, though the
+app is not optimised for this.</li> 
 <li>Find nearby points of interest (but that's pretty standard for an
 OSM mobile app). The POIs are obtained from the Freemap server and
 consequently this functionality is only available in areas with Freemap
@@ -63,8 +62,8 @@ be used completely offline if desired.</li>
 </p>
 <h2>Download</h2>
 	<ul>
-	<li><a href="../downloads/android/opentrail03.apk">OpenTrail 0.3</a>,
-	works on Android 4.0+. Uses Mapsforge 0.5. Downloads live mapping data
+	<li><a href="../downloads/android/opentrail03-190118.apk">OpenTrail 0.3</a>,
+	works on Android 4.0+. Uses Mapsforge 0.8. Downloads live mapping data
 	from the Freemap server and caches it on the device, thus combining
 	up-to-date data and offline use. This allows you to
 	download the maps at home and use them in the
@@ -73,46 +72,17 @@ be used completely offline if desired.</li>
 	<li>OpenTrail 0.2 was started but abandoned in favour of 0.3; basically
 	it was 0.3 minus the live mapping data.</li>
 	<li><a href="../downloads/android/opentrail.apk">OpenTrail 0.1</a>,
-	works on Android 2.1+. Better tested but using an older version (0.3
-	rather than 0.5) of Mapsforge.</li>
+	works on Android 2.1+. Uses an older version (0.3) of Mapsforge.</li>
 	</ul>
 <p>Please <a href="../downloads/android/README_BEFORE_DOWNLOADING.txt">
 read this</a> before downloading!</p>
-<h2>Brief instructions</h2>
-<p><em>It is recommended you run OpenTrail for the first time in a wi-fi 
-area as map data needs to be downloaded.</em> Fire up the app. You will be
-prompted to download a style file from the Freemap server; this controls the
-look-and-feel of the maps. Then, when you get a GPS signal, you will be 
-prompted to download a map file for your local area (map files cover the 
-standard OS 100x100km grid squares). This is a binary file containing the map
-data. Once downloaded you will be able to use the app in that 100x100km area
-without needing a network connection for the map.</p>
-<p>As an alternative to the 100x100km squares of map data you can now
-(Dec 13) download the whole of England or Wales, though note 
-<em>these are large files (150 to 300MB!)</em> so you'll probably want wifi.</p>
-<p>Hopefully most of the menu options will be self-explanatory. One thing to
-note is that you can <em>automatically download new point of interest and
-annotation data as you travel</em> avoiding the need to manually download
-data. Point of interest and annotation data is then cached on the device to
-avoid network access next time, though there is an option to force download
-of new data rather than use the cache (for example, if someone else adds a
-new annotation in the meantime).</p>
-<h2>IMPORTANT! This is BETA SOFTWARE!</h2>
-<p>OpenTrail is <em>beta software</em>. While I have endeavoured to keep bugs 
-to a minimum
-I cannot guarantee that it is bug-free. It is possible that the app
-will crash. To help fix bugs, please note that <em>if the app does crash,
-it will send a bug report to a spreadsheet on my (nickw)'s Google Drive</em>
-via
-the <a href="http://www.acra.ch">ACRA</a> bug reporting system. Please ONLY
-install if you are happy with this!</p>
 <h2>Missing features?</h2>
 <p>
 If there are any things you would like to see added, or have ideas
 for features that could make it to the next release, please
 <a href="mailto:nickw4426@gmail.com">email me</a> (Nick Whitelegg, nickw on
 OSM)</p>
-<h2>Looking for augmented reality?</h3>
+<h2>Looking for augmented reality?</h2>
 <p>If you were at SOTM or SOTM-EU in 2011, you may remember that I presented
 an early version of OpenTrail featuring augmented reality, overlaying OSM
 data on the device's camera feed. OpenTrail no longer includes this
@@ -124,5 +94,14 @@ See <a href='hikar.html'>here</a>.</p>
 the <a href="https://github.com/nickw1/Freemap">Freemap github page</a>,
 OpenTrail source is in the "java" directory.</p>
 <p><a href="/fm/index.php">Back to Freemap</a></p>
+<h2 id="privacy">Privacy policy</h2>
+<p>OpenTrail does not currently send any personal information (such as your
+Google login) to the Freemap server. All data sent (i.e. your notes and their
+location, and your walk routes including latitude and longitude of your track)
+is completely anonymous. The Freemap site administrator will then authorise
+your data if it is legitimate and non-offensive. It is planned in a future
+version to allow you to login to Freemap via OpenTrail. Even then, login 
+information will only be used to allow auto-authorisation of contributions by
+legitimate users.</p>
 </body>
 </html>

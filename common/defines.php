@@ -8,7 +8,6 @@ define('OTV_LIVE_PANOS','/var/www/otvnew/pano');
 define('PHOTO_UPLOADS','/home/www-data/uploads/photos');
 define('CONTOUR_CACHE','/home/www-data/contourcache');
 define('CACHE','/home/www-data/fmapcache');
-define('HGTDIR','/var/www/data/hgt');
 define('PG_DBNAME','gis2');
 define('PG_USER','gis');
 define('POPULATE_LOCK','/home/www-data/POPULATE_LOCK');

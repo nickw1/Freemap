@@ -158,16 +158,13 @@ switch($cleaned["action"])
             {
                 ?>
                 <h1>Sign up</h1>
-                <p>Signing up and creating a Freemap/OpenTrailView account will
+                <p>Signing up and creating a Freemap account will
 				allow you to:
 					<ul>
 					<li>annotate paths and save walking routes on 
 					<a href='http://www.free-map.org.uk'>Freemap</a>;</li>
-					<li>contribute panoramas on 
-					<a href='http://www.opentrailview.org'>OpenTrailView</a>.
-					</li>
 					</ul>
-				You can use the same login on both sites.</p>
+				</p>
                 <?php
             }
             ?>

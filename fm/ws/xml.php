@@ -33,6 +33,7 @@ function poiToXML(&$poi)
         echo "<annotation x='$x' y='$y' id='".$poi["properties"]["id"]."'>";
         echo "<description>".htmlentities($poi["properties"]["text"]).
 			"</description>";
+		echo "<type>".$poi["properties"]["annotationtype"]."</type>";
         echo "</annotation>";
     }
     else

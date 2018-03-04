@@ -5,12 +5,13 @@ require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
 require_once('../../lib/User.php');
 require_once('../../lib/UserManager.php');
+require_once('ws_defines.php');
 
 $format = isset($_REQUEST["format"]) && ctype_alpha($_REQUEST["format"])
          ? $_REQUEST["format"]:"geojson";
 $action = isset($_REQUEST["action"]) ? $_REQUEST["action"]:"get";
 
-$conn = new PDO ("pgsql:host=localhost;dbname=gis2;", "gis");
+$conn = new PDO ("pgsql:host=localhost;dbname=".WS_DATABASE, WS_DATABASE_USER);
 $um = new UserManager($conn);
 
 $cget = clean_input($_GET, null);
