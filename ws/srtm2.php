@@ -1,11 +1,11 @@
 <?php
 require_once("../lib/latlong.php");
 require_once("../lib/functionsnew.php");
-require_once("../common/defines.php");
 
+define('HGTDIR', '/var/www/data/hgt');
 
 // note $w $s $e $n in microdegrees
-
+  
 list($w,$s,$e,$n) = explode(",", $_GET["bbox"]);
 
 if(!getSRTM($w,$s,$e,$n))
