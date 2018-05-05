@@ -46,14 +46,13 @@ class FreemapUserManager extends UserManager
             $random = rand (1000000,9999999);
             $active=0; 
             $stmt = $this->conn->prepare ("insert into users (".
-                    "username,password,email,active,k) ".
-                    "values (?,?,?,?,?)");
+                    "username,password,active,k) ".
+                    "values (?,?,?,?)");
             $stmt->bindParam (1, $username);
 			$hash=password_hash($password, PASSWORD_BCRYPT);
             $stmt->bindParam (2, $hash);
-			$stmt->bindParam (3, $email);
-            $stmt->bindParam (4, $active);
-            $stmt->bindParam (5, $random);
+            $stmt->bindParam (3, $active);
+            $stmt->bindParam (4, $random);
             $stmt->execute();
 
             $result=$this->conn->query("SELECT currval('users_id_seq') AS id");
