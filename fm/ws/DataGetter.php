@@ -29,9 +29,11 @@ class DataGetter
         $this->data = array();
         $this->data["features"] = array();
         $this->data["type"] = "FeatureCollection";
+		/* temporarily remove - screwing up graphhopper
         $this->data["properties"]["copyright"] =
             "Map data OpenStreetMap Contributors, Open Database Licence; ".
             "contours Ordnance Survey, OS OpenData licence";
+		*/
         $this->kothic_gran = $kothic_gran;
         $this->poiFilter=array();
         $this->wayFilter=array();
