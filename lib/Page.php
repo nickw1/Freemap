@@ -44,6 +44,10 @@ class Page extends View {
         }
     }
 
+    function outputHTML($html) {
+        echo $html;
+    }
+
     public function closeHead() {
         echo "</head>\n";    
     }
