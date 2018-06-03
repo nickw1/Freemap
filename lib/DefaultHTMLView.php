@@ -1,8 +1,8 @@
 <?php
 
-require_once('View.php');
+require_once('DBView.php');
 
-class DefaultHTMLView extends View {
+class DefaultHTMLView extends DBView {
 
     function outputRecord($row) {
         foreach($row as $k=>$v) {

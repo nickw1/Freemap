@@ -1,6 +1,8 @@
 <?php
 
-class Page {
+require_once('View.php');
+
+class Page extends View {
 
     public function writePage($title, $scripts, $css) {
         $this->openPage();
