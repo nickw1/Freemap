@@ -20,7 +20,12 @@ class Page extends View {
     }
 
     public function writeBody() {
-        echo "<body>\n</body>\n";
+		$file = "views/body".static::class.".php";
+		if(file_exists($file)) {
+			include($file); 
+		} else {
+			echo "<body>\n</body>\n";
+		}
     }
 
     public function openPage() {
