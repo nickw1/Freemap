@@ -66,9 +66,13 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         mkdir(CACHE."/$kg/$z/$x",0755,true);
         
     $bg = new BboxGetter($bbox,"3857","3857",$ext,$kg,$tbl_prefix);
+	$data = false;
 
     if($z<=7)
     {
+		$data = [];
+		/* 100618 risk that OpenTrail 0.4 might try to request data at a low zoom level
+		which might kill the server. Prevent it.
         $bg->addWayFilter("highway","motorway,trunk,primary,".
                             "motorway_link,primary_link,trunk_link");
         $bg->addWayFilter("railway","rail,preserved");
@@ -76,6 +80,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         $bg->addPOIFilter("place","city");
         $bg->includePolygons(false);
         unset($cleaned["contour"]);
+		*/
     }
     elseif($z<=9)
     {
@@ -101,12 +106,14 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         unset($cleaned["contour"]);
     }
 
-    $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
+	if($data===false) {
+    	$data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
                         CACHE."/$kg/$z/$x/$y.json",$x,$y,$z);
-    $data["granularity"] = $kg;
-    $data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
+    	$data["granularity"] = $kg;
+    	$data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
             $ne['lon']+0.01,$ne['lat']+0.01);
-    echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
+    	echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
+	}
 }
 else
 {
