@@ -203,27 +203,34 @@ class DataGetter
             $feature=array();
             $feature["type"] = $this->kothic_gran===null?"Feature":"Point";
             $f= json_decode($prow["st_asgeojson"],true);
-            $counteddata=array();
+			// 301018 correct problem where POIs on tile boundaries end up
+			// being corrupted with a type of GeometryCollection and 
+			// coordinates of null
+ 			if($f["coordinates"] != null) {
+            	$counteddata=array();
 
-            foreach($prow as $k=>$v)    
-                if($k!='way' && $k!='st_asgeojson' && $k!='tway' && $v!='')
-                    $counteddata[$k]=htmlspecialchars
-                        (str_replace("&","and",$v));
+            	foreach($prow as $k=>$v)    
+                	if($k!='way' && $k!='st_asgeojson' && $k!='tway' && $v!='')
+                    	$counteddata[$k]=htmlspecialchars
+                        	(str_replace("&","and",$v));
 
-            $feature["properties"] = $counteddata;
-            $feature["properties"]["featuretype"]=get_high_level
-                ($feature["properties"]);
-            if($this->kothic_gran===null)
-            {
-                $feature["geometry"]=array();
-                $feature["geometry"]["type"] = $f["type"];
-                $feature["geometry"]["coordinates"] = $f["coordinates"];
-            }
-            else
-            {
-                $feature["coordinates"]= $this->kothicAdjust($f);
-            }
-            $this->data["features"][] = $feature;
+            	$feature["properties"] = $counteddata;
+            	$feature["properties"]["featuretype"]=get_high_level
+                	($feature["properties"]);
+
+            	if($this->kothic_gran===null)
+            	{
+                	$feature["geometry"]=array();
+                	$feature["geometry"]["type"] = $f["type"];
+                	$feature["geometry"]["coordinates"] = $f["coordinates"];
+            	}
+            	else
+            	{
+                	$feature["coordinates"]= $this->kothicAdjust($f);
+            	}
+
+            	$this->data["features"][] = $feature;
+			}
         }    
     }
 
