@@ -1,7 +1,5 @@
 <?php
 require_once('../../lib/functionsnew.php');
-require_once('../../lib/User.php');
-require_once('../../lib/UserManager.php');
 require_once('ws_defines.php');
 
 session_start();
@@ -31,7 +29,6 @@ $expected = array ("create" => array("lon","lat","text"),
 $userid=0; // 0=not supplied; -1=incorrect
 
 $conn = new PDO ("pgsql:host=localhost;dbname=".WS_DATABASE, WS_DATABASE_USER);
-$um = new UserManager($conn);
 $action = isset($cpost["action"]) && ctype_alpha($cpost["action"]) ?
             $cpost["action"] : "";
 
@@ -50,26 +47,6 @@ else
         	exit;
 		}
     }
-}
-
-if(isset($_SERVER['PHP_AUTH_USER']) &&
-        isset($_SERVER['PHP_AUTH_PW']))
-{
-    $row=$um->isValidLogin($_SERVER['PHP_AUTH_USER'],
-                                $_SERVER['PHP_AUTH_PW']);
-    if($row!==false)
-    {
-        $userid=$row["id"];
-    }
-    else
-    {
-        $userid = -1;
-    }
-}    
-elseif(isset($_SESSION["gatekeeper"]))
-{
-    $userid=$um->getUserFromUsername($_SESSION['gatekeeper'])->getID();
-    $userid=($userid>0) ? $userid: -1;
 }
 
 switch($cpost['action'])

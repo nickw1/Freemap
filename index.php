@@ -1,12 +1,14 @@
 <?php
 
+if(isset($_GET["e"]) && isset($_GET["n"]) && isset($_GET["js"])) {
+	header("HTTP/1.1 404 Not Found");
+	die("404");
+}
+
 require_once('lib/functionsnew.php');
 require_once('common/defines.php');
 
 
-session_start();
-
-$loggedIn = (isset($_SESSION['gatekeeper'])) ? "true": "false";
     
 ?>
 <!DOCTYPE html>
@@ -51,9 +53,6 @@ href='http://leaflet.github.io/Leaflet.draw/leaflet.draw.css' />
 <script type='text/javascript' src='jslib/Dialog.js'></script>
 <script type='text/javascript' src='jslib/SearchWidget.js'></script>
 
-<script type='text/javascript'>
-var loggedIn=<?php echo $loggedIn;?>;
-</script>
 
 <script type='text/javascript' src='fm/js/main.js'></script>
 <script type='text/javascript' src='fm/js/InformationFormatter.js'></script>
@@ -82,7 +81,7 @@ if(file_exists(POPULATE_LOCK))
 else
 {
     ?>
-    <body onload='init(<?php echo $loggedIn;?>)'> 
+    <body onload='init()'> 
     <?php write_sidebar(true); ?>
     <div id='main'>
 
@@ -114,19 +113,19 @@ function write_sidebar($homepage=false)
 
 
     <p id='intro'>Welcome to <em>Freemap</em>... 
-	OpenStreetMap-based maps of the UK countryside, allowing 
-	you to share footpath problems and walking routes. Now with
-	field boundaries, stiles, gates and clickable POIs...
-    <a href='fm/about.html'>More</a> </p>
+	annotatable
+	OpenStreetMap-based maps of the countryside of England and Wales, 
+	allowing you to add notes and walking routes (note that a login
+	is no longer required, however additions to the map must be authorised
+	by the administrator).  
+	<strong><a href='fm/about.html'>More</a></strong> </p>
+
 
     <div id='appmsg'>
     <a href='/common/opentrail.html'>Android app</a>
     also available!</div>
 
 
-    <?php
-    write_login();
-    ?>
 
 
     <div id='searchdiv'></div>
@@ -134,37 +133,4 @@ function write_sidebar($homepage=false)
     <?php
 }
 
-function write_login()
-{
-    echo "<div id='logindiv'>";
-
-    if(!isset($_SESSION['gatekeeper']))
-    {
-        ?>
-        <p>
-        <label for="username">Username</label> <br/>
-        <input name="username" id="username" /> <br/>
-        <label for="password">Password</label> <br/>
-        <input name="password" id="password" type="password" /> <br/>
-        <input type='button' value='go' id='loginbtn'/>
-        </p>
-        <p>
-        <a href='fm/user.php?action=signup'>Sign up</a>
-        </p>
-        <!--
-        <p><em>Please note that logging in will place a cookie on your
-        machine to identify you to the server. Please only proceed if
-        you are happy with this.</em></p>
-        -->
-        <?php
-    }
-    else
-    {
-        echo "<em>Logged in as $_SESSION[gatekeeper]</em>\n";
-        echo "<a href='#' id='myroutes'>My routes</a> | ".
-        "<a href='/fm/user.php?action=logout&redirect=".
-            htmlentities($_SERVER['PHP_SELF'])."'>Log out</a> ";
-    }
-    echo "</div>";
-}
 ?>

@@ -3,8 +3,6 @@ session_start();
 
 require_once('../../lib/functionsnew.php');
 require_once('Walkroute.php');
-require_once('../../lib/User.php');
-require_once('../../lib/UserManager.php');
 require_once('ws_defines.php');
 
 $format = isset($_REQUEST["format"]) && ctype_alpha($_REQUEST["format"])
@@ -12,7 +10,6 @@ $format = isset($_REQUEST["format"]) && ctype_alpha($_REQUEST["format"])
 $action = isset($_REQUEST["action"]) ? $_REQUEST["action"]:"get";
 
 $conn = new PDO ("pgsql:host=localhost;dbname=".WS_DATABASE, WS_DATABASE_USER);
-$um = new UserManager($conn);
 
 $cget = clean_input($_GET, null);
 $cpost = clean_input($_POST, null);
@@ -23,7 +20,7 @@ switch($action)
     case "add":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-            $userid = $um->getUserIdFromCredentials();
+            $userid = 0;
             if($userid<0)
             {
                 header("HTTP/1.1 401 Unauthorized");
@@ -51,11 +48,11 @@ switch($action)
         $badreq=true;
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-            $userid = $um->getUserIdFromCredentials();
-           if($userid<=0) 
+            $userid = 0; 
+           if($userid<0) 
             {
                 header("HTTP/1.1 401 Unauthorized");
-				$badreq=false;
+                $badreq=false;
             }
             else if (isset($cpost["id"]) && ctype_digit($cpost["id"])
                         && isset($cpost["data"]))
@@ -76,14 +73,14 @@ switch($action)
                                             0, 
                                             htmlentities
                                             ($f["properties"]["description"]));
-					echo $id;
-					$badreq=false;
+                    echo $id;
+                    $badreq=false;
                 }
             }
         }
 
-		if($badreq)	
-			header("HTTP/1.1 400 Bad Request");
+        if($badreq)    
+            header("HTTP/1.1 400 Bad Request");
        
         break;
 
@@ -178,11 +175,6 @@ switch($action)
             $userid=0;
             if(isset($cget["userid"]) && ctype_digit($cget["userid"]))
                 $userid = $cget["userid"];
-            else if(isset($_SESSION["gatekeeper"]))
-            {
-                $userid=$um->getUserFromUsername($_SESSION['gatekeeper'])
-                        ->getID();
-            }
 
             if($userid>0)
             {
@@ -198,7 +190,7 @@ switch($action)
     case "edit":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-            $userid = $um->getUserIdFromCredentials();
+            $userid = 0; 
             if($userid<=0)
             {
                 header("HTTP/1.1 401 Unauthorized");
@@ -217,13 +209,11 @@ switch($action)
             if(ctype_digit($cpost["id"]))
             {
                 $wr = new Walkroute($conn,$cpost["id"]);
-                $userid=$um->getUserIdFromCredentials();
-                $user = new User ($userid, $conn);
-                if($userid<=0 || 
-                    ($wr->getUserId() != $userid && !$user->isAdmin()))
-                    header("HTTP/1.1 401 Unauthorized");
-                else
+                $userid=0;
+                if(false)
                     $wr->delete();
+                else
+                       header("HTTP/1.1 401 Unauthorized"); 
             }
             else
                 header("HTTP/1.1 400 Bad Request");
@@ -233,21 +223,19 @@ switch($action)
     case "deleteMulti":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-            $userid=$um->getUserIdFromCredentials();
+            $userid=0;
             $deleted = array();
             if($userid<=0)
                 header("HTTP/1.1 401 Unauthorized");    
             elseif(isset($cpost["ids"]))
             {
-                $user = new User($userid, $conn);
                 $ids = json_decode ($cpost["ids"]);
                 foreach($ids as $id)
                 {
                     if(ctype_digit($id))
                     {
                         $wr = new Walkroute($conn, $id);
-                        if($userid>0 && 
-                            ($wr->getUserId()==$userid || $user->isAdmin()))
+                        if(false)
                         {
                             $wr->delete();
                             $deleted[] = $id;
@@ -269,16 +257,13 @@ switch($action)
                 preg_match("/^-?[\d\.]+$/", $cpost["lon"]) &&
                 preg_match("/^-?[\d\.]+$/", $cpost["lat"]))
         {
-            $userid = $um->getUserIdFromCredentials();
-			echo "userid $userid";
+            $userid = 0; 
             if($userid>0)
             {
-                $user = new User($userid, $conn);
                 $wr = Walkroute::getWalkrouteFromWaypoint($conn, $cpost["id"]);
-				echo "walkroute user id " . $wr->getUserId();
                 if($wr===null)
                     header("HTTP/1.1 404 Not Found");
-                elseif($wr->getUserId()==$userid || $user->isAdmin())
+                elseif(false)
                     Walkroute::moveWaypoint
                         ($conn, $cpost["id"], $cpost["lon"], $cpost["lat"]);
                 else
@@ -289,27 +274,25 @@ switch($action)
         }
         else
             header("HTTP/1.1 400 Bad Request");
-	
-		break;
+    
+        break;
 
     case "deleteMultiWaypoints":
         if($_SERVER['REQUEST_METHOD']=='POST')
         {
-            $userid=$um->getUserIdFromCredentials();
+            $userid=0;
             $deleted = array();
             if($userid<=0)
                 header("HTTP/1.1 401 Unauthorized");    
             elseif(isset($cpost["ids"]))
             {
-                $user = new User($userid, $conn);
                 $ids = json_decode ($cpost["ids"]);
                 foreach($ids as $id)
                 {
                     if(ctype_digit("$id"))
                     {
                         $wr = Walkroute::getWalkrouteFromWaypoint($conn, $id);
-                        if($userid>0 && 
-                            ($wr->getUserId()==$userid || $user->isAdmin()))
+                        if(false)
                         {
                             Walkroute::deleteWaypoint($conn, $id);
                             $deleted[] = $id;
