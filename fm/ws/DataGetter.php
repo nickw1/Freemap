@@ -113,7 +113,8 @@ class DataGetter
                     $qry.=" OR ";
                 if ($lyrs[$i] == "natural")
                     $lyrs[$i] = "\"natural\"";
-                $qry .= $lyrs[$i] . " <> '' ";
+                $qry .= ($lyrs[$i]!='footpaths' ? $lyrs[$i] . " <> '' ":
+						"(designation <>'' OR highway='footway' OR highway='path' OR highway='bridleway' OR highway='service' OR highway='steps' OR highway='track' OR highway='byway')");
             }
             $qry .= ")";
         }
@@ -452,7 +453,12 @@ class BboxGetter extends DataGetter
         $this->geomtxt = $this->mkgeom();
         $this->extGeomtxt = $this->mkExtGeom();
         $this->forceCache = false;
+		$this->intersect = true;
     }
+
+	function setIntersect($intersect) {
+		$this->intersect = $intersect;
+	}
 
     function setForceCache($fc)
     {
@@ -522,7 +528,7 @@ class BboxGetter extends DataGetter
         
         parent::doGetData($options);
 
-		/* this didn't work (trying to fix mapsforge "flood" problem
+		/* this didn't work (trying to fix mapsforge "flood" problem)
 		if(isset($options["mocksea"]) && $options["mocksea"]) 
 		{
 			$this->addMockSeaData();
@@ -915,8 +921,8 @@ class BboxGetter extends DataGetter
     function getWayQuery($table, $constraint)
     {
         return ($table=="polygon") ?
-            $this->dbq->getBboxPolygonQuery($this->geomtxt, $constraint):
-            $this->dbq->getBboxWayQuery($this->geomtxt, $constraint);
+            $this->dbq->getBboxPolygonQuery($this->geomtxt, $constraint, $this->intersect):
+            $this->dbq->getBboxWayQuery($this->geomtxt, $constraint, $this->intersect);
     }
 
     function getUniqueList($property)

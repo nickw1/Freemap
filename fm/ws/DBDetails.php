@@ -91,21 +91,21 @@ class DBDetails
 
 
 
-    public function getBboxWayQuery($geomtxt, $constraint="")
+    public function getBboxWayQuery($geomtxt, $constraint="", $intersect=true)
     {
         return ($this->wayDetails) ?
                 $this->trWayIntersectQuery($this->wayDetails["table"],
                                     $this->wayDetails["col"], $geomtxt,
-                                    $constraint) :
+                                    $constraint, $intersect) :
                 null;
     }
 
-    public function getBboxPolygonQuery($geomtxt, $constraint="")
+    public function getBboxPolygonQuery($geomtxt, $constraint="", $intersect=true)
     {
         return ($this->polygonDetails) ?
                 $this->trWayIntersectQuery($this->polygonDetails["table"],
                                     $this->polygonDetails["col"], $geomtxt,
-                                    $constraint) :
+                                    $constraint, $intersect) :
                 null;
     }
 
@@ -133,11 +133,13 @@ class DBDetails
     // it covers the transformed bbox) then find all transformed ways in the
     // transformed bbox from this set of ways
     private function trWayIntersectQuery($tbl,$col,$geomtxt,$constraint="",
+							$intersect=true,
                             $outputFunc="ST_AsGeoJSON")
     {
-		$outway = "ST_Intersection(t.tway,".
-					"ST_Transform($geomtxt,$this->tSRID))";
-		$outway_nt = "ST_Intersection($col,$geomtxt)";
+		$outway = $intersect ? "ST_Intersection(t.tway,".
+					"ST_Transform($geomtxt,$this->tSRID))":
+						"t.tway";
+		$outway_nt = $intersect ? "ST_Intersection($col,$geomtxt)": $col;
         return $this->tSRID != $this->SRID ?
             "SELECT *,$outputFunc(".
 			(($this->tSRID == $this->outSRID) ?

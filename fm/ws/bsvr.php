@@ -9,7 +9,7 @@ require_once('DBDetails.php');
 require_once('xml.php');
 require_once('../../lib/latlong.php');
 
-header("Access-Control-Allow-Origin: http://www.opentrailview.org");
+header("Access-Control-Allow-Origin: http://www.mapthepaths.org.uk");
 
 // fernhurst -80454 6629930
 
@@ -77,6 +77,7 @@ $bbox = array(min($sw["e"],$nw["e"]),min($sw["n"],$se["n"]),
 				max($ne["e"],$se["e"]), max($ne["n"],$nw["n"]));
 
 $bg=new BboxGetter($bbox, $inProj, $outProj, $ext);
+$bg->setIntersect(!isset($cleaned["fullways"]) || !$cleaned["fullways"]);
 $data=$bg->getData($cleaned,null,null);
 
 switch($format)
