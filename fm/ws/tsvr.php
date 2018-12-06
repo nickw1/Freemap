@@ -35,18 +35,14 @@ $z = $cleaned["z"];
 $tbl_prefix=isset($cleaned["tbl_prefix"]) ? $cleaned["tbl_prefix"]:"planet_osm";
 $ext=isset($cleaned["ext"]) ? $cleaned["ext"]:0;
 
-$mftest=isset($cleaned["mftest"]) ? $cleaned["mftest"]:0;
-
 $outProj = (isset($cleaned['outProj'])) ? $cleaned['outProj']: '3857';
 adjustProj($outProj);
-$kg=isset($cleaned["kg"]) ? $cleaned["kg"]: 1000;
 
 if(!ctype_digit($x) || !ctype_digit($y) || !ctype_digit($z) ||
         !ctype_alnum($outProj) || !preg_match("/^\w+$/", $tbl_prefix) ||
-        !ctype_digit($kg) ||
-        isset($cleaned["poi"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["poi"]) ||
-           isset($cleaned["way"]) && !preg_match("/^(\w+,)*\w+$/", $cleaned["way"]) || 
-        isset($cleaned["kothic"]) && !ctype_digit($cleaned["kothic"]) ||
+        isset($cleaned["poi"])&&!preg_match("/^(\w+,)*\w+$/", $cleaned["poi"])||
+           isset($cleaned["way"]) && !preg_match("/^(\w+,)*\w+$/", 
+            $cleaned["way"]) || 
         isset($cleaned["contour"]) && !ctype_digit($cleaned["contour"]) ||
         isset($cleaned["coastline"]) && !ctype_digit($cleaned["coastline"]))
 {
@@ -56,31 +52,23 @@ if(!ctype_digit($x) || !ctype_digit($y) || !ctype_digit($z) ||
 }
      
 $bbox = get_sphmerc_bbox($x,$y,$z);
-if(isset($cleaned["kothic"]) && $cleaned["kothic"])
+header("Content-type: application/json");
+$bg = new BboxGetter($bbox,"3857",$outProj,$ext,$tbl_prefix);
+if(isset($cleaned["cache"]) && $cleaned["cache"])
 {
-    $sw = sphmerc_to_ll($bbox[0],$bbox[1]);
-    $ne = sphmerc_to_ll($bbox[2],$bbox[3]);
-    if(!file_exists(CONTOUR_CACHE."/$kg/$z/$x"))
-        mkdir(CONTOUR_CACHE."/$kg/$z/$x",0755,true);
-    if(!file_exists(CACHE."/$kg/$z/$x"))
-        mkdir(CACHE."/$kg/$z/$x",0755,true);
+    if(!file_exists(CONTOUR_CACHE."/$outProj/$z/$x"))
+        mkdir(CONTOUR_CACHE."/$outProj/$z/$x",0755,true);
+    if(!file_exists(CACHE."/$outProj/$z/$x"))
+        mkdir(CACHE."/$outProj/$z/$x",0755,true);
         
-    $bg = new BboxGetter($bbox,"3857","3857",$ext,$kg,$tbl_prefix);
-	$data = false;
+    $data = false;
 
     if($z<=7)
     {
-		$data = [];
-		/* 100618 risk that OpenTrail 0.4 might try to request data at a low zoom level
-		which might kill the server. Prevent it.
-        $bg->addWayFilter("highway","motorway,trunk,primary,".
-                            "motorway_link,primary_link,trunk_link");
-        $bg->addWayFilter("railway","rail,preserved");
-        $bg->addWayFilter("waterway","river");
-        $bg->addPOIFilter("place","city");
-        $bg->includePolygons(false);
-        unset($cleaned["contour"]);
-		*/
+        $data = [];
+        /* 100618 risk that OpenTrail 0.4 might try to request data at a low zoom level
+        which might kill the server. Prevent it.
+        */
     }
     elseif($z<=9)
     {
@@ -91,7 +79,6 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         $bg->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city,town");
         $bg->includePolygons(false);
-        unset($cleaned["contour"]);
     }
     elseif($z<=11)
     {
@@ -103,30 +90,23 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         $bg->addWayFilter("waterway","river");
         $bg->addPOIFilter("place","city,town,village");
         $bg->addPOIFilter("railway","station");
+    }
+
+    if($z<=13) {
         unset($cleaned["contour"]);
     }
 
-	if($data===false) {
-    	$data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
-                        CACHE."/$kg/$z/$x/$y.json",$x,$y,$z);
-    	$data["granularity"] = $kg;
-    	$data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
-            $ne['lon']+0.01,$ne['lat']+0.01);
-    	echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
-	}
+    if($data===false) {
+        $data=$bg->getData($cleaned,CONTOUR_CACHE."/$outProj/$z/$x/$y.json",
+                        CACHE."/$outProj/$z/$x/$y.json",$x,$y,$z);
+//        $data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01, $ne['lon']+0.01,$ne['lat']+0.01);
+    }
 }
 else
 {
-    header("Content-type: application/json");
-    $bg=new BboxGetter($bbox,"3857",$outProj,$ext,null,$tbl_prefix);
-    // mapsforge rendering test
-	if($mftest==1)
-	{
-		$bg->addWayFilter("designation","public_bridleway");
-	}
     $data=$bg->getData($cleaned,null,null);
-    echo json_encode($data);
 }
+    echo json_encode($data);
 
 
 ?>

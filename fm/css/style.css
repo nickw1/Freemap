@@ -10,6 +10,7 @@ a { text-decoration: none; }
 
 #main { 
     font-family: DejaVu Sans,Calibri,verdana,helvetica,arial,sans-serif; 
+	color: black;
 }
 
 
@@ -69,8 +70,8 @@ pre
     border-width: 1px
 }
 
-#sidebar a,#sidebar a:visited,#myroutes a,#myroutes a:visited,.fmap_dlg a,
-.fmap_dlg a:visited, #modebar div > a
+#sidebar a,#sidebar a:visited,#myroutes a,#myroutes a:visited,
+#modebar div > a
 {
     color:white
 }

@@ -1,0 +1,539 @@
+cameras:
+    camera1:
+        type: perspective
+
+lights:
+    light1:
+        type: directional
+        direction: [0, 1, -.5]
+        diffuse: .3
+        ambient: 1
+
+sources:
+    freemap:
+        type: GeoJSON
+        url: http://www.free-map.org.uk/fm/ws/tsvr.php?x={x}&y={y}&z={z}
+        url_params:
+            way: highway,natural,landuse,barrier,waterway,power,railway
+            poi: all 
+            coastline: 1
+            contour: 1
+            cache: 1
+            outProj: 4326
+        max_zoom: 16
+        min_zoom: 11
+scene:
+    background:
+        color: '#88bbee'
+
+#styles:
+#    custom:
+#        base: points
+#        texture: pub.png
+
+layers:
+    earth:
+        data: { source: freemap }
+        filter:
+            natural: nosea
+        draw:
+            polygons:
+                order: 0 
+                color: '#ddeeee'
+                outline:
+                    color: '#0000ff'
+                    width: 10
+
+    natural_and_water:
+        data: { source: freemap }
+        filter:
+           #{ [ natural: [ wood, heath, water ], waterway: [river,stream] ], $zoom: { min: 13}}
+           all:
+               - [natural: [ wood, heath, water ] , waterway: [river,stream], landuse: reservoir]
+               - $zoom: { min: 11 }
+        draw:
+            polygons:
+                order: 1
+            lines: 
+                color: '#808080'
+                width: 3
+                order: 3
+        wood:
+            filter:
+                natural: wood
+            draw:
+                polygons:
+                    color: '#aaffaa'
+        heath:
+            filter:
+                natural: heath 
+            draw:
+                polygons:
+                    color: '#ffffc0'
+        water:
+            filter:
+                [ natural: water, landuse: reservoir, waterway: [river,stream] ]
+            draw:
+                polygons:
+                    order: 3
+                    color: '#88bbee'
+            river:
+                filter:
+                    [waterway: river]
+                draw:
+                    lines:
+                        width: 18
+                        order: 3
+                        color: '#88bbee'
+            stream:
+                filter:
+                    [waterway: stream]
+                draw:
+                    lines:
+                        width: 12
+                        order: 3
+                        color: '#88bbee'
+            
+
+    contour:
+        data: { source: freemap }
+        filter:
+            all:
+                - contourtype: true
+                - $zoom: { min: 14 } 
+        minor:
+            filter:
+                contourtype: minor 
+            draw:
+                lines:
+                    color: '#fb9b67'
+                    width: 3
+                    order: 2
+                text:
+                    font:
+                        size: 12px
+                        fill: '#fb9b67'
+                        family: Helvetica
+                    text_source: ele
+            lowzoom:
+                filter:
+                    $zoom: 14
+                draw:
+                    lines:
+                        width: 6
+        major:
+            filter:
+                contourtype: major 
+            draw:
+                lines:
+                    color: '#fb9b67'
+                    width: 5
+                    order: 2
+                text:
+                    font:
+                        size: 12px
+                        fill: '#fb9b67'
+                        family: Helvetica
+                    text_source: ele
+            lowzoom:
+                filter:
+                    $zoom: 14
+                draw:
+                    lines:
+                        width: 10 
+    barrier:
+        data: { source: freemap }
+        filter: 
+            barrier: [ hedge, fence, wall, retaining_wall ]
+        draw:
+            lines:
+                color: '#808080'
+                width: 3
+                order: 3
+
+    power:
+        data: { source: freemap}
+        filter: 
+            all:
+                - power: [tower, line]
+                - $zoom: { min: 14}
+        powertower:
+            filter:
+                power: tower
+            draw:
+                points:
+                    texture: icons/pylon16.png
+                    order: 16
+        powerline:
+            filter:
+                power: line
+            draw:
+                lines:
+                    color: '#808080'
+                    width: 3
+                    order: 16
+    mast:
+        data: {source: freemap}
+        filter:
+            all:
+                - man_made: mast
+                - $zoom: { min: 14}
+        draw:
+            points:
+                texture: icons/mast.png
+                order: 16
+    pois:
+        data: { source: freemap }
+        filter: 
+            [ place: [village, hamlet, town, city, suburb], amenity: [pub, cafe], natural: peak ]
+        draw:
+            text:
+                order: 15
+        village:
+            filter:
+                place: village
+            normal:
+                filter:
+                    $zoom: { min: 14 }
+                draw:
+                    text:
+                        font:
+                            size: 18px 
+                            fill: black
+                            weight: 50
+            lowzoom:
+                filter:
+                    $zoom: { min: 13, max: 14 }
+                draw:
+                    text:
+                        font:
+                            size: 12px 
+                            fill: black
+                            weight: 50
+        hamlet:
+            filter:
+                { place: [hamlet, suburb], $zoom: { min: 14 } }
+            draw:
+                text:
+                    font:
+                        size: 12px
+                        fill: black
+                        weight: 50
+        town:
+            filter:
+                place: town
+            normal:
+                filter:
+                    $zoom: { min: 14}
+                draw:
+                    text:
+                        font:
+                            size: 24px
+                            fill: black 
+                            weight: 50
+            lowzoom:
+                filter:
+                    $zoom: { min: 11, max: 14 }
+                draw:
+                    text:
+                        font:
+                            size: 18px 
+                            fill: black
+                            weight: 50
+        city:
+            filter:
+                place: city 
+            normal:
+                filter:
+                    $zoom: { min: 14}
+                draw:
+                    text:
+                        font:
+                            size: 32px
+                            fill: black
+                            weight: 50
+            lowzoom:
+                filter:
+                    $zoom: { min: 11, max: 14}
+                draw:
+                    text:
+                        font:
+                            size: 24px
+                            fill: black
+                            weight: 50
+            vlowzoom:
+                filter:
+                    $zoom: { min: 7, max: 11}
+                draw:
+                    text:
+                        font:
+                            size: 18px
+                            fill: black
+                            weight: 50
+
+        pub:
+            filter: 
+                { amenity: pub, $zoom: { min: 14}}
+            draw:
+                points:
+                    texture: icons/pub.png
+                text:
+                    font:
+                        size: 10px
+                        fill: black    
+        peak:
+            filter: 
+                { natural: peak, $zoom: { min: 13}}
+            draw:
+                text:
+                    font:
+                        size: 10px
+                        fill: black    
+
+    rows:
+        data: { source: freemap }
+        filter:
+            { $zoom: {min: 14} , [designation: true, foot: permissive] }
+        draw:
+            lines:
+                cap: round
+                order: 14
+        footpath:
+            filter:
+                designation: public_footpath
+            draw:
+                lines:
+                    #color: '#ff0000'
+                    color: green
+                    width: 12 
+#                    dash: [2,2]
+                    cap: round
+            lowzoom:
+                filter:
+                    $zoom: 14
+                draw:
+                    lines:
+                        width: 12
+        bridleway:
+            filter:
+                designation: public_bridleway
+            draw:
+                lines:
+#                    color: '#ff0000'
+                    color: '#aa5500'
+                    width: 12 
+#                    dash: [8,4]
+            lowzoom:
+                filter:
+                    $zoom: 14
+                draw:
+                    lines:
+                        width: 12
+        byway:
+            filter:
+                designation: [byway_open_to_all_traffic,restricted_byway]
+            draw:
+                lines:
+                    color: '#ff0000'
+                    width: 12 
+#                    dash: [6,2]
+            lowzoom:
+                filter:
+                    $zoom: 14
+                draw:
+                    lines:
+                        width: 24 
+        permissive:
+            filter:
+                foot: permissive 
+            draw:
+                lines:
+#                    color: '#ff80ff'
+                    color: '#00c0c0'
+                    width: 12  
+#                    dash: [2,2]
+
+    rail:
+        data: { source: freemap }
+        filter:
+            all:
+                - railway: [rail, station]
+                - $zoom: { min: 14}
+        railline:
+            filter:
+                railway: rail
+            draw:
+                lines:
+                    color: black
+                    order: 8
+                    width: 8
+                    dash: [4,4]
+                    outline:
+                        color: '#808080'
+                        width: 4
+                        order: 8
+                        dash: false
+            bridge:
+                filter:
+                    bridge: [yes,true]
+                draw:
+                    lines:
+                        order: 9
+            tunnel:
+                filter:
+                    tunnel: [yes,true]
+                draw:
+                    lines:
+                        dash: [2,4]
+                        outline: false
+        
+    roads:
+        data: { source: freemap }
+        filter:
+            highway: true
+    
+        tracks:
+            filter:
+                { highway: [track,byway], $zoom: { min: 14}}
+            draw:
+                lines:
+                    color: white 
+                    order: 8
+                    width: 18
+                    outline:
+                        order: 8
+                        color: '#808080' 
+                        width: 6 
+                        dash: [4,4]
+
+        paths:
+            filter:
+                all:
+                    - highway: [path,footway]
+                    - $zoom: {min: 14} 
+                    - not: 
+                        any:
+                            - designation: true
+                            - foot: permissive
+            draw:
+                lines:
+                    order: 14 
+                    color: black 
+                    width: 6
+                    dash: [2,2]
+
+        allroads:
+            filter:
+                highway: [motorway,motorway_link,trunk,trunk_link,primary,primary_link,secondary,secondary_link,service,tertiary,tertiary_link,unclassified,unclassified_link,residential,residential_link]
+       
+            motorway:
+                filter:
+                    { highway: [motorway, motorway_link], $zoom: { min: 7}}
+                draw:
+                    lines:
+                        color: '#809bc0'
+            trunk:
+                filter:
+                    { highway: [trunk, trunk_link], $zoom: { min: 7}}
+                draw:
+                    lines:
+                        #color: '#cdeacd'
+                        color: '#88ae88'
+            primary:
+                filter:
+                    { highway: [primary, primary_link], $zoom: { min: 8}}
+                draw:
+                    lines:
+                        color: '#f4c3c4'
+                vlowzoom:
+                    filter: 
+                        { $zoom: { max: 12}}
+                    draw:
+                        lines:
+                            width: 192
+            secondary:
+                filter:
+                    { highway: [secondary, secondary_link] , $zoom: { min: 9}}
+                draw:
+                    lines:
+                        color: '#fee0b8'
+            tertiary:
+                filter:
+                    { highway: [tertiary, tertiary_link] , $zoom: {min: 10}}
+                draw:
+                    lines:
+                        color: '#ffffcc'
+
+            unclassified:
+                filter:
+                    { highway: [unclassified, unclassified_link], $zoom: {min: 12}}
+                    
+                draw:
+                    lines:
+                        color: '#ffffff'
+                lowzoom:
+                    filter: 
+                        { $zoom: {max: 14}}
+                    draw:
+                        lines:
+                            width: 64
+                            outline:
+                                width: 12
+                    
+            residential:
+                filter:
+                    { highway: [residential, residential_link, service], $zoom: {min: 14}}
+                    
+                draw:
+                    lines:
+                        color: white
+                        width: 18
+
+            bridge:
+                filter:
+                    bridge: [yes,true]
+                draw:
+                    lines:
+                        order: 9
+                        outline: false
+            tunnel:
+                filter:
+                    tunnel: [yes,true]
+                draw:
+                    lines:
+                        dash: [2,4]
+                        
+            draw:
+                lines:
+                    order: 8
+                    width: 24 
+                    cap: round 
+                    outline:
+                        color: '#8d4346'
+                        width: 4
+                        cap: round
+            normal:
+                filter:
+                    { $zoom: { min: 15}}
+                draw:
+                    text:
+                        font:    
+                            size: 12px
+                            family: Helvetica
+                            fill: black
+            lowzoom:
+                filter: 
+                    { $zoom: {min: 12, max: 14}}
+                draw:
+                    lines:
+                        width: 72 
+                        outline:
+                            width: 16
+            vlowzoom:
+                filter: 
+                    { $zoom: { max: 12}}
+                draw:
+                    lines:
+                        width: 192
+                        outline:
+                            width: 32

@@ -5,6 +5,7 @@ require_once('ws_defines.php');
 define('MAX_TILE_AGE', 86400);
 define('TILELIST', '/home/www-data/cron/tilelist.txt');
 
+/// **** dekothicised DataGettr, bboxGetter still to do
 // change 180815
 // add $ext parameter to extend bbox to avoid boundary artefacts
 // was originally done if $kg existed, however now we also want to do this
@@ -18,23 +19,22 @@ define('TILELIST', '/home/www-data/cron/tilelist.txt');
 
 class DataGetter
 {
-    protected $data, $kothic_gran, $wayMustMatch, $poiFilter, $wayFilter,
+    protected $data, $wayMustMatch, $poiFilter, $wayFilter,
             $doWays, $doPolygons, $dbq, $conn;
 
-    function __construct($kothic_gran=null, $dbdetails=null, $srid="3857",
-						$projSRID="3857",$outSRID="3857",	
+    function __construct($dbdetails=null, $srid="3857",
+                        $projSRID="3857",$outSRID="3857",    
                             $dbname=WS_DATABASE, $user=WS_DATABASE_USER)
     {
         $this->conn = new PDO("pgsql:host=localhost;dbname=$dbname", $user);
         $this->data = array();
         $this->data["features"] = array();
         $this->data["type"] = "FeatureCollection";
-		/* temporarily remove - screwing up graphhopper
+        /* temporarily remove - screwing up graphhopper
         $this->data["properties"]["copyright"] =
             "Map data OpenStreetMap Contributors, Open Database Licence; ".
             "contours Ordnance Survey, OS OpenData licence";
-		*/
-        $this->kothic_gran = $kothic_gran;
+        */
         $this->poiFilter=array();
         $this->wayFilter=array();
         $this->doWays=true;
@@ -54,7 +54,7 @@ class DataGetter
                     array("table"=>"coastlines",
                             "col"=>"the_geom"),
                     array("col"=>"xy"), 
-					$srid, $projSRID, $outSRID
+                    $srid, $projSRID, $outSRID
                             ); 
         $this->SRID = $srid;
         $this->projSRID = $projSRID;
@@ -77,10 +77,10 @@ class DataGetter
     function getData($options)//,$outProj=null)
     {
         $this->doGetData($options);
-		/*
+        /*
         if($outProj!==null)
             $this->reprojectData($outProj);
-		*/
+        */
         return $this->data;
     }
 
@@ -89,8 +89,8 @@ class DataGetter
 
         $plyrs = isset($options["poi"]) ? explode(",", $options["poi"]):null;
         $wlyrs = isset($options["way"]) ? explode(",", $options["way"]):null;
-		//print_r($plyrs);
-		//print_r($wlyrs);
+        //print_r($plyrs);
+        //print_r($wlyrs);
 
         if(isset($options["poi"]))
             $this->getPOIData($plyrs);
@@ -114,7 +114,7 @@ class DataGetter
                 if ($lyrs[$i] == "natural")
                     $lyrs[$i] = "\"natural\"";
                 $qry .= ($lyrs[$i]!='footpaths' ? $lyrs[$i] . " <> '' ":
-						"(designation <>'' OR highway='footway' OR highway='path' OR highway='bridleway' OR highway='service' OR highway='steps' OR highway='track' OR highway='byway')");
+                        "(designation <>'' OR highway='footway' OR highway='path' OR highway='bridleway' OR highway='service' OR highway='steps' OR highway='track' OR highway='byway')");
             }
             $qry .= ")";
         }
@@ -184,7 +184,7 @@ class DataGetter
         //$pqry = $this->dbq->getPOIQuery();
         $pqry = $this->getPOIQuery();
 
-//		echo "POI Query is : $pqry<br />";
+//        echo "POI Query is : $pqry<br />";
 
         if($plyrs[0]!="all")
             $pqry .= DataGetter::criteria($plyrs);
@@ -194,44 +194,37 @@ class DataGetter
 
 
         $presult = $this->conn->query($pqry);
-		$errorInfo = $this->conn->errorInfo();
-//		print_r($errorInfo);
-		if($errorInfo[0]!="00000")
-			return;
+        $errorInfo = $this->conn->errorInfo();
+//        print_r($errorInfo);
+        if($errorInfo[0]!="00000")
+            return;
 
         while($prow=$presult->fetch(PDO::FETCH_ASSOC))
         {
             $feature=array();
-            $feature["type"] = $this->kothic_gran===null?"Feature":"Point";
+            $feature["type"] = "Feature";
             $f= json_decode($prow["st_asgeojson"],true);
-			// 301018 correct problem where POIs on tile boundaries end up
-			// being corrupted with a type of GeometryCollection and 
-			// coordinates of null
- 			if($f["coordinates"] != null) {
-            	$counteddata=array();
+            // 301018 correct problem where POIs on tile boundaries end up
+            // being corrupted with a type of GeometryCollection and 
+            // coordinates of null
+             if($f["coordinates"] != null) {
+                $counteddata=array();
 
-            	foreach($prow as $k=>$v)    
-                	if($k!='way' && $k!='st_asgeojson' && $k!='tway' && $v!='')
-                    	$counteddata[$k]=htmlspecialchars
-                        	(str_replace("&","and",$v));
+                foreach($prow as $k=>$v)    
+                    if($k!='way' && $k!='st_asgeojson' && $k!='tway' && $v!='')
+                        $counteddata[$k]=htmlspecialchars
+                            (str_replace("&","and",$v));
 
-            	$feature["properties"] = $counteddata;
-            	$feature["properties"]["featuretype"]=get_high_level
-                	($feature["properties"]);
+                $feature["properties"] = $counteddata;
+                $feature["properties"]["featuretype"]=get_high_level
+                    ($feature["properties"]);
 
-            	if($this->kothic_gran===null)
-            	{
-                	$feature["geometry"]=array();
-                	$feature["geometry"]["type"] = $f["type"];
-                	$feature["geometry"]["coordinates"] = $f["coordinates"];
-            	}
-            	else
-            	{
-                	$feature["coordinates"]= $this->kothicAdjust($f);
-            	}
+                $feature["geometry"]=array();
+                $feature["geometry"]["type"] = $f["type"];
+                $feature["geometry"]["coordinates"] = $f["coordinates"];
 
-            	$this->data["features"][] = $feature;
-			}
+                $this->data["features"][] = $feature;
+            }
         }    
     }
 
@@ -245,32 +238,32 @@ class DataGetter
 
         foreach($arr as $table)
         {
-			$f = DataGetter::applyFilter("way");
-			$criteria = $wlyrs[0]=="all"?"":DataGetter::criteria($wlyrs);
+            $f = DataGetter::applyFilter("way");
+            $criteria = $wlyrs[0]=="all"?"":DataGetter::criteria($wlyrs);
             $wqry = $this->getWayQuery($table,
-				$criteria. " ".
-				DataGetter::applyFilter("way"));
+                $criteria. " ".
+                DataGetter::applyFilter("way"));
 
-		
-//			echo "FILTER $f";	
-			//echo "Way query: $wqry<br />";
+        
+//            echo "FILTER $f";    
+            //echo "Way query: $wqry<br />";
 
-			/*
+            /*
             if($wlyrs[0]!="all")
                 $wqry .= DataGetter::criteria($wlyrs);
             $wqry .= DataGetter::applyFilter("way");
-		*/
+        */
 
-			/*
-			echo "CONSTRAINT ".
-				DataGetter::criteria($wlyrs). "  ".
-				DataGetter::applyFilter("way"). "<br />";
-			*/
-			//echo "<br />ACTUAL QUERY $wqry<br />";
+            /*
+            echo "CONSTRAINT ".
+                DataGetter::criteria($wlyrs). "  ".
+                DataGetter::applyFilter("way"). "<br />";
+            */
+            //echo "<br />ACTUAL QUERY $wqry<br />";
             $wresult = $this->conn->query($wqry);
-			$errorInfo = $this->conn->errorInfo();
-			if($errorInfo[0]!="00000")
-				return;
+            $errorInfo = $this->conn->errorInfo();
+            if($errorInfo[0]!="00000")
+                return;
 
             $first=true;
 
@@ -281,7 +274,7 @@ class DataGetter
             while($wrow=$wresult->fetch(PDO::FETCH_ASSOC))
             {
                 $feature=array();
-				//echo $wrow['st_asgeojson']. "<br />";
+                //echo $wrow['st_asgeojson']. "<br />";
                 $f = json_decode($wrow['st_asgeojson'],true);
                 $tags = array();
          
@@ -289,26 +282,16 @@ class DataGetter
                 // Replace ampersands with the word "and".
                 foreach($wrow as $k=>$v)
                     if($k!=$excluded_col && $k!='st_asgeojson' && $k!='tway'
-					&& $v!='')
+                    && $v!='')
                         $tags[$k] = htmlspecialchars(str_replace("&","and",$v));
 
                 $feature["properties"] = $tags;
-                if($this->kothic_gran===null)
-                {
                     $feature["type"] = "Feature"; 
                     $feature["geometry"]=array();
                     $feature["geometry"]["type"] = $f["type"];
                     $feature["geometry"]["coordinates"] = $f["coordinates"];
                     if(count($feature["geometry"]["coordinates"])>0)
                         $this->data["features"][] = $feature;
-                }
-                else
-                {
-                    $feature["coordinates"]= $this->kothicAdjust($f);
-                    $feature["type"] = $f["type"];
-                    if(count($feature["coordinates"])>0)
-                        $this->data["features"][] = $feature;
-                }
             }
         }
     }
@@ -318,8 +301,8 @@ class DataGetter
         return $this->dbq->getPOIQuery();
     }
 
-	// 181116 $constraint not needed but need to satisfy Strict Standards
-	// still no overloading in php
+    // 181116 $constraint not needed but need to satisfy Strict Standards
+    // still no overloading in php
     function getWayQuery($table, $constraint)
     {
         return ($table=="polygon") ?
@@ -327,7 +310,7 @@ class DataGetter
         $this->dbq->getWayQuery();
     }
 
-		/* now not done - done in DB query
+        /* now not done - done in DB query
     function reprojectData($outProj)
     {
         for($f=0; $f<count($this->data["features"]); $f++)
@@ -407,32 +390,30 @@ class DataGetter
             }
         }
     }
-		*/
+        */
 }
 
 class NameSearch extends DataGetter
 {
     protected $name;
 
-    function __construct($name,$outProj,$tbl_prefix="planet_osm",
-					$dbname=WS_DATABASE, $user=WS_DATABASE_USER)
+    function __construct($name,$outProj,$dbname=WS_DATABASE, $user=WS_DATABASE_USER)
     {
-        parent::__construct(null,$tbl_prefix,"3857","3857",$outProj,
-								$dbname,$user);
+        parent::__construct(null,"3857","3857",$outProj, $dbname,$user);
         $this->name=$name;
     }
 
     function getPOIQuery()
     {
-        return parent::getPOIQuery()." AND name ILIKE '%".$this->name."%'";
+       return parent::getPOIQuery()." AND name ILIKE '%".$this->name."%'";
     }
 
 
-	// 181116 $constraint not needed but need to satisfy Strict Standards
-	// still no overloading in php
+    // 181116 $constraint not needed but need to satisfy Strict Standards
+    // still no overloading in php
     function getWayQuery($table, $constraint)
     {
-        return parent::getWayQuery($table)." AND name ILIKE '%".
+        return parent::getWayQuery($table, $constraint)." AND name ILIKE '%".
             $this->name."%'";
     }
 }
@@ -440,53 +421,46 @@ class NameSearch extends DataGetter
 class BboxGetter extends DataGetter
 {
     private $bbox, $forceCache;
-	private $ext; // extend bbox to avoid boundary artefacts
+    private $ext; // extend bbox to avoid boundary artefacts
 
     function __construct($bbox,$bboxSRID="4326",$outSRID="3857",$ext=0,
-							$kothic_gran=null,$dbdetails=null,$srid="3857",
+                            $dbdetails=null,$srid="3857",
                             $dbname=WS_DATABASE, $user=WS_DATABASE_USER)
     {
-        parent::__construct($kothic_gran,$dbdetails,$srid,$bboxSRID,$outSRID,
-								$dbname,$user);
+        parent::__construct($dbdetails,$srid,$bboxSRID,$outSRID,
+                                $dbname,$user);
         $this->bbox = $bbox;
-		$this->ext = ($kothic_gran===null) ? $ext*0.01:0.2; // $ext parameter is a % extension
+        $this->ext = (true) ? $ext*0.01:0.2; // $ext parameter is a % extension
         $this->geomtxt = $this->mkgeom();
         $this->extGeomtxt = $this->mkExtGeom();
         $this->forceCache = false;
-		$this->intersect = true;
+        $this->intersect = true;
     }
 
-	function setIntersect($intersect) {
-		$this->intersect = $intersect;
-	}
+    function setIntersect($intersect) {
+        $this->intersect = $intersect;
+    }
 
     function setForceCache($fc)
     {
         $this->forceCache = $fc;
     }
 
-	// NW 120815 removed $outProj as it's no longer doing anything
-	// (This was done as part of the bbox stuff done circa March but
-	// never removed until now)
+    // NW 120815 removed $outProj as it's no longer doing anything
+    // (This was done as part of the bbox stuff done circa March but
+    // never removed until now)
     function getData($options, $contourCache=null, $cache=null, 
                         $x=null, $y=null, $z=null)
     {
-        // Only cache if all was requested and we're in kothic mode 
-        $all = isset($options["coastline"]) && $options["coastline"]
-            && isset($options["poi"]) && $options["poi"]=="all"
-            && isset($options["way"]) && $options["way"]=="all"
-            && $this->kothic_gran;
-
-		// test: now only cache if were in kothic (only)
-		$all = $this->kothic_gran;
-
+        // cache if we have a cache...
+        $all = $cache!==null;
         
         if($this->forceCache)
         {
             $this->getDataFromDB($options);
             $this->cacheData($cache);    
         }
-        elseif($cache!==null && $all)
+        elseif($cache!==null)
         {
             $result = $this->getCachedData($cache);
 // $result = false; // never readin from cache for testing - was done during
@@ -515,10 +489,10 @@ class BboxGetter extends DataGetter
         if(isset($options["contour"]) && $options["contour"])
             $this->getContourData($contourCache);
 
-		/*
+        /*
         if($outProj!==null)
             $this->reprojectData($outProj);
-		*/
+        */
 
         return $this->data;
     }
@@ -528,12 +502,12 @@ class BboxGetter extends DataGetter
         
         parent::doGetData($options);
 
-		/* this didn't work (trying to fix mapsforge "flood" problem)
-		if(isset($options["mocksea"]) && $options["mocksea"]) 
-		{
-			$this->addMockSeaData();
-		}
-		*/
+        /* this didn't work (trying to fix mapsforge "flood" problem)
+        if(isset($options["mocksea"]) && $options["mocksea"]) 
+        {
+            $this->addMockSeaData();
+        }
+        */
         
         if(isset($options["coastline"]) && $options["coastline"])
             $this->getCoastlineData();
@@ -557,7 +531,7 @@ class BboxGetter extends DataGetter
 
     function getCachedData($cache)
     {
-        if($this->kothic_gran!==null && $cache!==null)
+        if($cache!==null)
         {
             if(!file_exists($cache))
             {
@@ -575,7 +549,7 @@ class BboxGetter extends DataGetter
 
     function getContourData($contourCache=null)
     {
-        if($this->kothic_gran!==null && $contourCache!==null)
+        if(/*$this->kothic_gran!==null && */$contourCache!==null)
         {
             if(!file_exists($contourCache))
             {
@@ -602,8 +576,8 @@ class BboxGetter extends DataGetter
         $features=array();
         $q=$this->dbq->getContourQuery
 //***210417 FIX??? - don't use extended geometry for contours
-//			($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
-			($this->geomtxt);
+//            ($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
+            ($this->geomtxt);
         if($q===null)
             return;
         $result=$this->conn->query($q);
@@ -616,33 +590,19 @@ class BboxGetter extends DataGetter
             $feature["properties"]["ele"]=$row["height"]; // 070517
             $feature["properties"]["contour"]=$row["height"]; // for bk compat
             $feature["properties"]["contourtype"]=$row["height"]%50==0?
-					"major":"minor";
-            if($this->kothic_gran===null)
-            {
+                    "major":"minor";
                 $feature["type"]="Feature";
                 $feature["geometry"]=array();
                 $feature["geometry"]["type"] = $f["type"];
                 $feature["geometry"]["coordinates"] = $f["coordinates"];
                 if(count($feature["geometry"]["coordinates"])>0)
                     $features[] = $feature;
-            }
-            else
-            {
-                $feature["coordinates"] = $this->kothicAdjust($f);
-                $feature["type"] = $f["type"];
-                if(count($feature["coordinates"])>0)
-                    $features[] = $feature;
-            }
         }
         return $features;
     }
 
     function getCoastlineData()
     {
-        if($this->kothic_gran!==null)
-        {
-            $factor = $this->kothic_gran / ($this->bbox[2]-$this->bbox[0]);
-        }
         $q=$this->dbq->getCoastlineQuery($this->geomtxt);
         if($q===null)
             return;
@@ -654,57 +614,46 @@ class BboxGetter extends DataGetter
             $tags = array();
             $feature["properties"] = array();
             $feature["properties"]["natural"] = "nosea"; 
-            if($this->kothic_gran===null)
-            {
                 $feature["type"]="Feature";
                 $feature["geometry"]=array();
                 $feature["geometry"]["type"] = $f["type"];
                 $feature["geometry"]["coordinates"] = $f["coordinates"];
                 if(count($feature["geometry"]["coordinates"])>0) {
-//					$this->landFix($feature);
-//					print_r($feature);
+//                    $this->landFix($feature);
+//                    print_r($feature);
                     $this->data["features"][] = $feature;
-				
-				}
-            }
-            else
-            {
-                $feature["coordinates"] =$this->kothicAdjust($f);
-                $feature["type"] = $f["type"];
-                if(count($feature["coordinates"])>0)
-                    $this->data["features"][] = $feature;
-				
-            }
+                
+                }
         } 
     }
    
-	// hardcoded to do 3857 -> 4326 !
-	/* this experiment didn't work
-	function addMockSeaData()
-	{
-		$bbx = array();
-		list($bbx[0],$bbx[1]) = reproject($this->bbox[0], $this->bbox[1], "3857", "4326");
-		list($bbx[2],$bbx[3]) = reproject($this->bbox[2], $this->bbox[3], "3857", "4326");
-		
-		$feature = array();
-		$feature["type"]="Feature";
-		$feature["geometry"]=array();
-		$feature["geometry"]["coordinates"] =
-					array(
-						array(
-						array($bbx[0],$bbx[1]) ,
-						array($bbx[2],$bbx[1]),
-						array($bbx[2],$bbx[3]),
-						array($bbx[0],$bbx[3]),
-						array($bbx[0],$bbx[1])
-						)
-						);	
+    // hardcoded to do 3857 -> 4326 !
+    /* this experiment didn't work
+    function addMockSeaData()
+    {
+        $bbx = array();
+        list($bbx[0],$bbx[1]) = reproject($this->bbox[0], $this->bbox[1], "3857", "4326");
+        list($bbx[2],$bbx[3]) = reproject($this->bbox[2], $this->bbox[3], "3857", "4326");
+        
+        $feature = array();
+        $feature["type"]="Feature";
+        $feature["geometry"]=array();
+        $feature["geometry"]["coordinates"] =
+                    array(
+                        array(
+                        array($bbx[0],$bbx[1]) ,
+                        array($bbx[2],$bbx[1]),
+                        array($bbx[2],$bbx[3]),
+                        array($bbx[0],$bbx[3]),
+                        array($bbx[0],$bbx[1])
+                        )
+                        );    
 
-		$feature["geometry"]["type"] = "Polygon"; 
-		$feature["properties"] = array ("natural"=>"sea");
-		$this->data["features"][] = $feature;
-	} 
-	*/
+        $feature["geometry"]["type"] = "Polygon"; 
+        $feature["properties"] = array ("natural"=>"sea");
+        $this->data["features"][] = $feature;
+    } 
+    */
 
     function getAnnotationData()
     {
@@ -745,7 +694,7 @@ class BboxGetter extends DataGetter
             "$bbox[2] $bbox[3],$bbox[0] $bbox[3],$bbox[0] $bbox[1]))',".
             $this->SRID.")";    
     */
-	// now use the native srid and transform later
+    // now use the native srid and transform later
     $g = "ST_SetSRID('BOX3D($bbox[0] $bbox[1],$bbox[2] $bbox[3])'::box3d,".
         $this->SRID.")";
         return $g; 
@@ -771,150 +720,46 @@ class BboxGetter extends DataGetter
         return $g; 
     }
 
-	function landFix(&$f)
-	{
-
-//		print_r($f);
-		$bbx = array();
-		list($bbx[0],$bbx[1]) = reproject($this->bbox[0], $this->bbox[1], "3857", "4326");
-		list($bbx[2],$bbx[3]) = reproject($this->bbox[2], $this->bbox[3], "3857", "4326");
-
-		for($i=0; $i<count($f["geometry"]["coordinates"]); $i++)
-		{
-			$coords[$i]=array();
-			for($j=0; $j<count($f["geometry"]["coordinates"][$i]); $j++)
-			{
-				// convert back to sphmerc
-				list($x,$y) = 
-				reproject ( (int)
-					(round($f["geometry"]["coordinates"][$i][$j][0])),
-				 (int)
-				(round($f["geometry"]["coordinates"][$i][$j][1])),
-					"4326","3857"
-					);
-				// coords of (0,0) seem to screw up rendering
-				if($x<$this->bbox[0]) $x = $this->bbox[0]+1;
-				if($y<$this->bbox[1]) $y = $this->bbox[1]+1;
-				if($x>$this->bbox[2]) $x = $this->bbox[2]-1;
-				if($y>$this->bbox[3]) $y = $this->bbox[3]-1;
-
-				list($lon,$lat) = reproject($x,$y,"3857","4326");
-				$f["geometry"]["coordinates"][$i][$j][0] = $lon;
-				$f["geometry"]["coordinates"][$i][$j][1] = $lat;
-			}
-		}
-		return $f;
-	}
-
-    function kothicAdjust($f)
+    function landFix(&$f)
     {
-        $factor = $this->kothic_gran / ($this->bbox[2]-$this->bbox[0]);
-        $coords=array();
-        switch($f["type"])
+
+//        print_r($f);
+        $bbx = array();
+        list($bbx[0],$bbx[1]) = reproject($this->bbox[0], $this->bbox[1], "3857", "4326");
+        list($bbx[2],$bbx[3]) = reproject($this->bbox[2], $this->bbox[3], "3857", "4326");
+
+        for($i=0; $i<count($f["geometry"]["coordinates"]); $i++)
         {
-            case "Point":
-                $x =  (int)    
-                    (($f["coordinates"][0] - $this->bbox[0]) * $factor);
-                $y =     (int)
-                    (($f["coordinates"][1] - $this->bbox[1]) * $factor);
-            $coords = array($x,$y);
-            break;
+            $coords[$i]=array();
+            for($j=0; $j<count($f["geometry"]["coordinates"][$i]); $j++)
+            {
+                // convert back to sphmerc
+                list($x,$y) = 
+                reproject ( (int)
+                    (round($f["geometry"]["coordinates"][$i][$j][0])),
+                 (int)
+                (round($f["geometry"]["coordinates"][$i][$j][1])),
+                    "4326","3857"
+                    );
+                // coords of (0,0) seem to screw up rendering
+                if($x<$this->bbox[0]) $x = $this->bbox[0]+1;
+                if($y<$this->bbox[1]) $y = $this->bbox[1]+1;
+                if($x>$this->bbox[2]) $x = $this->bbox[2]-1;
+                if($y>$this->bbox[3]) $y = $this->bbox[3]-1;
 
-            case "LineString":
-                for($i=0; $i<count($f["coordinates"]); $i++)
-                {
-                    $x =  (int)    
-                    round(($f["coordinates"][$i][0]-$this->bbox[0]) * $factor);
-                    $y =     (int)
-                    round(($f["coordinates"][$i][1]-$this->bbox[1]) * $factor);
-                    // coords of (0,0) seem to  screw up rendering
-			
-				
-/* 210417 can we get rid of this now the ext factor is sorted for contours?
-                    $x=($x==0)?1:$x;
-                    $y=($y==0)?1:$y;
-                    $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
-                    $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
-*/
-                    $x=($x<0)?0:$x;
-                    $y=($y<0)?0:$y;
-                    $x=($x>$this->kothic_gran)?$this->kothic_gran:$x;
-                    $y=($y>$this->kothic_gran)?$this->kothic_gran:$y;
-					
-					
-		
-
-                   if($x>=0 && $y>=0 && $x<=$this->kothic_gran && $y<=$this->kothic_gran)
-                           $coords[] = array($x,$y);
-				}
-                break;
-
-            case "MultiLineString":
-            case "Polygon":
-                for($i=0; $i<count($f["coordinates"]); $i++)
-                {
-                    $coords[$i]=array();
-                    for($j=0; $j<count($f["coordinates"][$i]); $j++)
-                    {
-                        $x =  (int)    
-                        round(($f["coordinates"][$i][$j][0]-
-                        $this->bbox[0]) * $factor);
-                        $y =     (int)
-                        round(($f["coordinates"][$i][$j][1]-
-                        $this->bbox[1]) * $factor);
-                        // coords of (0,0) seem to screw up rendering
-                        if($f["type"]=="MultiLineString")
-                        {
-                            $x=($x==0)?1:$x;
-                            $y=($y==0)?1:$y;
-                            $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
-                            $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
-                        }
-            
-                        $coords[$i][] = array($x,$y);
-
-                    }
-                }
-                break;
-
-            case "MultiPolygon":
-                for($i=0; $i<count($f["coordinates"]); $i++)
-                {
-                    $coords[$i]=array();
-                    for($j=0; $j<count($f["coordinates"][$i]); $j++)
-                    {
-                        $coords[$i][$j]=array();
-                        for($k=0; $k<count($f["coordinates"][$i][$j]); $k++)
-                        {
-                            $x =  (int)    
-                            round(($f["coordinates"][$i][$j][$k][0]-
-                            $this->bbox[0]) * 
-                            $factor);
-
-                            $y =     (int)
-                            round(($f["coordinates"][$i][$j][$k][1]-
-                            $this->bbox[1]) * 
-                            $factor);
-
-                // coords of (0,0) screw up rendering
-                            $x=($x==0)?1:$x;
-                            $y=($y==0)?1:$y;
-                            $x=($x==$this->kothic_gran)?$this->kothic_gran-1:$x;
-                            $y=($y==$this->kothic_gran)?$this->kothic_gran-1:$y;
-                            $coords[$i][$j][] = array($x,$y);
-                        }
-                    }
-                }
-                break;
+                list($lon,$lat) = reproject($x,$y,"3857","4326");
+                $f["geometry"]["coordinates"][$i][$j][0] = $lon;
+                $f["geometry"]["coordinates"][$i][$j][1] = $lat;
+            }
         }
-        return $coords;
+        return $f;
     }
 
     function getPOIQuery()
     {
-		return $this->dbq->getBboxPOIQuery
-//				($this->kothic_gran===null ? $this->geomtxt: $this->extGeomtxt);
-				($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
+        return $this->dbq->getBboxPOIQuery
+//                ($this->kothic_gran===null ? $this->geomtxt: $this->extGeomtxt);
+                ($this->ext>0 ? $this->extGeomtxt: $this->geomtxt);
 
     }
 

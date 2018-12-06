@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>Freemap - About</title>
+<link rel='stylesheet' type='text/css' href='../fm/css/style.css' />
+</head>
+<body> 
+<div id='content'>
+<h1>What is Freemap?</h1>
+<hr />
+<p><em>Freemap</em> is a project to create free 
+maps of the countryside, using 
+<a href='http://www.openstreetmap.org'>OpenStreetMap</a> data to create the
+maps. Freemap maps aim to show not only the official rights of way, but 
+all paths with public access, many of which are missing on other maps.</p>
+<p>
+<ul>
+<li><a href='#mapkey'>Map key</a></li>
+<li><a href='#norender'>The map isn't showing! Why?</a></li>
+<li><a href='#limitations'>Limitations</a></li>
+<li><a href='#source'>Source code</a></li>
+<li><a href='../common/otherstuff.html'>Other software</a>
+hosted on this server and available for download.</li>
+<li><a href='/index.php'>Back to map</a></li>
+</ul>
+<h2 id='mapkey'>Map key</h2>
+
+<ul>
+<li>Green: public footpath</li>
+<li>Brown: public bridleway</li>
+<li>Red: byway or restricted byway</li>
+<li>Blue: permissive footpath</ul>
+
+<p>Note how some paths and tracks are shown in black and white 
+only. These are paths
+and tracks for which walkers' rights are unknown, i.e. it is not known whether
+they are walkable or private. 
+</p>
+<h2>Android app - OpenTrail</h2>
+<p>Freemap has an accompanying Android app, 
+<a href='/common/opentrail.html'>OpenTrail</a>. With OpenTrail you can
+add and share notes "in the field" on your device: these will be uploaded
+to the database. Furthermore, you can record a walking route while out
+walking, add notes to it, upload to the Freemap server 
+and share with others.</p>
+<p>Furthermore, OpenTrail features the ability to download and "play" 
+existing walking routes - so you'll be able to see
+walk route directions presented to you on your Android device while out
+walking!</p>
+<h2 id='norender'>The map isn't showing! Why?</h2>
+<p>If the map doesn't show immediately, it's because the map for that
+area needs to be rendered (drawn). Generating the map data from the database
+takes time as this is a relatively low-spec server. This is particularly
+the case if contours have not been generated yet.</p>
+It may take some time in built-up areas. However, once an area
+of map is drawn, it is cached which means that next time you visit that
+area, the map will be drawn much more quickly - a second or two.</p>
+<p>Also please note that from early 2012, maps have been drawn in the
+browser using vector rendering, for many years with
+<a href='http://www.kothic.org/'>kothic-js</a> and now (Nov 2018) with
+<a href='https://github.com/tangrams/tangram'>Tangram</a>. 
+The decision to switch to in-browser rendering has been
+made as a result of the large demands of server-side rendering due to
+the increased size of the OpenStreetMap database.</p>
+<p>The move to in-browser rendering also means that you will need a moderately 
+up-to-date browser (something released in the last 5 years or so); 
+in particular, Internet Explorer versions before IE9 will not work.</p>
+<h2 id='limitations'>Limitations</h2>
+<p>There are some limitations with Freemap as it stands: in 
+particular, due to server constraints it's restricted to Britain and Ireland
+(with contours only available in England, Wales and the far south of 
+Scotland)
+and it cannot currently handle certain types of OpenStreetMap data. 
+The main example of this is "multipolygon
+relations", which is the mechanism OSM uses to handle situations such as
+lakes with islands or forests with "holes" of open land within them.
+The principle effect is that, 
+unfortunately, many of the larger lakes in the Lake District
+are not drawn.  This is something that will hopefully be dealt with in the 
+future.</p>
+<h3 id='source'>Source code</h3>
+<p>Freemap
+source code is available via gitlab; see
+<a href='https://gitlab.com/nickw1/Freemap'>here</a>. The SVN repository is
+no longer being maintained.</p>
+<hr />
+<p><em>Nick Whitelegg (OSM username: nickw)
+</p>
+<p><a href='/index.php'>Back to map</a></p>
+</div>
+</body>
+</html>

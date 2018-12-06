@@ -1,136 +1,71 @@
-<?php
-
-if(isset($_GET["e"]) && isset($_GET["n"]) && isset($_GET["js"])) {
-	header("HTTP/1.1 404 Not Found");
-	die("404");
-}
-
-require_once('lib/functionsnew.php');
-require_once('common/defines.php');
-
-
-    
-?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>FREEMAP</title>
-<meta charset="utf-8" />
+<title>FREEMAP - OpenStreetMap walking maps of Britain and Ireland</title>
+
+<?php
+require_once('common/defines.php');
+
+if(file_exists(POPULATE_LOCK)) {
+    echo "<p>The Freemap database updates just after midnight every Wednesday ".
+        "and can take up to 6 hours. During this time the site is not ".
+        "available, so please come back later!</p>";
+} else {
+    $zoom = false;
+    if(isset($_GET['zoom'])) {
+        if(is_numeric($_GET['zoom']) && $_GET['zoom']>=11 && $_GET['zoom']<=16) {
+            $zoom = $_GET['zoom'];    
+        } 
+    } else {
+        $zoom = 15;
+    }
+
+    if($zoom!==false) {
+?>
+<script type='text/javascript'>
+var lat=<?php echo isset($_GET['lat']) ? (float)$_GET['lat']: 51.05; ?>;
+var lon=<?php echo isset($_GET['lon']) ? (float)$_GET['lon']: -0.72; ?>;
+var zoom=<?php echo $zoom; ?>;
+</script>
+<link rel='stylesheet' href='https://unpkg.com/leaflet@1.3.4/dist/leaflet.css'/>
+<script type='text/javascript' src='https://unpkg.com/leaflet@1.3.4/dist/leaflet.js'></script>
+<script src='https://unpkg.com/tangram/dist/tangram.min.js'></script>
+<script src='fm/js/main.js'></script>
+<script src='/jslib/Dialog.js'></script>
 <link rel='stylesheet' type='text/css' href='fm/css/style.css' />
-<script type='text/javascript' 
-src='javascript/leaflet-0.7/leaflet.js'></script>
-<?php
-$kv = isset($_GET["kv"]) && ctype_digit($_GET["kv"]) && 
-		is_dir("/var/www/javascript/kothic/$_GET[kv]") ? 
-		$_GET["kv"] : 16;
-
-?>
-<script type='text/javascript' 
-src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic.js'>
-</script>
-<script type='text/javascript' 
-src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet.js'></script>
-<script type='text/javascript' 
-src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet-clickable.js'>
-</script>
-<link rel='stylesheet' type='text/css' 
-href='javascript/leaflet-0.7/leaflet.css' />
-
-<script type='text/javascript'
-src='javascript/Leaflet.draw/dist/leaflet.draw.js'></script>
-<link rel='stylesheet' type='text/css'
-href='javascript/Leaflet.draw/dist/leaflet.draw.css' />
-<!--
-<script type='text/javascript'
-src='http://leaflet.github.io/Leaflet.draw/leaflet.draw.js'></script>
-<link rel='stylesheet' type='text/css'
-href='http://leaflet.github.io/Leaflet.draw/leaflet.draw.css' />
--->
-
-
-<script type='text/javascript' src='fm/style_new.js?killcache=<?php echo time();?>'></script>
-
-<script type='text/javascript' src='jslib/Dialog.js'></script>
-<script type='text/javascript' src='jslib/SearchWidget.js'></script>
-
-
-<script type='text/javascript' src='fm/js/main.js'></script>
-<script type='text/javascript' src='fm/js/InformationFormatter.js'></script>
-<script type='text/javascript' src='fm/js/FeatureLoader.js'> </script>
-<script type='text/javascript' src='fm/js/WRViewMgr.js'> </script>
-
-
-<link rel='alternate' type='application/rss+xml'
-title='The Freemap blog, revisited' href='/wordpress/' />
-
 </head>
+<body onload='init()'>
+<div id='sidebar'>
 
-<?php
-if(file_exists(POPULATE_LOCK))
-{
-    ?>
-    <body>
-    <p>The Freemap database is updated at 2am UK time every Wednesday and
-    Freemap is unavailable while the update takes place. The update is
-    taking place right now.
-    It typically takes no more than 1hr30 so should be over by 4am....
-    so please return later!</p>
-    </body>
-    <?php
-}
-else
-{
-    ?>
-    <body onload='init()'> 
-    <?php write_sidebar(true); ?>
-    <div id='main'>
 
-    <div id="map"></div>
-
+<div id='title'> 
+    <div class='titlebox' id='titlebox'>
+    <img src='fm/images/freemap_small.png' alt='Freenap logo' /> <br />
     </div>
-
-    </body>
-
-    <?php
+</div>
+<p>OpenStreetMap walking maps of Britain and Ireland
+(note: contours currently England and Wales only).
+Now using <a href='https://github.com/tangrams/tangram'>Tangram</a>. 
+<a href='common/about.html'>More...</a></p>
+</div>
+<div id='main'>
+<div style='margin: 10px'><label for='q'>Search:</label><input id='q' />
+<select id='type'>
+<option selected>all</option>
+<option value='place'>Place (village, town, city etc.)</option>
+<option value='amenity'>Amenity (pub, restaurant, cafe etc.)</option>
+<option value='natural'>Natural feature (hill, etc.)</option>
+<option value='railway'>Railway station</option>
+</select>
+<input type='button' id='searchBtn' value='Go!' />
+</div>
+<div id='map'></div>
+<?php
+    } else {
+        echo "ERROR: zoom must be between 11 and 16.";
+    }
 }
-
 ?>
-
+</div>
+</body>
 </html>
-
-<?php
-function write_sidebar($homepage=false)
-{
-?>
-    <div id='sidebar'>
-
-
-	<div id='title'> 
-		<div class='titlebox' id='titlebox'>
-		<img src='fm/images/freemap_small.png' alt='Freenap logo' /> <br />
-		</div>
-	</div>
-
-
-    <p id='intro'>Welcome to <em>Freemap</em>... 
-	annotatable
-	OpenStreetMap-based maps of the countryside of England and Wales, 
-	allowing you to add notes and walking routes (note that a login
-	is no longer required, however additions to the map must be authorised
-	by the administrator).  
-	<strong><a href='fm/about.html'>More</a></strong> </p>
-
-
-    <div id='appmsg'>
-    <a href='/common/opentrail.html'>Android app</a>
-    also available!</div>
-
-
-
-
-    <div id='searchdiv'></div>
-    </div>
-    <?php
-}
-
-?>

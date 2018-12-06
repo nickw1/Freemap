@@ -1,33 +1,4 @@
-This is the source for all web apps running on the Freemap server, primarily:
-- Freemap itself;
-- OpenTrailView;
-- Freemap 3D (OSM WebGL demo).
-To run on your server you will need to have a standard OSM PostGIS database
-present, prepared by importing .osm files using osm2pgsql or Osmosis. You
-also need to set up the Freemap/OTV specific tables, the SQL for this can be
-found in database.sql.
-You will also need to tweak the paths in common/defines.php.
+This is the source for Freemap itself, i.e. the web API powering Freemap,
+OpenTrail, Hikar and MapThePaths, plus the front end.
 
-Explanation of directories:
-
-freemap - Freemap itself.
-otvnew - OpenTrailView.
-3d - Demo WebGL OSM viewer.
-ws - Web services to return PostGIS OSM data by tile.
-lib - Library functions, used by Freemap and OTV.
-common - Common functionality; login and defines.
-javascript - Common JavaScript, including a local copy of Prototype.
-
-LICENSING:
-
-Unless stated otherwise in the source files, this code is available under the 
-GNU GPL version 2, with the exception of library code which is under the 
-Lesser GPL. Library code includes: 
-
-Anything in a directory named "lib";
-The subdirectories "freemaplib", "freemaplibProj" and "andromaps" within the
-"java" directory.
-
-Looking for OpenTrail?
-
-This now lives in its own repository, https://github.com/nickw1/opentrail.
+All other projects have now been split off into other repos. 

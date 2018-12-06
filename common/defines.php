@@ -10,6 +10,6 @@ define('CONTOUR_CACHE','/home/www-data/contourcache');
 define('CACHE','/home/www-data/fmapcache');
 define('PG_DBNAME','gis2');
 define('PG_USER','gis');
-define('POPULATE_LOCK','/home/www-data/POPULATE_LOCK');
+define('POPULATE_LOCK','/var/www/fm/POPULATE_LOCK');
 define('PHP_LIB_DIR','/var/www/lib');
 ?>
