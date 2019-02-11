@@ -2,13 +2,13 @@ function init()
 {
  
  var freemap = {
-  initialise: function (lat, lon, zoom, canUpdate) 
+  initialise: function (lat, lon, zoom, canEdit) 
   {
     var url = "/fm/ws/tsvr.php?x={x}&y={y}&z={z}"+//&t="+new Date().getTime()+
                 "&way=highway,natural,waterway,railway,power,barrier,landuse&poi=all"+
                 "&kothic=1&contour=1&coastline=1";
 
-    var kothic = new L.TileLayer.Kothic.Clickable
+    var kothic = new L.TileLayer.Kothic
             ( url, 
                             { minZoom: 11, attribution:
                     "&copy; 2004-" + new Date().getFullYear() + 
@@ -158,8 +158,7 @@ function init()
 
     this.map = L.map ("map", {layers:
         [kothic, this.markersLayer, this.walkrouteStartsLayer,
-            this.walkrouteLayer, this.walkrouteWaypointsLayer],
-		maxBounds: L.latLngBounds(L.latLng(49.9, -7), L.latLng(55.9, 2)) } );
+            this.walkrouteLayer, this.walkrouteWaypointsLayer] } );
 
     L.control.layers ( null,
                         { "Walkroute Markers" : this.markersLayer,
@@ -172,7 +171,7 @@ function init()
     this.drawnItems = new L.FeatureGroup();
     this.map.addLayer(this.drawnItems);
 
-    L.drawLocal.draw.toolbar.buttons.polyline = (canUpdate) ? 'Draw walk route':
+    L.drawLocal.draw.toolbar.buttons.polyline = (canEdit) ? 'Draw walk route':
                         'Calculate distance of route';
     L.drawLocal.draw.toolbar.buttons.marker='Add note to map or to walk route';
 
@@ -188,7 +187,7 @@ function init()
             } );
 
     this.map.addControl(this.drawControl);
-    if(canUpdate)
+    if(canEdit)
     {
         this.enableMarkerTool();
     }
@@ -209,7 +208,7 @@ function init()
                 case "polyline":
                     this.drawnItems.addLayer(e.layer);
 
-                    if(this.canUpdate) 
+                    if(this.canEdit) 
                     {
                         this.sendDlg = new Dialog ( 'main',
                          { ok: this.saveWalkrouteToServer.bind(this,e.layer),
@@ -231,7 +230,10 @@ function init()
             "<input id='_wrmgr_wtitle' /></p>"+
             "<p>Description:<br /><textarea id='_wrmgr_wdesc' " +
             "style='margin: 10px 10px 10px 10px;width:360px;height:150px'>"+
-            "</textarea></p>");
+            "</textarea></p>"+
+                "<p>Having saved your walk, you can then add directions to "+
+                "your walk by clicking and dragging the marker icon to "+
+                "the appropriate point(s) on your walk route.</p>" );
 
                         this.sendDlg.setPosition("100px","100px");
                         this.sendDlg.show();
@@ -253,6 +255,31 @@ function init()
 
     var app = this;
 
+
+    this.map.on('draw:edited', function (e)
+        {
+            e.layers.eachLayer (function(layer) 
+                {
+                    if(layer.edit)
+                        layer.edit();
+                } );
+            // edit the polyline
+        } );
+    this.map.on('draw:deleted', (function (e)
+        {
+            e.layers.eachLayer ( (function(layer)
+                    {
+                        layer.addToDelList(this.deletionList);
+                    }).bind(this));
+            this.deletionList.doDelete();
+        }).bind(this));
+
+    this.deleting=false;
+
+    this.map.on('draw:deletestart', 
+        (function() { this.deleting=true; }).bind(this));
+    this.map.on('draw:deletestop', 
+        (function() { this.deleting=false; }).bind(this));
 
     this.annotationLoader = new FeatureLoader
         ("/fm/ws/bsvr.php", this.markersLayer, "format=json&ann=1");
@@ -307,7 +334,7 @@ function init()
                 );
     this.walkroutesDlg.setPosition("100px", "100px");
     
-    this.canUpdate = canUpdate;
+    this.canEdit = canEdit;
 
 
     this.map.on("viewreset", (function(e) 
@@ -328,6 +355,159 @@ function init()
     var bounds = this.map.getBounds();
     this.annotationLoader.loadFeatures(bounds);
     this.walkrouteStartsLoader.loadFeatures(bounds);
+  
+    this.deletionList = {
+        annotations: [],
+        walkroutes: [],
+        waypoints: [],
+        doDelete: function()
+        {
+            var wrIds = new Array(), wpIds = new Array();
+            for(var i=0; i<this.walkroutes.length; i++)
+                wrIds.push(this.walkroutes[i][0].id);
+            for(var i=0; i<this.waypoints.length; i++)
+                wpIds.push(this.waypoints[i].id);
+            var annJson = JSON.stringify(this.annotations);
+            var wrJson = JSON.stringify(wrIds);
+            var wpJson = JSON.stringify(wpIds);
+    
+            if(this.annotations.length>0)
+            {    
+                this.sendPointDeletionRequest 
+                    (annJson, "/fm/ws/annotation.php", "deleteMulti",
+                         (function(e)
+                            { 
+                                alert("Note(s) deleted!");
+                                this.annotations = [];
+                            } ).bind(this));
+            }
+            if(this.waypoints.length>0)
+            {
+                this.sendPointDeletionRequest
+                    (wpJson, "/fm/ws/wr.php", "deleteMultiWaypoints",
+                        (function(e)
+                            {
+                                var deleted = JSON.parse(e.target.responseText);
+                                var nUndeleted = this.waypoints.length-
+                                    deleted.length;
+                                if(nUndeleted>0)
+                                {
+                                    alert(nUndeleted + " walk route waypoints "+
+                                          "could not be deleted as the walk "+
+                                          "route(s) are not yours!");
+                                }
+                                else
+                                    alert("Walk route waypoints deleted!");
+                                this.deleteWaypointCallback(deleted);
+                            } ).bind(this));}
+
+            if(this.walkroutes.length>0)
+            {
+                var xhr2_2 = new XMLHttpRequest();
+                xhr2_2.addEventListener ("load", (function(e) 
+                { 
+                    if(e.target.status==200)
+                    {
+                        var deleted = JSON.parse(e.target.responseText);
+                        var nUndeleted = wrIds.length-deleted.length;
+                        if(nUndeleted>0)
+                            alert(nUndeleted + ' walk routes not deleted ' +
+                                    'as they are not yours!');
+                        else
+                            alert('Walk route(s) deleted!');    
+                        this.deleteWalkrouteCallback(deleted);
+                        this.walkroutes=[];
+                    }
+                    else
+                        alert('Server error: ' + e.target.status);
+                }).bind(this));
+                xhr2_2.open("POST","/fm/ws/wr.php");
+                var data = new FormData();
+                data.append("ids", wrJson);
+                data.append("action", "deleteMulti");
+                xhr2_2.send(data);
+            }
+        },
+
+        sendPointDeletionRequest: function(json,url,action,callback)
+        {
+                var xhr2 = new XMLHttpRequest();
+                xhr2.addEventListener ("load", (function(e) 
+                { 
+                    if(e.target.status==200)
+                        callback(e);
+                    else
+                        alert('Server error: ' + e.target.status);
+                }).bind(this));
+                xhr2.open("POST",url);
+                var data = new FormData();
+                data.append("ids", json);
+                data.append("action", action);
+                xhr2.send(data);
+        }
+    };
+    
+    this.deletionList.deleteWalkrouteCallback = (function(deleted)
+    {
+        for(var i=0; i<this.deletionList.walkroutes.length; i++)
+        {
+            var parentLayer = this.deletionList.walkroutes[i][1] ?
+                this.walkrouteStartsLayer: this.walkrouteLayer,
+                otherLayer = this.deletionList.walkroutes[i][1] ?
+                this.walkrouteLayer: this.walkrouteStartsLayer,
+                others = this.deletionList.walkroutes[i][1] ?
+                this.walkroutes: this.walkrouteStarts;
+            var id = this.deletionList.walkroutes[i][0].id;
+            var idx = deleted.indexOf(id);
+            // if walkroute or walkroute start not deleted by server,
+            // add it back
+            if (idx==-1)    
+            {
+                parentLayer.addLayer(this.deletionList.walkroutes[i][0]);
+
+                // needed otherwise the marker will not reappear
+                this.drawnItems.addLayer(this.deletionList.walkroutes[i][0]);
+
+            }
+            // if walkroute start deleted, remove walkroute itself and
+            // vice-versa
+            else
+            {
+                otherLayer.removeLayer(others[id]);
+
+                // remove all walkroute waypoints belonging to this
+                // walkroute 
+            
+                this.walkrouteWaypointsLayer.eachLayer (
+                    (function(layer)
+                    {
+                        if(layer.walkroute==id)
+                        {
+                            this.walkrouteWaypointsLayer.removeLayer(layer);
+                            this.drawnItems.removeLayer(layer);
+                        }
+                    }).bind(this));
+            }
+        }
+    }).bind(this);
+
+
+    this.deletionList.deleteWaypointCallback = (function(deleted)
+    {
+        for(var i=0; i<this.deletionList.waypoints.length; i++)
+        {
+            var id = this.deletionList.waypoints[i].id;
+            var idx = deleted.indexOf(id);
+            if(idx==-1)
+            {
+                this.walkrouteWaypointsLayer.addLayer
+                    (this.deletionList.waypoints[i]);
+                this.drawnItems.addLayer
+                    (this.deletionList.waypoints[i]);
+            }
+        }    
+        this.deletionList.waypoints = [];
+    }).bind(this);
   },
 
   saveAnnotationToServer : function(marker, wrWaypoint)
@@ -381,7 +561,7 @@ function init()
 
     var nearWalkroute=0;
 
-    if(this.canUpdate===true) 
+    if(this.canEdit===true) 
     {
         this.walkrouteLayer.eachLayer (function(layer)
             {
@@ -503,6 +683,20 @@ function init()
     }
   },
 
+  loginSuccess : function(json)
+  {
+    var userData = JSON.parse(json);
+    document.getElementById('logindiv').innerHTML = 
+        '<em>Logged in as ' + userData[0] + 
+        '</em> <a href="#" id="myroutes">My routes</a> | '+
+        '<a href="/fm/user.php?action=logout&redirect=/index.php">Log out</a>';
+    document.getElementById('myroutes').addEventListener("click", 
+        this.wrViewMgr.sendRequest.bind(this.wrViewMgr));
+    this.canEdit = true;
+    L.drawLocal.draw.toolbar.buttons.polyline = 'Draw walk route';
+    this.enableMarkerTool();
+  },
+
   saveWalkrouteToServer : function(polyline)
   {
     var newRoute = !polyline.id;
@@ -569,6 +763,23 @@ function init()
     xhr2.send(data);
   },
 
+  addAnnotationEditDeleteHandlers: function(marker)
+  {
+    marker.edit = this.saveAnnotationToServer.bind (this,marker,false);
+    marker.addToDelList = function(deletionList)
+                    {
+                        deletionList.annotations.push(marker.id);
+                    };
+  },
+
+  addWalkrouteEditDeleteHandlers: function(layer)
+  {
+    layer.edit = this.saveWalkrouteToServer.bind(this,layer);
+    layer.addToDelList = function(deletionList)
+                    {
+                        deletionList.walkroutes.push([layer,false]);
+                    };
+  },
 
   addWalkrouteWaypoint: function (wrId,latlng, text, callback)
   {
