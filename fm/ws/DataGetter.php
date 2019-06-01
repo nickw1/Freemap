@@ -298,15 +298,16 @@ class DataGetter
                     $feature["type"] = "Feature"; 
                     $feature["geometry"]=array();
                     $feature["geometry"]["type"] = $f["type"];
-                    $feature["geometry"]["coordinates"] = $f["coordinates"];
-                    if(count($feature["geometry"]["coordinates"])>0)
+                    if(isset($f['coordinates']) && is_array($f["coordinates"]) && count($f["coordinates"])>0) {
+		    	$feature["geometry"]["coordinates"] = $f["coordinates"];
                         $this->data["features"][] = $feature;
+		    }
                 }
                 else
                 {
                     $feature["coordinates"]= $this->kothicAdjust($f);
                     $feature["type"] = $f["type"];
-                    if(count($feature["coordinates"])>0)
+                    if(is_array($feature["coordinates"]) && count($feature["coordinates"])>0)
                         $this->data["features"][] = $feature;
                 }
             }
@@ -623,14 +624,14 @@ class BboxGetter extends DataGetter
                 $feature["geometry"]=array();
                 $feature["geometry"]["type"] = $f["type"];
                 $feature["geometry"]["coordinates"] = $f["coordinates"];
-                if(count($feature["geometry"]["coordinates"])>0)
+                if(is_array($feature["geometry"]["coordinates"]) && count($feature["geometry"]["coordinates"])>0)
                     $features[] = $feature;
             }
             else
             {
                 $feature["coordinates"] = $this->kothicAdjust($f);
                 $feature["type"] = $f["type"];
-                if(count($feature["coordinates"])>0)
+                if(is_array($feature["coordinates"]) && count($feature["coordinates"])>0)
                     $features[] = $feature;
             }
         }
@@ -660,7 +661,7 @@ class BboxGetter extends DataGetter
                 $feature["geometry"]=array();
                 $feature["geometry"]["type"] = $f["type"];
                 $feature["geometry"]["coordinates"] = $f["coordinates"];
-                if(count($feature["geometry"]["coordinates"])>0) {
+                if(is_array($feature["geometry"]["coordinates"]) && count($feature["geometry"]["coordinates"])>0) {
 //					$this->landFix($feature);
 //					print_r($feature);
                     $this->data["features"][] = $feature;
@@ -671,7 +672,7 @@ class BboxGetter extends DataGetter
             {
                 $feature["coordinates"] =$this->kothicAdjust($f);
                 $feature["type"] = $f["type"];
-                if(count($feature["coordinates"])>0)
+                if(is_array($feature["coordinates"]) && count($feature["coordinates"])>0)
                     $this->data["features"][] = $feature;
 				
             }

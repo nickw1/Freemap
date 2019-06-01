@@ -13,15 +13,14 @@
 // tbl_prefix - prefix for tables (default planet_osm)
 
 require_once('../../lib/functionsnew.php');
-require_once('../../common/defines.php');
+//require_once('../../common/defines.php');
 require_once('DataGetter.php');
 require_once('xml.php');
 require_once('DBDetails.php');
 
-header("Access-Control-Allow-Origin: http://www.opentrailview.org");
+//header("Access-Control-Allow-Origin: http://www.opentrailview.org");
+header("Access-Control-Allow-Origin: *");
 
-define('CONTOUR_CACHE2','/home/www-data/contourcache');
-define('CACHE2','/home/www-data/fmapcache2');
 
 $cleaned = clean_input($_GET, null);
 
@@ -61,18 +60,18 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
     $sw = sphmerc_to_ll($bbox[0],$bbox[1]);
     $ne = sphmerc_to_ll($bbox[2],$bbox[3]);
     if(!file_exists(CONTOUR_CACHE."/$kg/$z/$x"))
-        mkdir(CONTOUR_CACHE."/$kg/$z/$x",0755,true);
+        @mkdir(CONTOUR_CACHE."/$kg/$z/$x",0755,true);
     if(!file_exists(CACHE."/$kg/$z/$x"))
-        mkdir(CACHE."/$kg/$z/$x",0755,true);
+        @mkdir(CACHE."/$kg/$z/$x",0755,true);
         
     $bg = new BboxGetter($bbox,"3857","3857",$ext,$kg,$tbl_prefix);
-	$data = false;
+    $data = false;
 
     if($z<=7)
     {
-		$data = [];
-		/* 100618 risk that OpenTrail 0.4 might try to request data at a low zoom level
-		which might kill the server. Prevent it.
+        $data = [];
+        /* 100618 risk that OpenTrail 0.4 might try to request data at a low zoom level
+        which might kill the server. Prevent it.
         $bg->addWayFilter("highway","motorway,trunk,primary,".
                             "motorway_link,primary_link,trunk_link");
         $bg->addWayFilter("railway","rail,preserved");
@@ -80,7 +79,7 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         $bg->addPOIFilter("place","city");
         $bg->includePolygons(false);
         unset($cleaned["contour"]);
-		*/
+        */
     }
     elseif($z<=9)
     {
@@ -106,24 +105,29 @@ if(isset($cleaned["kothic"]) && $cleaned["kothic"])
         unset($cleaned["contour"]);
     }
 
-	if($data===false) {
-    	$data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
+    if($data===false) {
+        $data=$bg->getData($cleaned,CONTOUR_CACHE."/$kg/$z/$x/$y.json",
                         CACHE."/$kg/$z/$x/$y.json",$x,$y,$z);
-    	$data["granularity"] = $kg;
-    	$data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
+        $data["granularity"] = $kg;
+        $data["bbox"] = array($sw['lon']-0.01,$sw['lat']-0.01,
             $ne['lon']+0.01,$ne['lat']+0.01);
-    	echo "onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
-	}
+        if($cleaned["kothic"] > 1) {
+            header("Content-Type: application/json");
+            echo json_encode($data);
+        } else { 
+            echo"onKothicDataResponse(".json_encode($data).",$z,$x,$y);";
+        }
+    }
 }
 else
 {
     header("Content-type: application/json");
     $bg=new BboxGetter($bbox,"3857",$outProj,$ext,null,$tbl_prefix);
     // mapsforge rendering test
-	if($mftest==1)
-	{
-		$bg->addWayFilter("designation","public_bridleway");
-	}
+    if($mftest==1)
+    {
+        $bg->addWayFilter("designation","public_bridleway");
+    }
     $data=$bg->getData($cleaned,null,null);
     echo json_encode($data);
 }
