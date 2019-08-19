@@ -1,3 +1,0 @@
-*.orig.php files are versions before the new way of doing queries (using native
-DB reprojections for dealing with differing input/output projections) was
-done
