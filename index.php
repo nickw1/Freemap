@@ -1,10 +1,5 @@
 <?php
 
-if(isset($_GET["e"]) && isset($_GET["n"]) && isset($_GET["js"])) {
-	header("HTTP/1.1 404 Not Found");
-	die("404");
-}
-
 require_once('lib/functionsnew.php');
 require_once('common/defines.php');
 
@@ -17,38 +12,17 @@ require_once('common/defines.php');
 <title>FREEMAP</title>
 <meta charset="utf-8" />
 <link rel='stylesheet' type='text/css' href='fm/css/style.css' />
-<script type='text/javascript' 
-src='javascript/leaflet-0.7/leaflet.js'></script>
-<?php
-$kv = isset($_GET["kv"]) && ctype_digit($_GET["kv"]) && 
-		is_dir("/var/www/javascript/kothic/$_GET[kv]") ? 
-		$_GET["kv"] : 16;
-
-?>
-<script type='text/javascript' 
-src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic.js'>
-</script>
-<script type='text/javascript' 
-src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet.js'></script>
-<script type='text/javascript' 
-src='../javascript/kothic/<?php echo $kv; ?>/dist/kothic-leaflet-clickable.js'>
-</script>
-<link rel='stylesheet' type='text/css' 
-href='javascript/leaflet-0.7/leaflet.css' />
+<link rel='stylesheet' type='text/css' href='css/style.css' />
+<link rel='stylesheet' type='text/css' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css' />
+<script type='text/javascript' src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js'></script>
+<script type='text/javascript' src='3rdparty/kothic-js/dist/kothic.js'></script>
+<script type='text/javascript' src='3rdparty/kothic-js/dist/kothic-leaflet.js'></script>
+<script type='text/javascript' src='map/style_new.js'></script>
 
 <script type='text/javascript'
 src='javascript/Leaflet.draw/dist/leaflet.draw.js'></script>
 <link rel='stylesheet' type='text/css'
 href='javascript/Leaflet.draw/dist/leaflet.draw.css' />
-<!--
-<script type='text/javascript'
-src='http://leaflet.github.io/Leaflet.draw/leaflet.draw.js'></script>
-<link rel='stylesheet' type='text/css'
-href='http://leaflet.github.io/Leaflet.draw/leaflet.draw.css' />
--->
-
-
-<script type='text/javascript' src='fm/style_new.js?killcache=<?php echo time();?>'></script>
 
 <script type='text/javascript' src='jslib/Dialog.js'></script>
 <script type='text/javascript' src='jslib/SearchWidget.js'></script>
@@ -59,9 +33,6 @@ href='http://leaflet.github.io/Leaflet.draw/leaflet.draw.css' />
 <script type='text/javascript' src='fm/js/FeatureLoader.js'> </script>
 <script type='text/javascript' src='fm/js/WRViewMgr.js'> </script>
 
-
-<link rel='alternate' type='application/rss+xml'
-title='The Freemap blog, revisited' href='/wordpress/' />
 
 </head>
 

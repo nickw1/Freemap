@@ -1,0 +1,1002 @@
+canvas
+{
+    fill-color: lightblue;
+}
+
+area[natural=nosea]
+{
+    fill-color: #f2efe9;
+    z-index: 0;
+}
+
+node[place][place!=locality]
+{
+    text-color: black;
+}
+
+node[place][place!=locality],node|z13-20[railway=station]
+{
+    font-weight: bold;
+    font-family: DejaVu Sans Book; 
+    text: name;
+    text-allow-overlap: true;
+}
+
+node|z13-20[railway=station]
+{
+    text-color: red;
+    color: red;
+    icon-image: img/rsmall.png;
+    allow-overlap: true;
+    z-index: 21;
+    text-offset: 6;
+    opacity: 1;
+}
+
+node|z13-20[man_made=mast],node|z13-20[man_made=communications_tower]
+{
+    icon-image: img/mast.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z13-20[power=tower]
+{
+    icon-image: img/powertower.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z15-20[barrier=stile]
+{
+    icon-image: img/osm_stile_small.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z15-20[barrier=gate]
+{
+    icon-image: img/osm_gate_small.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z14-20[tourism=viewpoint]
+{
+    icon-image: img/viewpoint.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z14-20[man_made=windmill]
+{
+    icon-image: img/osm_windmill.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z14-20[man_made=water_tower]
+{
+    icon-image: img/osm_water_tower.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z14-20[tourism=camp_site]
+{
+    icon-image: img/osm_camping.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z14-20[tourism=hostel]
+{
+    icon-image: img/osmosnimki.hostel.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node|z15-20[amenity=parking]
+{
+    icon-image: img/carpark.png;
+    allow-overlap: true;
+    z-index: 21;
+    opacity: 1;
+}
+
+node[place] 
+{
+    text-color: black;
+    font-weight: bold;
+    font-family: DejaVu Sans Book; 
+    text: name;
+}
+
+node|z17-20[place=suburb],node|z17-20[place=hamlet]
+{
+    font-size: 18;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 10;
+    z-index: 21;
+}
+
+node|z17-20[place=village]
+{
+    font-size:20;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z17-20[place=town]
+{
+    font-size: 22;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z17-20[place=city]
+{
+    font-size: 24;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 14;
+    z-index: 21;
+}
+
+node|z15-16[place=suburb],node|z15-16[place=hamlet]
+{
+    font-size: 14;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 10;
+    z-index: 21;
+}
+
+node|z15-16[place=village]
+{
+    font-size:16;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z15-16[place=town]
+{
+    font-size: 18;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z15-16[place=city]
+{
+    font-size: 20;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 14;
+    z-index: 21;
+}
+
+node|z14[place=suburb],node|z14[place=hamlet]
+{
+    font-size: 10;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 10;
+    z-index: 21;
+}
+
+node|z14[place=village]
+{
+    font-size:12;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z14[place=town]
+{
+    font-size: 14;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z14[place=city]
+{
+    font-size: 16;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 14;
+    z-index: 21;
+}
+
+node|z12-13[place=village]
+{
+    font-size:10;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 10;
+    z-index: 21;
+}
+
+node|z12-13[place=town]
+{
+    font-size: 12;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z12-13[place=city]
+{
+    font-size: 14;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node|z10-11[place=town]
+{
+    font-size: 10;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 10;
+    z-index: 21;
+}
+
+node|z10-11[place=city]
+{
+    font-size: 12;
+    icon-image: img/waypoint.png;
+    allow-overlap: true;
+    text-allow-overlap: true;
+    text-offset: 12;
+    z-index: 21;
+}
+
+node[natural=peak]
+{
+    text-color: black;
+    font-weight: bold;
+    font-family: DejaVu Sans Book; 
+    text: name;
+    text-allow-overlap: true;
+    allow-overlap: true;
+    icon-image: img/peak_small.png;
+    text-offset: 12;
+}
+
+node|z13-14[natural=peak]
+{
+    font-size: 10;
+}
+
+node|z15-20[natural=peak]
+{
+    font-size: 14;
+}
+
+node|z14-20[amenity=pub]
+{
+    text-color: black;
+    font-weight: bold;
+    font-family: DejaVu Sans Book; 
+    text: name;
+    icon-image: img/pub.png;
+    allow-overlap: true;
+    text-offset: 8;
+    z-index: 21;
+}
+
+node|z14[amenity=pub],node|z14[amenity=cafe],node|z14[place=locality],node|z14[amenity=restaurant],node|z14[railway=station]
+{
+    font-size: 8;
+}
+
+node|z15-16[amenity=pub],node|z15-16[amenity=cafe],node|z15-16[place=locality],node|z15-16[amenity=restaurant],node|z15-16[railway=station]
+{
+    font-size: 12;
+}
+
+node|z17-20[amenity=pub],node|z17-20[amenity=cafe],node|z17-20[place=locality],node|z17-20[amenity=restaurant],node|z17-20[railway=station]
+{
+    font-size: 16;
+}
+
+node|z14-20[amenity=cafe]
+{
+    text-color: black;
+    font-weight: bold;
+    font-family: DejaVu Sans Book; 
+    text: name;
+    icon-image: img/cafe.png;
+    allow-overlap: true;
+    text-offset: 8;
+    z-index: 21;
+}
+
+node|z14-20[amenity=restaurant]
+{
+    text-color: black;
+    font-weight: bold;
+    font-family: DejaVu Sans Book; 
+    text: name;
+    icon-image: img/restaurant.png;
+    allow-overlap: true;
+    text-offset: 8;
+    z-index: 21;
+}
+
+line|z14[highway=motorway],line|z14[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 1;
+    color: #809bc0;
+    width: 3;
+    z-index: 9;
+}
+
+line|z14[highway=trunk],line|z14[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 3;
+    z-index: 8;
+}
+
+line|z14[highway=primary],line|z14[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 3;
+    z-index: 7;
+}
+
+line|z14[highway=secondary],line|z14[highway=secondary_link]
+{
+    casing-color: #a37b48;
+    casing-width: 1;
+    color: #fee0b8;
+    width: 3;
+    z-index: 6;
+}
+
+line|z14[highway=tertiary],line|z14[highway=tertiary_link]
+{
+    casing-color: #bbb;
+    casing-width: 1;
+    color: #ffc;
+    width: 3;
+    z-index: 5;
+}
+
+line|z14[highway=unclassified],line|z14[highway=unclassified_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 3;
+    z-index: 4;
+}
+
+line|z14[highway=residential],line|z14[highway=service],line|z14[highway=residential_link],line|z14[highway=service_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 2;
+    z-index: 4;
+}
+
+line|z14[highway=track],line|z14-20[highway=byway]
+{
+    color: white; 
+    width: 2;
+    casing-color: #999; 
+    casing-width: 1;
+    casing-dashes: 4,2;
+    z-index: 3;
+}
+
+line|z15[highway=motorway],line|z15[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 1;
+    color: #809bc0;
+    width: 4;
+    z-index: 9;
+}
+
+line|z15[highway=trunk],line|z15[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 4;
+    z-index: 8;
+}
+
+line|z15[highway=primary],line|z15[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 4;
+    z-index: 7;
+}
+
+line|z15[highway=secondary],line|z15[highway=secondary_link]
+{
+    casing-color: #a37b48;
+    casing-width: 1;
+    color: #fee0b8;
+    width: 4;
+    z-index: 6;
+}
+
+line|z15[highway=tertiary],line|z15[highway=tertiary_link]
+{
+    casing-color: #bbb;
+    casing-width: 1;
+    color: #ffc;
+    width: 4;
+    z-index: 5;
+}
+
+line|z15[highway=unclassified],line|z15[highway=unclassified_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 4;
+    z-index: 4;
+}
+
+line|z15[highway=residential],line|z15[highway=service],line|z15[highway=residential_link],line|z15[highway=service_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 3;
+    z-index: 4;
+}
+
+line|z15[highway=track],line|z15[highway=byway]
+{
+    color: white; 
+    width: 3;
+    casing-color: #999; 
+    casing-width: 1;
+    casing-dashes: 4,2;
+    z-index: 3;
+}
+
+line|z16[highway=motorway],line|z16[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 1;
+    color: #809bc0;
+    width: 6;
+    z-index: 9;
+}
+
+line|z16[highway=trunk],line|z16[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 6;
+    z-index: 8;
+}
+
+line|z16[highway=primary],line|z16[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 6;
+    z-index: 7;
+}
+
+line|z16[highway=secondary],line|z16[highway=secondary_link]
+{
+    casing-color: #a37b48;
+    casing-width: 1;
+    color: #fee0b8;
+    width: 6;
+    z-index: 6;
+}
+
+line|z16[highway=tertiary],line|z16[highway=tertiary_link]
+{
+    casing-color: #bbb;
+    casing-width: 1;
+    color: #ffc;
+    width: 6;
+    z-index: 5;
+}
+
+line|z16[highway=unclassified],line|z16[highway=unclassified_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 6;
+    z-index: 4;
+}
+
+line|z16[highway=residential],line|z16[highway=service],line|z16[highway=residential_link],line|z16[highway=service_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 4;
+    z-index: 4;
+}
+
+line|z16[highway=track],line|z16[highway=byway]
+{
+    color: white; 
+    width: 4;
+    casing-color: #999; 
+    casing-width: 1;
+    casing-dashes: 4,2;
+    z-index: 3;
+}
+
+line|z17-[highway=motorway],line|z17-[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 1;
+    color: #809bc0;
+    width: 8;
+    z-index: 9;
+}
+
+line|z17-[highway=trunk],line|z17-[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 8;
+    z-index: 8;
+}
+
+line|z17-[highway=primary],line|z17-[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 8;
+    z-index: 7;
+}
+
+line|z17-[highway=secondary],line|z17-[highway=secondary_link]
+{
+    casing-color: #a37b48;
+    casing-width: 1;
+    color: #fee0b8;
+    width: 8;
+    z-index: 6;
+}
+
+line|z17-[highway=tertiary],line|z17-[highway=tertiary_link]
+{
+    casing-color: #bbb;
+    casing-width: 1;
+    color: #ffc;
+    width: 8;
+    z-index: 5;
+}
+
+line|z17-[highway=unclassified],line|z17-[highway=unclassified_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 8;
+    z-index: 4;
+}
+
+line|z17-[highway=residential],line|z17-[highway=service],line|z17-[highway=residential_link],line|z17-[highway=service_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 6;
+    z-index: 4;
+}
+
+line|z17-[highway=track],line|z17-[highway=byway]
+{
+    color: white; 
+    width: 6;
+    casing-color: #999; 
+    casing-width: 1;
+    casing-dashes: 4,2;
+    z-index: 3;
+}
+
+line|z14-20[highway=path],line|z14-20[highway=footway],line|z14-20[highway=bridleway],line|z14-20[highway=steps],line|z14-20[highway=pedestrian]
+{
+    color: black;
+    width: 1;
+    dashes: 2,2;
+    z-index: 3;
+}
+
+line|z14-20[highway=cycleway]
+{
+    color: blue;
+    width: 1;
+    dashes: 2,2;
+    z-index: 3;
+}
+
+line|z14-20[highway=path][bridge=yes],line|z14-20[highway=footway][bridge=yes],line|z14-20[highway=bridleway][bridge=yes],line|z14-20[highway=cycleway][bridge=yes],line|z14-20[highway=pedestrian][bridge=yes]
+{
+    casing-color: #999; 
+    casing-width: 2;
+     casing-dashes: 1,0;    
+}
+
+line|z14-20[highway][designation=public_footpath]::rights
+{
+    color: #00ff00;
+    width:3;
+    opacity: 0.5;
+    z-index: 20;
+}
+
+line|z14-20[highway][designation=public_bridleway]::rights
+{
+    color: #c06000;
+    width:3;
+    opacity: 0.5;
+    z-index: 20;
+}
+
+line|z14-20[highway][designation=public_byway]::rights,
+line|z14-20[highway][designation=byway]::rights,
+line|z14-20[highway][designation=restricted_byway]::rights,
+line|z14-20[highway][designation=byway_open_to_all_traffic]::rights,
+line|z14-20[highway][designation=unknown_byway]::rights
+{
+    color: red; 
+    width:3;
+    opacity: 0.5;
+    z-index: 20;
+}
+
+line|z14-20[highway][foot=permissive]::rights
+{
+    color:cyan;
+    width: 3;
+    opacity: 0.5;
+    z-index: 20;
+}
+
+line|z13-20[contour]
+{
+    color: #fb9b67;
+    width: 0.5;
+    z-index: 2;
+    text: contour;
+    text-color: #fb9b67;
+    font-family: helvetica;
+}
+
+line|z13[contour]
+{
+    font-size: 8;
+}
+
+line|z14[contour]
+{
+    font-size: 10;
+}
+
+line|z15-16[contour]
+{
+    font-size: 12;
+}
+
+line|z17-20[contour]
+{
+    font-size: 14;
+}
+
+line|z16-20[highway]
+{
+    text: name;
+    text-color: black;
+    font-family: helvetica;
+    font-weight: bold;
+    font-size: 12;
+}
+
+line|z14-20[barrier=hedge],line|z14-20[barrier=fence],line|z14-20[barrier=wall],line|z14-20[barrier=ditch],line|z14-20[barrier=retaining_wall]
+{
+    color: #404040;
+    width: 0.5; 
+    z-index: 2;
+}
+
+line|z13-20[power=line]
+{
+    color: #808080;
+    width: 1;
+    z-index: 21;
+}
+
+area[natural=wood],area[landuse=forest]
+{
+    fill-color: #c0e0c0;
+    z-index: 2;
+}
+
+area[natural=water],area[landuse=reservoir]
+{
+    fill-color:lightblue;
+    z-index: 3;
+}
+
+area[natural=heath]
+{
+    fill-color: #f0e0a0;
+    z-index: 2;
+}
+
+area[natural=moor]
+{
+    fill-color: #ffc0ff;
+    z-index: 2;
+}
+
+area[leisure=park],area[leisure=common]
+{
+    fill-color: #e0ffe0;
+    z-index: 1;
+}
+
+area[landuse=residential],area[landuse=commercial],area[landuse=retail]
+{
+    fill-color: #c0c0c0;
+    z-index: 2;
+}
+
+area[landuse=industrial]
+{
+    fill-color: #a0a0a0;
+    z-index: 2;
+}
+
+area[landuse=military]
+{
+    fill-color: #ffe0e0;
+    z-index: 2;
+}
+
+area|z13-[natural=scree],area|z13-[natural=bare_rock]
+{
+    fill-image: img/Bare_rock-125.png;
+    z-index: 3;
+}
+
+area|z14-[landuse=field]
+{
+    casing-color: #404040;
+    casing-width: 0.25;
+    z-index: 2;
+}
+
+area|z13-[natural=beach]
+{
+    fill-color: #ffffc0;
+    z-index: 2;
+}
+
+area|z13-[natural=wetland]
+{
+    fill-color: #f0f0ff;
+    z-index: 2;
+}
+
+line[waterway=river]
+{
+    color:lightblue;
+    width: 2;
+    z-index: 3;
+}
+
+line[waterway=stream]
+{
+    color:lightblue;
+    width: 1;
+    z-index: 3;
+}
+
+line|z14-20[railway=rail],line[railway=preserved_rail],line[railway=preserved]
+{
+    color: white; 
+    casing-color: black;
+    casing-width: 1;
+    dashes: 4,4;
+    casing-dashes: 1,0;
+    width: 2;
+}
+
+line|z10-13[railway=rail],line[railway=preserved_rail],line[railway=preserved]
+{
+    color: white; 
+    casing-color: black;
+    casing-width: 0.5;
+    dashes: 4,4;
+    casing-dashes: 1,0;
+    width: 1;
+}
+
+line|z13[highway=motorway],line|z13[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 1;
+    color: #809bc0;
+    width: 3;
+    z-index: 9;
+}
+
+line|z13[highway=trunk],line|z13[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 3;
+    z-index: 8;
+}
+
+line|z13[highway=primary],line|z13[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 3;
+    z-index: 7;
+}
+
+line|z13[highway=secondary],line|z13[highway=secondary_link]
+{
+    casing-color: #a37b48;
+    casing-width: 1;
+    color: #fee0b8;
+    width: 3;
+    z-index: 6;
+}
+
+line|z12-13[highway=tertiary],line|z12-13[highway=tertiary_link]
+{
+    casing-color: #bbb;
+    casing-width: 1;
+    color: #ffc;
+    width: 2;
+    z-index: 5;
+}
+
+line|z13[highway=unclassified],line|z13[highway=unclassified_link]
+{
+    casing-color: #999;
+    casing-width: 1;
+    color: white;
+    width: 2;
+    z-index: 4;
+}
+
+line|z12[highway=unclassified],line|z12[highway=unclassified_link]
+{
+    casing-color: #999;
+    casing-width: 0.5;
+    color: white;
+    width: 1;
+    z-index: 4;
+}
+
+line|z10-12[highway=motorway],line|z10-12[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 2;
+    color: #809bc0;
+    width: 2;
+    z-index: 9;
+}
+
+line|z10-12[highway=trunk],line|z10-12[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 2;
+    z-index: 8;
+}
+
+line|z10-12[highway=primary],line|z10-12[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 2;
+    z-index: 7;
+}
+
+line|z10-12[highway=secondary],line|z10-12[highway=secondary_link]
+{
+    casing-color: #a37b48;
+    casing-width: 1;
+    color: #fee0b8;
+    width: 2;
+    z-index: 6;
+}
+
+line|z1-9[highway=motorway],line|z1-9[highway=motorway_link]
+{
+    casing-color: #506077;
+    casing-width: 2;
+    color: #809bc0;
+    width: 1;
+    z-index: 9;
+}
+
+line|z1-9[highway=trunk],line|z1-9[highway=trunk_link]
+{
+    casing-color: #477147;
+    casing-width: 1;
+    color: #cdeacd;
+    width: 1;
+    z-index: 8;
+}
+
+line|z1-9[highway=primary],line|z1-9[highway=primary_link]
+{
+    casing-color: #8d4346;
+    casing-width: 1;
+    color: #f4c3c4;
+    width: 1;
+    z-index: 7;
+}
