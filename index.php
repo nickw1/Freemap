@@ -1,6 +1,6 @@
 <?php
 
-require_once('lib/functionsnew.php');
+require_once('../lib/functionsnew.php');
 require_once('common/defines.php');
 
 
@@ -13,25 +13,16 @@ require_once('common/defines.php');
 <meta charset="utf-8" />
 <link rel='stylesheet' type='text/css' href='fm/css/style.css' />
 <link rel='stylesheet' type='text/css' href='css/style.css' />
-<link rel='stylesheet' type='text/css' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css' />
-<script type='text/javascript' src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js'></script>
-<script type='text/javascript' src='3rdparty/kothic-js/dist/kothic.js'></script>
-<script type='text/javascript' src='3rdparty/kothic-js/dist/kothic-leaflet.js'></script>
-<script type='text/javascript' src='map/style_new.js'></script>
-
-<script type='text/javascript'
-src='javascript/Leaflet.draw/dist/leaflet.draw.js'></script>
-<link rel='stylesheet' type='text/css'
-href='javascript/Leaflet.draw/dist/leaflet.draw.css' />
-
-<script type='text/javascript' src='jslib/Dialog.js'></script>
-<script type='text/javascript' src='jslib/SearchWidget.js'></script>
-
-
-<script type='text/javascript' src='fm/js/main.js'></script>
-<script type='text/javascript' src='fm/js/InformationFormatter.js'></script>
-<script type='text/javascript' src='fm/js/FeatureLoader.js'> </script>
-<script type='text/javascript' src='fm/js/WRViewMgr.js'> </script>
+<script type='text/javascript' src='https://unpkg.com/leaflet@1.3.4/dist/leaflet.js'></script>
+<link rel='stylesheet' type='text/css' href='https://unpkg.com/leaflet@1.3.4/dist/leaflet.css' />
+<script src='https://unpkg.com/tangram/dist/tangram.min.js'></script>
+<script type='text/javascript'>
+const lat = <?php echo isset($_GET["lat"]) && preg_match("/^[\d\.\-]+$/", $_GET["lat"]) ? $_GET["lat"] : 51.05; ?>;
+const lon = <?php echo isset($_GET["lon"]) && preg_match("/^[\d\.\-]+$/", $_GET["lon"]) ? $_GET["lon"] : -0.72; ?>;
+const zoom = <?php echo isset($_GET["zoom"]) && ctype_digit($_GET["zoom"]) ? $_GET["zoom"] : 14;?>;
+</script>
+<script src='tangram/js/bundle.js' defer></script>
+</head>
 
 
 </head>
@@ -52,8 +43,8 @@ if(file_exists(POPULATE_LOCK))
 else
 {
     ?>
-    <body onload='init()'> 
-    <?php write_sidebar(true); ?>
+    <body> 
+    <?php write_topbar(true); ?>
     <div id='main'>
 
     <div id="map"></div>
@@ -70,36 +61,26 @@ else
 </html>
 
 <?php
-function write_sidebar($homepage=false)
+function write_topbar($homepage=false)
 {
 ?>
-    <div id='sidebar'>
+    <div id='topbar'>
 
-
-	<div id='title'> 
-		<div class='titlebox' id='titlebox'>
-		<img src='fm/images/freemap_small.png' alt='Freenap logo' /> <br />
+		<div id='imgdiv' style='float:left; top:10px; position:relative; margin-right: 10px;'>
+		<img src='fm/images/freemap_small.png' alt='Freenap logo' /> 
 		</div>
+
+
+    <div id='intro' style='margin-left:auto; margin-right:auto'>Welcome to <em>Freemap</em>... 
+	OpenStreetMap-based maps of the countryside of England and Wales.
+	<strong><a href='fm/about.html'>More</a></strong> </div>
+
+	<div id='search'>
+    <input id='q' />
+	<input type='button' id='searchBtn' value='Search!'>
+	</div>
 	</div>
 
-
-    <p id='intro'>Welcome to <em>Freemap</em>... 
-	annotatable
-	OpenStreetMap-based maps of the countryside of England and Wales, 
-	allowing you to add notes and walking routes (note that a login
-	is no longer required, however additions to the map must be authorised
-	by the administrator).  
-	<strong><a href='fm/about.html'>More</a></strong> </p>
-
-
-    <div id='appmsg'>
-    <a href='/common/opentrail.html'>Android app</a>
-    also available!</div>
-
-
-
-
-    <div id='searchdiv'></div>
     </div>
     <?php
 }
